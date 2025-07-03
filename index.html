@@ -1,13 +1,45 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./assets/css/style.css">
+    <title>Início - CEPIN-CIS</title>
 </head>
+
 <body>
-    <h1>Hello, world!</h1>
-    <h1>Hello, world!</h1>
-    <h1>Hello, world!</h1>
+    <div id="header"></div>
+    <section class="hero"></section>
+
+    <main class="page page--home">
+        <div class="container">
+            <div class="content text--dark">
+                <div class="title__search flex--between">
+                    <h1 class="f--22">Últimas Notícias</h1>
+                    <div class="block__search">
+                        <button class="btn__clearSearch" id="clearSearchBtn"><ion-icon class="ion-icon f--20"
+                                name="close-outline"></ion-icon></button>
+                        <input type="text" class="search__bar" id="searchBar" placeholder="Pesquisar..." />
+                    </div>
+                </div>
+                <div class="posts_list" id="postsList"></div>
+            </div>
+        </div>
+    </main>
+
+    <div id="footer"></div>
+
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    <script src="./assets/js/api.js"></script>
+    <script src="./assets/js/main.js"></script>
+    <script src="./assets/js/components.js"></script>
+    <script src="./assets/js/script.js"></script>
 </body>
+
 </html>
