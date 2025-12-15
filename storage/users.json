@@ -1,0 +1,26 @@
+[
+    {
+        "id": 1,
+        "username": "admin",
+        "password_hash": "$2y$10$y\/JX0kKlU0A8W5CzdgdypOilq4Y9Gv5HxCyPZX86sDrbRjVYRAfcm",
+        "fullname": "Administrador",
+        "email": "admin@example.com",
+        "created_at": "2025-11-26T17:46:57+00:00"
+    },
+    {
+        "id": 2,
+        "username": "teste123",
+        "password_hash": "$2y$10$Rvoo3m\/vCl6Uu3bcAlPmROLScGiRRQ1du9L2wUfD..wuLu.HbqPcm",
+        "fullname": "teste",
+        "email": "teste123@gmail.com",
+        "created_at": "2025-11-26T17:47:25+00:00"
+    },
+    {
+        "id": 3,
+        "username": "Cg3032108",
+        "password_hash": "$2y$10$UVFGa\/aKx9JdL5CT1vonwOD3z4JddTJ9FwMe2LyNBK1NcAHHWBPQq",
+        "fullname": "LEONARDO DI CIOMMO",
+        "email": "leodiciommo@gmail.com",
+        "created_at": "2025-11-26T18:03:26+00:00"
+    }
+]

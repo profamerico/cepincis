@@ -1,0 +1,62 @@
+# ===== CONFIGURAÇÕES SENSÍVEIS =====
+.env
+.env.local
+.env.production
+.env.development
+
+# ===== DEPENDÊNCIAS DO COMPOSER =====
+vendor/
+composer.lock
+
+# ===== ARQUIVOS DE BANCO DE DADOS/JSON =====
+data/users.json
+database.sqlite
+*.db
+*.sqlite
+*.sqlite3
+
+# ===== ARQUIVOS DE LOG =====
+*.log
+logs/
+error_log
+php_errors.log
+
+# ===== ARQUIVOS DO SISTEMA =====
+.htaccess
+.htpasswd
+web.config
+
+# ===== ARQUIVOS TEMPORÁRIOS =====
+*.tmp
+*.temp
+.cache/
+tmp/
+temp/
+
+# ===== ARQUIVOS DO EDITOR/IDE =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== ARQUIVOS DO SISTEMA OPERACIONAL =====
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===== BACKUPS =====
+*.backup
+*.bak
+backup/
+
+# ===== ARQUIVOS DE UPLOAD (se tiver) =====
+uploads/
+assets/uploads/
+
+# ===== ARQUIVOS DE CACHE DO PHP =====
+*.cache
+.opcache/
+
+# ===== ARQUIVOS DO XAMPP (se aplicável) =====
+/xampp/
