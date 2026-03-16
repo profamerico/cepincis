@@ -88,6 +88,28 @@ if (text) {
 	observerFecharTexto.observe(text);
 }
 
+const campoPesquisa = document.getElementById("campoPesquisa");
+
+campoPesquisa.addEventListener("keyup", function () {
+
+	const termo = campoPesquisa.value.toLowerCase();
+
+	const cards = document.querySelectorAll(".card-publicacao-carrossel");
+
+	cards.forEach(card => {
+
+		const tag = card.querySelector(".categoria-card-publicacao").textContent.toLowerCase();
+
+		if (tag.includes(termo)) {
+			card.style.display = "block";
+		} else {
+			card.style.display = "none";
+		}
+
+	});
+
+});
+
 // ===== VOLTAR PARA O BOTÃO ASSIM QUE VIRAR "VER MAIS" (CLIQUE MANUAL) =====
 if (btn) {
 	btn.addEventListener("click", () => {
