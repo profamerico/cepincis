@@ -53,6 +53,10 @@
                         <h2 class="titulo-principal-publicacoes">LINHAS DE PESQUISA</h2>
                     </div>
 
+                    <div class="barra-pesquisa">
+                        <input type="text" id="campoPesquisa" placeholder="Pesquisar por tag...">
+                    </div>
+                    
                     <div class="wrapper-carrossel-publicacoes">
                         <div class="container-carrossel-publicacoes" id="carrosselPublicacoes">
 
