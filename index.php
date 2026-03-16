@@ -56,19 +56,19 @@
                     <div class="barra-pesquisa">
                         <input type="text" id="campoPesquisa" placeholder="Pesquisar por tag...">
                     </div>
-                    
+
                     <div class="wrapper-carrossel-publicacoes">
                         <div class="container-carrossel-publicacoes" id="carrosselPublicacoes">
 
                             <div class="card-publicacao-carrossel card-publicacao-1">
-                                <h3 class="categoria-card-publicacao">futura tag</h3>
+                                <h3 class="categoria-card-publicacao">1tag</h3>
                                 <h2 class="titulo-card-publicacao">Dosador de Concreto Construído com Phyton</h2>
                                 <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
                                 <button class="botao-explorar-publicacao"><span>Explorar</span></button>
                             </div>
 
                             <div class="card-publicacao-carrossel card-publicacao-2">
-                                <h3 class="categoria-card-publicacao"> futura tag</h3>
+                                <h3 class="categoria-card-publicacao">2tag</h3>
                                 <h2 class="titulo-card-publicacao">Desenvolvimento de Ferramenta Digital Para Avaliação
                                     Técnica e Ambiental do Concreto</h2>
                                 <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
