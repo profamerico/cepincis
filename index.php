@@ -69,6 +69,7 @@
 
                             <div class="card-publicacao-carrossel card-publicacao-2">
                                 <h3 class="categoria-card-publicacao">2tag</h3>
+                                <h3 class="categoria-card-publicacao">3tag</h3>
                                 <h2 class="titulo-card-publicacao">Desenvolvimento de Ferramenta Digital Para Avaliação
                                     Técnica e Ambiental do Concreto</h2>
                                 <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
