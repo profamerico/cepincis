@@ -106,6 +106,7 @@ botoes.forEach(botao => {
 		filtrar();
 	});
 });
+//.
 
 // digitação na pesquisa
 campoPesquisa.addEventListener("keyup", filtrar);
