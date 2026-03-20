@@ -82,6 +82,34 @@
                                 <button class="botao-explorar-publicacao"><span>Explorar</span></button>
                             </div>
 
+                            <div class="card-publicacao-carrossel" data-tags="concreto sustentabilidade engenharia">
+                                <h3 class="categoria-card-publicacao">Construção Civil</h3>
+                                <h2>Projeto teste</h2>
+                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
+                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
+                            </div>
+
+                            <div class="card-publicacao-carrossel" data-tags="python engenharia">
+                                <h3 class="categoria-card-publicacao">Engenharia</h3>
+                                <h2>Projeto teste3</h2>
+                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
+                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
+                            </div>
+
+                            <div class="card-publicacao-carrossel" data-tags="pyhton">
+                                <h3 class="categoria-card-publicacao">Python</h3>
+                                <h2>Projeto teste2</h2>
+                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
+                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
+                            </div>
+
+                            <div class="card-publicacao-carrossel" data-tags="phyton">
+                                <h3 class="categoria-card-publicacao">Construção Civil</h3>
+                                <h2>Projeto teste4</h2>
+                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
+                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
+                            </div>
+
                         </div>
 
                         <div class="navegacao-carrossel-publicacoes">
@@ -92,6 +120,8 @@
                         <div class="indicadores-paginacao-carrossel">
                             <div class="ponto-indicador-carrossel active" onclick="irParaSlidePublicacao(0)"></div>
                             <div class="ponto-indicador-carrossel" onclick="irParaSlidePublicacao(1)"></div>
+                            <div class="ponto-indicador-carrossel" onclick="irParaSlidePublicacao(2)"></div>
+                            <div class="ponto-indicador-carrossel" onclick="irParaSlidePublicacao(3)"></div>                            <div class="ponto-indicador-carrossel" onclick="irParaSlidePublicacao(1)"></div>
                         </div>
                     </div>
                 </section>
