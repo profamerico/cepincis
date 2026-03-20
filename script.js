@@ -88,27 +88,49 @@ if (text) {
 	observerFecharTexto.observe(text);
 }
 
+const botoes = document.querySelectorAll(".filtros-tags button");
+const cards1 = document.querySelectorAll(".card-publicacao-carrossel");
 const campoPesquisa = document.getElementById("campoPesquisa");
 
-campoPesquisa.addEventListener("keyup", function () {
+let tagAtiva = "todos";
+
+// clique nos botões de tag
+botoes.forEach(botao => {
+	botao.addEventListener("click", () => {
+
+		botoes.forEach(b => b.classList.remove("active"));
+		botao.classList.add("active");
+
+		tagAtiva = botao.dataset.tag;
+
+		filtrar();
+	});
+});
+
+// digitação na pesquisa
+campoPesquisa.addEventListener("keyup", filtrar);
+
+// função principal
+function filtrar() {
 
 	const termo = campoPesquisa.value.toLowerCase();
 
-	const cards = document.querySelectorAll(".card-publicacao-carrossel");
+	cards1.forEach(card => {
 
-	cards.forEach(card => {
+		const tags = card.dataset.tags.toLowerCase();
+		const titulo = card.querySelector("h2").textContent.toLowerCase();
 
-		const tag = card.querySelector(".categoria-card-publicacao").textContent.toLowerCase();
+		const matchTag = tagAtiva === "todos" || tags.includes(tagAtiva);
+		const matchTexto = titulo.includes(termo) || tags.includes(termo);
 
-		if (tag.includes(termo)) {
+		if (matchTag && matchTexto) {
 			card.style.display = "block";
 		} else {
 			card.style.display = "none";
 		}
 
 	});
-
-});
+}
 
 // ===== VOLTAR PARA O BOTÃO ASSIM QUE VIRAR "VER MAIS" (CLIQUE MANUAL) =====
 if (btn) {

@@ -57,32 +57,30 @@
                         <input type="text" id="campoPesquisa" placeholder="Pesquisar por tag...">
                     </div>
 
+                    <div class="filtros-tags">
+                        <button data-tag="todos" class="active">Todos</button>
+                        <button data-tag="concreto">Concreto</button>
+                        <button data-tag="python">Python</button>
+                        <button data-tag="engenharia">Engenharia</button>
+                        <button data-tag="sustentabilidade">Sustentabilidade</button>
+                    </div>
+
                     <div class="wrapper-carrossel-publicacoes">
                         <div class="container-carrossel-publicacoes" id="carrosselPublicacoes">
 
-                            <div class="card-publicacao-carrossel card-publicacao-1">
-                                <h3 class="categoria-card-publicacao">1tag</h3>
-                                <h2 class="titulo-card-publicacao">Dosador de Concreto Construído com Phyton</h2>
+                            <div class="card-publicacao-carrossel" data-tags="concreto python engenharia">
+                                <h3 class="categoria-card-publicacao">Construção Civil</h3>
+                                <h2>Dosador de Concreto Construído com Python</h2>
                                 <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
                                 <button class="botao-explorar-publicacao"><span>Explorar</span></button>
                             </div>
 
-                            <div class="card-publicacao-carrossel card-publicacao-2">
-                                <h3 class="categoria-card-publicacao">2tag</h3>
-                                <h3 class="categoria-card-publicacao">3tag</h3>
-                                <h2 class="titulo-card-publicacao">Desenvolvimento de Ferramenta Digital Para Avaliação
-                                    Técnica e Ambiental do Concreto</h2>
+                            <div class="card-publicacao-carrossel" data-tags="concreto sustentabilidade avaliacao">
+                                <h3 class="categoria-card-publicacao">Sustentabilidade</h3>
+                                <h2>Ferramenta de Avaliação do Concreto</h2>
                                 <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
                                 <button class="botao-explorar-publicacao"><span>Explorar</span></button>
                             </div>
-
-                            <div class="card-publicacao-carrossel card-publicacao-3">
-                                <h3 class="categoria-card-publicacao">Em Breve</h3>
-                                <h2 class="titulo-card-publicacao">Em Breve</h2>
-                                <p class="descricao-card-publicacao">Clique aqui para explorar o edital</p>
-                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
-                            </div>
-
 
                         </div>
 

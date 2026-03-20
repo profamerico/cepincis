@@ -2912,3 +2912,27 @@ footer {
     border: none;
     width: 300px;
 }
+
+.filtros-tags {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.filtros-tags button {
+    margin: 5px;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.filtros-tags .active {
+    background: #000000;
+    color: white;
+}
+
+.barra-pesquisa input {
+    padding: 10px;
+    border-radius: 10px;
+    width: 250px;
+}
