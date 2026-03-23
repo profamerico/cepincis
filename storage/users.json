@@ -22,5 +22,13 @@
         "fullname": "LEONARDO DI CIOMMO",
         "email": "leodiciommo@gmail.com",
         "created_at": "2025-11-26T18:03:26+00:00"
+    },
+    {
+        "id": 4,
+        "username": "Cg3032108",
+        "password_hash": "$2y$10$UVFGa\/aKx9JdL5CT1vonwOD3z4JddTJ9FwMe2LyNBK1NcAHHWBPQq",
+        "fullname": "LEONARDO DI CIOMMO",
+        "email": "leozinho.ciommo@gmail.com",
+        "created_at": "2025-11-26T18:04:26+00:00"
     }
 ]
