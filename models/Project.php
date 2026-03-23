@@ -16,6 +16,7 @@ class ProjectManager {
         }
     }
     
+
     public function createProject($user_id, $title, $description, $category = 'Geral') {
         $projects = $this->getProjects();
         
@@ -38,6 +39,7 @@ class ProjectManager {
         
         return false;
     }
+    
     
     public function getUserProjects($user_id) {
         $projects = $this->getProjects();
