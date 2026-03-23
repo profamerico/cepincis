@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css" />
     <link href="https://fonts.googleapis.com/css2?family=Aldrich&family=Chivo:wght@300;400;700&display=swap"
         rel="stylesheet">
+        <link rel="icon" type="image/x-icon" href="./img/Captura_de_tela_2026-03-23_165121-removebg-preview.png">
 </head>
 
 <body>
