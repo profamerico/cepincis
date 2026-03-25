@@ -1,4 +1,38 @@
 <?php
+
+// A URL base para onde as redes sociais vão devolver o usuário
+$callback_base = "https://cepincis.com.br/callback.php";
+
+// Montando o link do Google
+$google_auth_url = "https://accounts.google.com/o/oauth2/v2/auth?" . http_build_query([
+    'client_id'     => '_ID_GOOGLE', // 
+    'redirect_uri'  => $callback_base . '?provider=google',
+    'response_type' => 'code',
+    'scope'         => 'email profile'
+]);
+
+// Montando o link do Facebook
+$facebook_auth_url = "https://www.facebook.com/v12.0/dialog/oauth?" . http_build_query([
+    'client_id'    => '_ID_FACEBOOK', // 
+    'redirect_uri' => $callback_base . '?provider=facebook',
+    'scope'        => 'email'
+]);
+
+// Montando o link do GitHub
+$github_auth_url = "https://github.com/login/oauth/authorize?" . http_build_query([
+    'client_id'    => 'Ov23limHfW3vDDuSJJvk', // 
+    'redirect_uri' => $callback_base . '?provider=github',
+    'scope'        => 'user:email'
+]);
+
+// Montando o link do LinkedIn
+$linkedin_auth_url = "https://www.linkedin.com/oauth/v2/authorization?" . http_build_query([
+    'response_type' => 'code',
+    'client_id'     => '_ID_LINKEDIN', // 
+    'redirect_uri'  => $callback_base . '?provider=linkedin',
+    'scope'         => 'r_liteprofile r_emailaddress'
+]);
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -56,16 +90,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         id="username"
                         name="username"
                         value="<?php echo htmlspecialchars($username_preenchido, ENT_QUOTES, 'UTF-8'); ?>"
-                        placeholder="Digite seu usuário"
-                        required
-                    />
+                        placeholder="Usuário..."
+                        required />
 
                     <label for="password">Senha</label>
-                    <input type="password" id="password" name="password" placeholder="Digite sua senha" required />
+                    <input type="password" id="password" name="password" placeholder="Senha..." required />
 
                     <button type="submit">Entrar</button>
                 </form>
+
                 <p>Não tem uma conta? <a href="./register.php">Registre-se</a></p>
+
+                <div class="social-login">
+                    <p>Ou conecte-se com:</p>
+                    <div class="social-icons">
+                        <a href="<?php echo htmlspecialchars($google_auth_url); ?>" title="Google">
+                            <i class="fa-brands fa-google-plus-g"></i>
+                        </a>
+                        <a href="<?php echo htmlspecialchars($facebook_auth_url); ?>" title="Facebook">
+                            <i class="fa-brands fa-facebook-f"></i>
+                        </a>
+                        <a href="<?php echo htmlspecialchars($github_auth_url); ?>" title="GitHub">
+                            <i class="fa-brands fa-github"></i>
+                        </a>
+                        <a href="<?php echo htmlspecialchars($linkedin_auth_url); ?>" title="LinkedIn">
+                            <i class="fa-brands fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

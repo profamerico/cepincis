@@ -2935,3 +2935,37 @@ footer {
     border-radius: 10px;
     width: 250px;
 }
+
+/* Cores no Hover */
+.fa-google-plus-g:hover { color: #db4437; }
+.fa-facebook-f:hover { color: #1877f2; }
+.fa-github:hover { color: #e7e7e7; }
+.fa-linkedin-in:hover { color: #0a66c2; }
+
+/* Transição suave */
+.social-icons a i {
+    transition: color 0.3s ease;
+}
+
+.social-login {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.social-icons a {
+    font-size: 1.5rem;
+    color: #002727; /* Cor padrão */
+    transition: transform 0.2s, color 0.2s;
+}
+
+.social-icons a:hover {
+    transform: scale(1.1);
+    color: #000; /* Cor ao passar o mouse */
+}
