@@ -107,9 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <a href="<?php echo htmlspecialchars($google_auth_url); ?>" title="Google">
                             <i class="fa-brands fa-google-plus-g"></i>
                         </a>
-                        <a href="<?php echo htmlspecialchars($facebook_auth_url); ?>" title="Facebook">
-                            <i class="fa-brands fa-facebook-f"></i>
-                        </a>
                         <a href="<?php echo htmlspecialchars($github_auth_url); ?>" title="GitHub">
                             <i class="fa-brands fa-github"></i>
                         </a>
