@@ -59,11 +59,11 @@
                     </div>
 
                     <div class="filtros-tags">
-                        <button data-tag="todos" class="active">Todos</button>
-                        <button data-tag="concreto">Concreto</button>
-                        <button data-tag="python">Python</button>
-                        <button data-tag="engenharia">Engenharia</button>
-                        <button data-tag="sustentabilidade">Sustentabilidade</button>
+                        <button data-tag="IoT" class="active">IoT</button>
+                        <button data-tag="UrbanSmart">UrbanSmart</button>
+                        <button data-tag="CarbonZero">CarbonZero</button>
+                        <button data-tag="EcoMat">EcoMat</button>
+                        <button data-tag="EduCIS">EduCIS</button>
                     </div>
 
                     <div class="wrapper-carrossel-publicacoes">
