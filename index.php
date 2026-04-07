@@ -389,6 +389,7 @@
 
 
                         <div class="carousel-container">
+                            
                             <button class="nav-arrow left">‹</button>
                             <div class="carousel-track">
                                 <div class="card" data-index="0">
