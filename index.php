@@ -1,3 +1,57 @@
+<?php
+require_once 'models/Project.php';
+
+$projectManager = new ProjectManager();
+$homepageProjects = $projectManager->getAllProjects();
+$homepageProjectTags = $projectManager->getProjectTags($homepageProjects);
+
+
+function home_project_status_label(string $status): string
+{
+    switch ($status) {
+        case 'completed':
+            return 'Concluido';
+        case 'pending':
+            return 'Pendente';
+        default:
+            return 'Ativo';
+    }
+}
+
+function home_project_status_key(?string $status): string
+{
+    $status = strtolower(trim((string) $status));
+
+    if (in_array($status, ['active', 'completed', 'pending'], true)) {
+        return $status;
+    }
+
+    return 'active';
+}
+
+function home_project_excerpt(string $text, int $limit = 150): string
+{
+    $text = trim(preg_replace('/\s+/', ' ', $text));
+
+    if ($text === '') {
+        return 'Projeto cadastrado no portal do CEPIN-CIS. Os detalhes completos podem ser publicados conforme a equipe atualizar a base.';
+    }
+
+    if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+        if (mb_strlen($text, 'UTF-8') <= $limit) {
+            return $text;
+        }
+
+        return rtrim(mb_substr($text, 0, $limit - 1, 'UTF-8')) . '...';
+    }
+
+    if (strlen($text) <= $limit) {
+        return $text;
+    }
+
+    return rtrim(substr($text, 0, $limit - 1)) . '...';
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 
@@ -51,7 +105,7 @@
                 <section class="secao-publicacoes-recentes">
                     <div class="cabecalho-publicacoes">
                         <h3 class="titulo-categoria-publicacoes">do CEPIN-CIS:</h3>
-                        <h2 class="titulo-principal-publicacoes">LINHAS DE PESQUISA</h2>
+                        <h2 class="titulo-principal-publicacoes">PROJETOS</h2>
                     </div>
 
                     <div class="barra-pesquisa">

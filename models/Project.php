@@ -9,13 +9,14 @@ class ProjectManager
         $this->ensureFileExists();
     }
 
-    public function createProject($userId, $title, $description, $category = 'Geral')
+    public function createProject($userId, $title, $description, $category = 'Geral', $tags = [])
     {
         $result = $this->adminSaveProject(null, [
             'user_id' => $userId,
             'title' => $title,
             'description' => $description,
             'category' => $category,
+            'tags' => $tags,
             'status' => 'active',
         ]);
 
@@ -49,6 +50,32 @@ class ProjectManager
         }
 
         return false;
+    }
+
+    public function getProjectTagList(array $project, bool $includeCategory = true): array
+    {
+        $tags = $this->normalizeTags($project['tags'] ?? []);
+
+        if ($includeCategory) {
+            $category = trim((string) ($project['category'] ?? ''));
+            if ($category !== '') {
+                $tags = $this->normalizeTags(array_merge($tags, [$category]));
+            }
+        }
+
+        return $tags;
+    }
+
+    public function getProjectTags(?array $projects = null): array
+    {
+        $projects = $projects ?? $this->loadProjects();
+        $allTags = [];
+
+        foreach ($projects as $project) {
+            $allTags = array_merge($allTags, $this->getProjectTagList($project));
+        }
+
+        return $this->normalizeTags($allTags);
     }
 
     public function updateProject($projectId, $data)
@@ -93,6 +120,7 @@ class ProjectManager
         $title = trim((string) ($data['title'] ?? ''));
         $description = trim((string) ($data['description'] ?? ''));
         $category = trim((string) ($data['category'] ?? 'Geral'));
+        $tags = $this->normalizeTags($data['tags'] ?? []);
         $status = $this->normalizeStatus((string) ($data['status'] ?? 'active'));
         $userId = $this->normalizeUserId($data['user_id'] ?? null);
 
@@ -112,6 +140,7 @@ class ProjectManager
                 'title' => $title,
                 'description' => $description,
                 'category' => $category !== '' ? $category : 'Geral',
+                'tags' => $tags,
                 'status' => $status,
                 'created_at' => $this->now(),
                 'updated_at' => $this->now(),
@@ -122,6 +151,7 @@ class ProjectManager
             $projects[$projectIndex]['title'] = $title;
             $projects[$projectIndex]['description'] = $description;
             $projects[$projectIndex]['category'] = $category !== '' ? $category : 'Geral';
+            $projects[$projectIndex]['tags'] = $tags;
             $projects[$projectIndex]['status'] = $status;
             $projects[$projectIndex]['updated_at'] = $this->now();
             $savedProject = $projects[$projectIndex];
@@ -276,6 +306,7 @@ class ProjectManager
             'title' => trim((string) ($project['title'] ?? '')),
             'description' => trim((string) ($project['description'] ?? '')),
             'category' => trim((string) ($project['category'] ?? 'Geral')) ?: 'Geral',
+            'tags' => $this->normalizeTags($project['tags'] ?? []),
             'status' => $this->normalizeStatus((string) ($project['status'] ?? 'active')),
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,
@@ -297,6 +328,39 @@ class ProjectManager
         $status = strtolower(trim($status));
 
         return in_array($status, $allowed, true) ? $status : 'active';
+    }
+
+    private function normalizeTags($tags): array
+    {
+        if (is_string($tags)) {
+            $tags = preg_split('/[,;\r\n]+/', $tags) ?: [];
+        }
+
+        if (!is_array($tags)) {
+            return [];
+        }
+
+        $normalizedTags = [];
+        $seenTags = [];
+
+        foreach ($tags as $tag) {
+            $cleanTag = trim((string) $tag);
+            if ($cleanTag === '') {
+                continue;
+            }
+
+            $normalizedKey = function_exists('mb_strtolower')
+                ? mb_strtolower($cleanTag, 'UTF-8')
+                : strtolower($cleanTag);
+            if (isset($seenTags[$normalizedKey])) {
+                continue;
+            }
+
+            $seenTags[$normalizedKey] = true;
+            $normalizedTags[] = $cleanTag;
+        }
+
+        return $normalizedTags;
     }
 
     private function findProjectIndex(array $projects, string $projectId): ?int

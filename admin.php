@@ -57,6 +57,15 @@ function admin_format_datetime(?string $value): string
     return date('d/m/Y H:i', $timestamp);
 }
 
+function admin_format_tags(array $tags): string
+{
+    if (empty($tags)) {
+        return 'Sem tags';
+    }
+
+    return implode(', ', $tags);
+}
+
 if (empty($_SESSION['admin_csrf'])) {
     $_SESSION['admin_csrf'] = bin2hex(random_bytes(16));
 }
@@ -137,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'user_id' => trim((string) ($_POST['user_id'] ?? '')),
                     'title' => trim((string) ($_POST['title'] ?? '')),
                     'category' => trim((string) ($_POST['category'] ?? '')),
+                    'tags' => trim((string) ($_POST['tags'] ?? '')),
                     'status' => trim((string) ($_POST['status'] ?? 'active')),
                     'description' => trim((string) ($_POST['description'] ?? '')),
                 ];
@@ -145,6 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'user_id' => $submittedProject['user_id'],
                     'title' => $submittedProject['title'],
                     'category' => $submittedProject['category'],
+                    'tags' => $submittedProject['tags'],
                     'status' => $submittedProject['status'],
                     'description' => $submittedProject['description'],
                 ]);
@@ -227,6 +238,7 @@ $projectForm = [
     'user_id' => isset($editingProject['user_id']) && $editingProject['user_id'] !== null ? (string) $editingProject['user_id'] : '',
     'title' => $editingProject['title'] ?? '',
     'category' => $editingProject['category'] ?? 'Geral',
+    'tags' => implode(', ', $editingProject['tags'] ?? []),
     'status' => $editingProject['status'] ?? 'active',
     'description' => $editingProject['description'] ?? '',
 ];
@@ -470,6 +482,11 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                 </div>
 
                 <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <input type="text" id="tags" name="tags" value="<?php echo htmlspecialchars((string) $projectForm['tags'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Ex.: IoT, UrbanSmart, CarbonZero">
+                </div>
+
+                <div class="form-group">
                     <label for="status">Status</label>
                     <select id="status" name="status">
                         <option value="active" <?php echo $projectForm['status'] === 'active' ? 'selected' : ''; ?>>Ativo</option>
@@ -520,6 +537,7 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                                     <td>
                                         <strong><?php echo htmlspecialchars((string) $project['title'], ENT_QUOTES, 'UTF-8'); ?></strong>
                                         <div class="admin-meta"><?php echo htmlspecialchars((string) $project['description'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="admin-meta">Tags: <?php echo htmlspecialchars(admin_format_tags($projectManager->getProjectTagList($project, false)), ENT_QUOTES, 'UTF-8'); ?></div>
                                     </td>
                                     <td><?php echo htmlspecialchars((string) ($owner['fullname'] ?? 'Sem responsavel'), ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
