@@ -11,6 +11,7 @@ $auth->requireAuth();
 $projectManager = new ProjectManager();
 $user = $auth->getCurrentUser();
 $stats = $projectManager->getUserStats((int) $user['id']);
+$roleLabel = $auth->getRoleLabel($user);
 $result = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -151,6 +152,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <li>
                         <span>Usuario</span>
                         <strong>@<?php echo htmlspecialchars((string) $user['username'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                    </li>
+                    <li>
+                        <span>Nivel atual</span>
+                        <strong><?php echo htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
                     </li>
                 </ul>
             </article>

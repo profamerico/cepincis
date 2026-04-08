@@ -10,6 +10,7 @@ $auth->requireAdmin();
 
 $projectManager = new ProjectManager();
 $currentUser = $auth->getCurrentUser();
+$roleOptions = $auth->getRoleDefinitions();
 
 function admin_set_flash(string $type, string $message): void
 {
@@ -233,6 +234,8 @@ $projectForm = [
 if ($projectFormOverrides !== null) {
     $projectForm = array_merge($projectForm, $projectFormOverrides);
 }
+
+$currentRoleLabel = $auth->getRoleLabel($currentUser);
 ?>
 
 <?php include_once 'includes/header.php'; ?>
@@ -258,7 +261,7 @@ if ($projectFormOverrides !== null) {
             <ul class="hero-meta-list">
                 <li>Usuario: @<?php echo htmlspecialchars((string) $currentUser['username'], ENT_QUOTES, 'UTF-8'); ?></li>
                 <li>Email: <?php echo htmlspecialchars((string) ($currentUser['email'] ?: 'Nao informado'), ENT_QUOTES, 'UTF-8'); ?></li>
-                <li>Nivel: administrador</li>
+                <li>Nivel: <?php echo htmlspecialchars($currentRoleLabel, ENT_QUOTES, 'UTF-8'); ?></li>
             </ul>
         </aside>
     </section>
@@ -298,6 +301,7 @@ if ($projectFormOverrides !== null) {
                 <div>
                     <p class="eyebrow">Usuarios</p>
                     <h2><?php echo $userForm['id'] !== '' ? 'Editar usuario' : 'Novo usuario'; ?></h2>
+                    <p class="admin-hierarchy-note">Hierarquia atual: Usuario, Pesquisador Academico, Pesquisador Associado, Pesquisador Pleno e Admin.</p>
                 </div>
 
                 <?php if ($userForm['id'] !== ''): ?>
@@ -330,10 +334,13 @@ if ($projectFormOverrides !== null) {
                 </div>
 
                 <div class="form-group">
-                    <label for="role">Permissao</label>
+                    <label for="role">Nivel hierarquico</label>
                     <select id="role" name="role">
-                        <option value="member" <?php echo $userForm['role'] === 'member' ? 'selected' : ''; ?>>Membro</option>
-                        <option value="admin" <?php echo $userForm['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                        <?php foreach ($roleOptions as $roleKey => $roleMeta): ?>
+                            <option value="<?php echo htmlspecialchars($roleKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo $auth->getRoleKey($userForm['role']) === $roleKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $roleMeta['label'], ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -362,7 +369,7 @@ if ($projectFormOverrides !== null) {
                         <thead>
                             <tr>
                                 <th>Usuario</th>
-                                <th>Permissao</th>
+                                <th>Nivel</th>
                                 <th>Email</th>
                                 <th>Projetos</th>
                                 <th>Criado em</th>
@@ -374,6 +381,9 @@ if ($projectFormOverrides !== null) {
                                 <?php
                                 $listedUserId = (int) $listedUser['id'];
                                 $listedIsAdmin = $auth->isAdmin($listedUser);
+                                $listedRoleKey = $auth->getRoleKey($listedUser);
+                                $listedRoleLabel = $auth->getRoleLabel($listedUser);
+                                $listedRoleClass = 'admin-pill--' . str_replace('_', '-', $listedRoleKey);
                                 $isSelf = $listedUserId === (int) $currentUser['id'];
                                 ?>
                                 <tr>
@@ -382,8 +392,8 @@ if ($projectFormOverrides !== null) {
                                         <div class="admin-meta">@<?php echo htmlspecialchars((string) $listedUser['username'], ENT_QUOTES, 'UTF-8'); ?></div>
                                     </td>
                                     <td>
-                                        <span class="admin-pill <?php echo $listedIsAdmin ? 'admin-pill--admin' : 'admin-pill--member'; ?>">
-                                            <?php echo $listedIsAdmin ? 'Admin' : 'Membro'; ?>
+                                        <span class="admin-pill <?php echo htmlspecialchars($listedRoleClass, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <?php echo htmlspecialchars($listedRoleLabel, ENT_QUOTES, 'UTF-8'); ?>
                                         </span>
                                     </td>
                                     <td><?php echo htmlspecialchars((string) ($listedUser['email'] ?: '-'), ENT_QUOTES, 'UTF-8'); ?></td>

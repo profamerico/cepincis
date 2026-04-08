@@ -15,7 +15,7 @@ $userStats = $projectManager->getUserStats((int) $currentUser['id']);
 $projectStats = $isAdmin ? $projectManager->getProjectStats() : null;
 $users = $isAdmin ? $auth->listUsers() : [];
 $displayName = $currentUser['fullname'] ?? $currentUser['username'];
-$roleLabel = $isAdmin ? 'Administrador' : 'Membro';
+$roleLabel = $auth->getRoleLabel($currentUser);
 ?>
 
 <?php include_once 'includes/header.php'; ?>

@@ -5,6 +5,35 @@ if (session_status() === PHP_SESSION_NONE) {
 
 class AuthController
 {
+    private const ROLE_MEMBER = 'member';
+    private const ROLE_ACADEMIC_RESEARCHER = 'academic_researcher';
+    private const ROLE_ASSOCIATE_RESEARCHER = 'associate_researcher';
+    private const ROLE_FULL_RESEARCHER = 'full_researcher';
+    private const ROLE_ADMIN = 'admin';
+
+    private const ROLE_DEFINITIONS = [
+        self::ROLE_MEMBER => [
+            'label' => 'Usuario',
+            'rank' => 10,
+        ],
+        self::ROLE_ACADEMIC_RESEARCHER => [
+            'label' => 'Pesquisador Academico',
+            'rank' => 20,
+        ],
+        self::ROLE_ASSOCIATE_RESEARCHER => [
+            'label' => 'Pesquisador Associado',
+            'rank' => 30,
+        ],
+        self::ROLE_FULL_RESEARCHER => [
+            'label' => 'Pesquisador Pleno',
+            'rank' => 40,
+        ],
+        self::ROLE_ADMIN => [
+            'label' => 'Administrador',
+            'rank' => 100,
+        ],
+    ];
+
     private $usersFile;
 
     public function __construct($usersFile = null)
@@ -101,7 +130,7 @@ class AuthController
                 'password_hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT),
                 'fullname' => $displayName,
                 'email' => $email,
-                'role' => 'member',
+                'role' => self::ROLE_MEMBER,
                 'provider' => $provider,
                 'created_at' => $this->nowIso(),
                 'updated_at' => $this->nowIso(),
@@ -181,7 +210,7 @@ class AuthController
             'password_hash' => password_hash($password, PASSWORD_DEFAULT),
             'fullname' => $fullname,
             'email' => $email,
-            'role' => 'member',
+            'role' => self::ROLE_MEMBER,
             'provider' => 'local',
             'created_at' => $this->nowIso(),
             'updated_at' => $this->nowIso(),
@@ -201,6 +230,35 @@ class AuthController
         return null;
     }
 
+    public function getRoleDefinitions(): array
+    {
+        return self::ROLE_DEFINITIONS;
+    }
+
+    public function getRoleKey($roleOrUser = null): string
+    {
+        return $this->normalizeRole($roleOrUser);
+    }
+
+    public function getRoleLabel($roleOrUser = null): string
+    {
+        $roleKey = $this->normalizeRole($roleOrUser);
+
+        return self::ROLE_DEFINITIONS[$roleKey]['label'] ?? self::ROLE_DEFINITIONS[self::ROLE_MEMBER]['label'];
+    }
+
+    public function getRoleRank($roleOrUser = null): int
+    {
+        $roleKey = $this->normalizeRole($roleOrUser);
+
+        return (int) (self::ROLE_DEFINITIONS[$roleKey]['rank'] ?? self::ROLE_DEFINITIONS[self::ROLE_MEMBER]['rank']);
+    }
+
+    public function hasAtLeastRole(string $requiredRole, ?array $user = null): bool
+    {
+        return $this->getRoleRank($user) >= $this->getRoleRank($requiredRole);
+    }
+
     public function isAdmin(?array $user = null): bool
     {
         $user = $user ?: $this->getCurrentUser();
@@ -209,11 +267,7 @@ class AuthController
             return false;
         }
 
-        $role = strtolower(trim((string) ($user['role'] ?? '')));
-        $username = strtolower(trim((string) ($user['username'] ?? '')));
-        $id = (int) ($user['id'] ?? 0);
-
-        return $role === 'admin' || $id === 1 || $username === 'admin';
+        return $this->normalizeRole($user) === self::ROLE_ADMIN;
     }
 
     public function updateProfile(array $data): array
@@ -336,8 +390,7 @@ class AuthController
         $fullname = trim((string) ($data['fullname'] ?? ''));
         $email = trim((string) ($data['email'] ?? ''));
         $password = (string) ($data['password'] ?? '');
-        $role = strtolower(trim((string) ($data['role'] ?? 'member')));
-        $role = in_array($role, ['admin', 'member'], true) ? $role : 'member';
+        $role = $this->normalizeRole((string) ($data['role'] ?? self::ROLE_MEMBER));
 
         $errors = [];
         if ($username === '') {
@@ -359,7 +412,7 @@ class AuthController
             $errors[] = 'Ja existe outro usuario com esse login.';
         }
 
-        if (!$isCreate && $role !== 'admin' && $this->isAdmin($users[$userIndex]) && $this->countAdmins($users, (int) $id) === 0) {
+        if (!$isCreate && $role !== self::ROLE_ADMIN && $this->isAdmin($users[$userIndex]) && $this->countAdmins($users, (int) $id) === 0) {
             $errors[] = 'Nao e possivel remover a permissao do ultimo admin.';
         }
 
@@ -482,7 +535,7 @@ class AuthController
             'password_hash' => password_hash('admin123', PASSWORD_DEFAULT),
             'fullname' => 'Administrador',
             'email' => 'admin@example.com',
-            'role' => 'admin',
+            'role' => self::ROLE_ADMIN,
             'provider' => 'local',
             'created_at' => $this->nowIso(),
             'updated_at' => $this->nowIso(),
@@ -539,15 +592,11 @@ class AuthController
         $username = trim((string) ($user['username'] ?? ''));
         $fullname = trim((string) ($user['fullname'] ?? $user['full_name'] ?? $username));
         $email = trim((string) ($user['email'] ?? ''));
-        $role = strtolower(trim((string) ($user['role'] ?? '')));
+        $role = $this->normalizeRole($user);
         $provider = trim((string) ($user['provider'] ?? 'local'));
         $passwordHash = (string) ($user['password_hash'] ?? $user['password'] ?? '');
         $createdAt = (string) ($user['created_at'] ?? $this->nowIso());
         $updatedAt = (string) ($user['updated_at'] ?? $createdAt);
-
-        if ($role === '') {
-            $role = ($id === 1 || strtolower($username) === 'admin') ? 'admin' : 'member';
-        }
 
         return [
             'id' => $id,
@@ -572,6 +621,8 @@ class AuthController
             'fullname' => $user['fullname'],
             'email' => $user['email'],
             'role' => $user['role'],
+            'role_label' => $this->getRoleLabel($user),
+            'role_rank' => $this->getRoleRank($user),
             'provider' => $user['provider'],
             'created_at' => $user['created_at'],
             'logged_at' => time(),
@@ -597,6 +648,35 @@ class AuthController
             $_SESSION['user_email'],
             $_SESSION['provider_usado']
         );
+    }
+
+    private function normalizeRole($roleOrUser = null): string
+    {
+        $role = '';
+        $userId = 0;
+        $username = '';
+
+        if (is_array($roleOrUser)) {
+            $role = strtolower(trim((string) ($roleOrUser['role'] ?? '')));
+            $userId = (int) ($roleOrUser['id'] ?? 0);
+            $username = strtolower(trim((string) ($roleOrUser['username'] ?? '')));
+        } else {
+            $role = strtolower(trim((string) ($roleOrUser ?? '')));
+        }
+
+        if ($role === 'user') {
+            $role = self::ROLE_MEMBER;
+        }
+
+        if (isset(self::ROLE_DEFINITIONS[$role])) {
+            return $role;
+        }
+
+        if ($userId === 1 || $username === 'admin') {
+            return self::ROLE_ADMIN;
+        }
+
+        return self::ROLE_MEMBER;
     }
 
     private function findUserIndexById(array $users, int $id): ?int
