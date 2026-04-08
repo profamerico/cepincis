@@ -1,8 +1,15 @@
 <?php
-// Iniciar sessão se não estiver iniciada
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+$currentUser = $_SESSION['user'] ?? null;
+$isLoggedIn = is_array($currentUser);
+$displayName = $isLoggedIn
+    ? trim((string) ($currentUser['fullname'] ?? $currentUser['username'] ?? 'Usuario'))
+    : '';
+$currentRole = strtolower(trim((string) ($currentUser['role'] ?? '')));
+$isAdmin = $isLoggedIn && ($currentRole === 'admin' || (int) ($currentUser['id'] ?? 0) === 1 || strtolower((string) ($currentUser['username'] ?? '')) === 'admin');
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -20,31 +27,42 @@ if (session_status() === PHP_SESSION_NONE) {
             border-radius: 4px;
             text-align: center;
         }
+
         .mensagem.erro {
             background-color: #ffebee;
             color: #c62828;
             border: 1px solid #ffcdd2;
         }
+
         .mensagem.sucesso {
             background-color: #e8f5e8;
             color: #2e7d32;
             border: 1px solid #c8e6c9;
         }
+
+        .header-user-name {
+            color: white;
+            margin-right: 12px;
+            font-weight: 700;
+        }
     </style>
 </head>
 <body>
-    <!-- ===== HEADER ===== -->
     <header>
         <a href="./index.php" class="logo">CEPIN-CIS</a>
         <nav>
             <a href="./about.php#sobre">Sobre</a>
-            <a href="./implement.php">Áreas Temáticas</a>
+            <a href="./implement.php">Areas Tematicas</a>
             <a href="https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf">Regulamento</a>
             <a href="./contact.php">Contato</a>
-            
-            <?php if(isset($_SESSION['usuario_nome'])): ?>
-                <span style="color: white; margin-right: 15px;"><?php echo $_SESSION['usuario_nome']; ?></span>
+
+            <?php if ($isLoggedIn): ?>
+                <span class="header-user-name"><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
                 <a href="./dashboard.php">Dashboard</a>
+                <a href="./profile.php">Perfil</a>
+                <?php if ($isAdmin): ?>
+                    <a href="./admin.php">Admin</a>
+                <?php endif; ?>
                 <a href="./logout.php">Sair</a>
             <?php else: ?>
                 <a href="./index.php">
