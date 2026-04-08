@@ -3,6 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$pageTitle = $pageTitle ?? 'CEPIN-CIS';
+$bodyClass = trim((string) ($bodyClass ?? ''));
 $currentUser = $_SESSION['user'] ?? null;
 $isLoggedIn = is_array($currentUser);
 $displayName = $isLoggedIn
@@ -16,7 +18,7 @@ $isAdmin = $isLoggedIn && ($currentRole === 'admin' || (int) ($currentUser['id']
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CEPIN-CIS</title>
+    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></title>
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aldrich&family=Chivo:wght@300;400;700&display=swap" rel="stylesheet">
@@ -47,7 +49,7 @@ $isAdmin = $isLoggedIn && ($currentRole === 'admin' || (int) ($currentUser['id']
         }
     </style>
 </head>
-<body>
+<body<?php echo $bodyClass !== '' ? ' class="' . htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
     <header>
         <a href="./index.php" class="logo">CEPIN-CIS</a>
         <nav>

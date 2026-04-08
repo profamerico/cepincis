@@ -11,7 +11,7 @@
         <link rel="icon" type="image/x-icon" href="./img/Captura_de_tela_2026-03-23_165121-removebg-preview.png">
 </head>
 
-<body>
+<body class="smooth-scroll-page home-page">
 
     <!-- ===== HEADER ===== -->
     <header>

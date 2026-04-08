@@ -1,524 +1,554 @@
-const ball = document.querySelector('.ball');
-
-let mouseX = 0;
-let mouseY = 0;
-
-let ballX = 0;
-let ballY = 0;
-
-let speed = 0.067;
-
-// Update ball position
-function animate() {
-	//Determine distance between ball and mouse
-	let distX = mouseX - ballX;
-	let distY = mouseY - ballY;
-
-	// Find position of ball and some distance * speed
-	ballX = ballX + (distX * speed);
-	ballY = ballY + (distY * speed);
-
-	ball.style.left = ballX + "px";
-	ball.style.top = ballY + "px";
-
-	requestAnimationFrame(animate);
-}
-animate();
-
-// Move ball with cursor
-document.addEventListener("mousemove", function (event) {
-	mouseX = event.pageX;
-	mouseY = event.pageY;
-});
-
-const btn = document.querySelector('.btn-ver-mais');
-const text = document.querySelector('.text-collapsed');
-
-btn.addEventListener('click', () => {
-	text.classList.toggle('text-expanded');
-
-	if (text.classList.contains('text-expanded')) {
-		btn.textContent = 'Ver Menos';
-	} else {
-		btn.textContent = 'Ver Mais';
-	}
-});
-
-// AUTO-FECHAMENTO DA ÁREA EXPANDIDA AO ROLAR COM DELAY
-let fecharTextoTimeout = null; // guarda o timeout para cancelar se voltar
-
-if (text) {
-	const observerFecharTexto = new IntersectionObserver((entries) => {
-		entries.forEach(entry => {
-			const estaExpandido = text.classList.contains('text-expanded');
-
-			// Quando sai da tela (menos de 40% visível)
-			if (!entry.isIntersecting && entry.intersectionRatio < 0.4) {
-				if (estaExpandido && !fecharTextoTimeout) {
-					// agenda o fechamento após X ms fora da tela
-					fecharTextoTimeout = setTimeout(() => {
-						if (text.classList.contains('text-expanded')) {
-							text.classList.remove('text-expanded');
-							if (btn) btn.textContent = 'Ver Mais';
-
-							// volta a rolagem para o botão assim que virar "Ver Mais"
-							const rect = btn.getBoundingClientRect();
-							const scrollY = window.scrollY || 0;
-							const posicaoAbsoluta = scrollY + rect.top;
-							window.scrollTo({
-								top: posicaoAbsoluta - 100, // ajuste se quiser
-								behavior: "smooth"
-							});
-						}
-						fecharTextoTimeout = null;
-					}, 3532); // 3000 ms = 3 segundos (ajuste como quiser)
-				}
-			} else {
-				// Se voltou a aparecer antes do tempo acabar, cancela o fechamento
-				if (fecharTextoTimeout) {
-					clearTimeout(fecharTextoTimeout);
-					fecharTextoTimeout = null;
-				}
-			}
-		});
-	}, {
-		threshold: [0.4]  // 40% visível
-	});
-
-	observerFecharTexto.observe(text);
-}
-
-const botoes = document.querySelectorAll(".filtros-tags button");
-const cards1 = document.querySelectorAll(".card-publicacao-carrossel");
-const campoPesquisa = document.getElementById("campoPesquisa");
-
-let tagAtiva = "todos";
-
-// clique nos botões de tag
-botoes.forEach(botao => {
-	botao.addEventListener("click", () => {
-
-		botoes.forEach(b => b.classList.remove("active"));
-		botao.classList.add("active");
-
-		tagAtiva = botao.dataset.tag;
-
-		filtrar();
-	});
-});
-//.
-
-// digitação na pesquisa
-campoPesquisa.addEventListener("keyup", filtrar);
-
-// função principal
-function filtrar() {
-
-	const termo = campoPesquisa.value.toLowerCase();
-
-	cards1.forEach(card => {
-
-		const tags = card.dataset.tags.toLowerCase();
-		const titulo = card.querySelector("h2").textContent.toLowerCase();
-
-		const matchTag = tagAtiva === "todos" || tags.includes(tagAtiva);
-		const matchTexto = titulo.includes(termo) || tags.includes(termo);
-
-		if (matchTag && matchTexto) {
-			card.style.display = "block";
-		} else {
-			card.style.display = "none";
-		}
-
-	});
-}
-
-// ===== VOLTAR PARA O BOTÃO ASSIM QUE VIRAR "VER MAIS" (CLIQUE MANUAL) =====
-if (btn) {
-	btn.addEventListener("click", () => {
-		// pequeno delay para garantir que o layout já foi atualizado
-		setTimeout(() => {
-			if (btn.textContent.trim() === "Ver Mais") {
-				const rect = btn.getBoundingClientRect();
-				const scrollY = window.scrollY || 0;
-				const posicaoAbsoluta = scrollY + rect.top;
-				window.scrollTo({
-					top: posicaoAbsoluta - 100, // ajuste se quiser
-					behavior: "smooth"
-				});
-			}
-		}, 50);
-	});
-}
-
-const body = document.body,
-	jsScroll = document.getElementsByClassName('js-scroll')[0],
-	height = jsScroll.getBoundingClientRect().height - 1,
-	scrollSpeed = 0.05
-
-var offset = 0
-
-body.style.height = Math.floor(height) + "px"
-
-function smoothScroll() {
-	offset += (window.pageYOffset - offset) * speed
-
-	var scroll = "translateY(-" + offset + "px) translateZ(0)"
-	jsScroll.style.transform = scroll
-
-	raf = requestAnimationFrame(smoothScroll)
-}
-smoothScroll()
-
-
-
 const teamMembers = [
-	{ name: "Universidade de Copenhagen", role: "Copenhagen, Dinamarca" },
-	{ name: "Universidade de Roma 3", role: "Roma, Itália" },
-	{ name: "Universidade de Fuzhou", role: "A universidade de Fuhzou, é uma prestigiada instituição pública de ensino superior localizada em Fuzhou, capital da província de Fujian, na China." },
-	{ name: "GETIS", role: "Grupo de Pesquisa em Engenharia, Tecnologia, Inovaçao e Sustentabilidade (GETIS) - IFSP-CAR" },
-	{ name: "i2", role: "Grupo de Pesquisas em Tecnologias Inovadoras - IFSP CAR" },
-	{ name: "ENASA", role: "Grupo de pesquisa em Energia, Água e Saneamento (ENASA) - IFSP-SP" }
+    { name: "Universidade de Copenhagen", role: "Copenhagen, Dinamarca" },
+    { name: "Universidade de Roma 3", role: "Roma, Italia" },
+    { name: "Universidade de Fuzhou", role: "Instituicao publica de ensino superior localizada em Fuzhou, capital da provincia de Fujian, na China." },
+    { name: "GETIS", role: "Grupo de Pesquisa em Engenharia, Tecnologia, Inovacao e Sustentabilidade (GETIS) - IFSP-CAR" },
+    { name: "i2", role: "Grupo de Pesquisas em Tecnologias Inovadoras - IFSP CAR" },
+    { name: "ENASA", role: "Grupo de pesquisa em Energia, Agua e Saneamento (ENASA) - IFSP-SP" }
 ];
 
-const cards = document.querySelectorAll(".card");
-const dots = document.querySelectorAll(".dot");
-const memberName = document.querySelector(".member-name");
-const memberRole = document.querySelector(".member-role");
-const leftArrow = document.querySelector(".nav-arrow.left");
-const rightArrow = document.querySelector(".nav-arrow.right");
-let currentIndex = 0;
-let isAnimating = false;
+function initCursorOrb() {
+    const ball = document.querySelector('.ball');
+    if (!ball) {
+        return;
+    }
 
-// compute dot step (how many cards correspond to one dot/page)
-// fallback to 1 if dots not present or division invalid
-const dotStep = (dots && dots.length) ? Math.max(1, Math.ceil(cards.length / dots.length)) : 1;
+    let mouseX = window.innerWidth / 2;
+    let mouseY = window.innerHeight / 2;
+    let ballX = mouseX;
+    let ballY = mouseY;
+    const easing = 0.067;
 
-function updateCarousel(newIndex) {
-	if (isAnimating) return;
-	isAnimating = true;
+    function animate() {
+        ballX += (mouseX - ballX) * easing;
+        ballY += (mouseY - ballY) * easing;
 
-	currentIndex = (newIndex + cards.length) % cards.length;
+        ball.style.left = `${ballX}px`;
+        ball.style.top = `${ballY}px`;
 
-	cards.forEach((card, i) => {
-		const offset = (i - currentIndex + cards.length) % cards.length;
+        requestAnimationFrame(animate);
+    }
 
-		card.classList.remove(
-			"center",
-			"left-1",
-			"left-2",
-			"right-1",
-			"right-2",
-			"hidden"
-		);
+    document.addEventListener('mousemove', (event) => {
+        mouseX = event.pageX;
+        mouseY = event.pageY;
+    });
 
-		if (offset === 0) {
-			card.classList.add("center");
-		} else if (offset === 1) {
-			card.classList.add("right-1");
-		} else if (offset === 2) {
-			card.classList.add("right-2");
-		} else if (offset === cards.length - 1) {
-			card.classList.add("left-1");
-		} else if (offset === cards.length - 2) {
-			card.classList.add("left-2");
-		} else {
-			card.classList.add("hidden");
-		}
-	});
-
-	// mark the correct dot as active using dotStep
-	if (dots && dots.length) {
-		const activeDotIndex = Math.floor(currentIndex / dotStep) % dots.length;
-		dots.forEach((dot, i) => {
-			dot.classList.toggle("active", i === activeDotIndex);
-		});
-	}
-
-	memberName.style.opacity = "0";
-	memberRole.style.opacity = "0";
-
-	setTimeout(() => {
-		memberName.textContent = teamMembers[currentIndex].name;
-		memberRole.textContent = teamMembers[currentIndex].role;
-		memberName.style.opacity = "1";
-		memberRole.style.opacity = "1";
-	}, 300);
-
-	setTimeout(() => {
-		isAnimating = false;
-	}, 800);
+    animate();
 }
 
-leftArrow.addEventListener("click", () => {
-	updateCarousel(currentIndex - 1);
-});
+function initExpandableText() {
+    const btn = document.querySelector('.btn-ver-mais');
+    const text = document.querySelector('.text-collapsed');
 
-rightArrow.addEventListener("click", () => {
-	updateCarousel(currentIndex + 1);
-});
+    if (!btn || !text) {
+        return;
+    }
 
-// replace dots click binding to account for dotStep
-dots.forEach((dot, i) => {
-	dot.addEventListener("click", () => {
-		updateCarousel(i * dotStep);
-	});
-});
+    let closeTimeout = null;
 
-cards.forEach((card, i) => {
-	card.addEventListener("click", () => {
-		updateCarousel(i);
-	});
-});
+    function collapseText() {
+        text.classList.remove('text-expanded');
+        btn.textContent = 'Ver Mais';
 
-document.addEventListener("keydown", (e) => {
-	if (e.key === "ArrowLeft") {
-		updateCarousel(currentIndex - 1);
-	} else if (e.key === "ArrowRight") {
-		updateCarousel(currentIndex + 1);
-	}
-});
+        const rect = btn.getBoundingClientRect();
+        const scrollY = window.scrollY || 0;
+        const absolutePosition = scrollY + rect.top;
 
-let touchStartX = 0;
-let touchEndX = 0;
+        window.scrollTo({
+            top: absolutePosition - 100,
+            behavior: 'smooth'
+        });
+    }
 
-document.addEventListener("touchstart", (e) => {
-	touchStartX = e.changedTouches[0].screenX;
-});
+    btn.addEventListener('click', () => {
+        text.classList.toggle('text-expanded');
+        btn.textContent = text.classList.contains('text-expanded') ? 'Ver Menos' : 'Ver Mais';
 
-document.addEventListener("touchend", (e) => {
-	touchEndX = e.changedTouches[0].screenX;
-	handleSwipe();
-});
+        setTimeout(() => {
+            if (btn.textContent.trim() === 'Ver Mais') {
+                const rect = btn.getBoundingClientRect();
+                const scrollY = window.scrollY || 0;
+                const absolutePosition = scrollY + rect.top;
 
-function handleSwipe() {
-	const swipeThreshold = 50;
-	const diff = touchStartX - touchEndX;
+                window.scrollTo({
+                    top: absolutePosition - 100,
+                    behavior: 'smooth'
+                });
+            }
+        }, 50);
+    });
 
-	if (Math.abs(diff) > swipeThreshold) {
-		if (diff > 0) {
-			updateCarousel(currentIndex + 1);
-		} else {
-			updateCarousel(currentIndex - 1);
-		}
-	}
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            const isExpanded = text.classList.contains('text-expanded');
+
+            if (!entry.isIntersecting && entry.intersectionRatio < 0.4) {
+                if (isExpanded && !closeTimeout) {
+                    closeTimeout = setTimeout(() => {
+                        if (text.classList.contains('text-expanded')) {
+                            collapseText();
+                        }
+                        closeTimeout = null;
+                    }, 3532);
+                }
+            } else if (closeTimeout) {
+                clearTimeout(closeTimeout);
+                closeTimeout = null;
+            }
+        });
+    }, {
+        threshold: [0.4]
+    });
+
+    observer.observe(text);
 }
 
-updateCarousel(0);
+function initPublicationFilters() {
+    const buttons = Array.from(document.querySelectorAll('.filtros-tags button'));
+    const cards = Array.from(document.querySelectorAll('.card-publicacao-carrossel'));
+    const searchField = document.getElementById('campoPesquisa');
 
+    if (!buttons.length || !cards.length || !searchField) {
+        return;
+    }
 
+    let activeTag = buttons.find((button) => button.classList.contains('active'))?.dataset.tag || 'todos';
 
-// ===== JAVASCRIPT DO CARROSSEL DE PUBLICAÇÕES =====
+    function filterCards() {
+        const term = searchField.value.toLowerCase();
 
-let slideAtualPublicacoes = 0;
-const carrosselPublicacoes = document.getElementById("carrosselPublicacoes");
-const totalSlidesPublicacoes = 5;
-const cardsPublicacoes = document.querySelectorAll(".card-publicacao-carrossel");
+        cards.forEach((card) => {
+            const tags = (card.dataset.tags || '').toLowerCase();
+            const title = (card.querySelector('h2')?.textContent || '').toLowerCase();
+            const matchesTag = activeTag === 'todos' || tags.includes(activeTag.toLowerCase());
+            const matchesText = title.includes(term) || tags.includes(term);
 
-let slideAtualExpandido = 0;
-const carrosselExpandido = document.getElementById("carrosselExpandido");
+            card.style.display = matchesTag && matchesText ? 'block' : 'none';
+        });
+    }
 
-function atualizarIndicadoresPublicacoes() {
-	const pontosIndicadores = document.querySelectorAll(".ponto-indicador-carrossel");
-	pontosIndicadores.forEach((ponto, indice) => {
-		ponto.classList.toggle("active", indice === slideAtualPublicacoes);
-	});
+    buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+            buttons.forEach((item) => item.classList.remove('active'));
+            button.classList.add('active');
+            activeTag = button.dataset.tag || 'todos';
+            filterCards();
+        });
+    });
+
+    searchField.addEventListener('keyup', filterCards);
 }
 
-function atualizarAtivoCardsPublicacoes() {
-	cardsPublicacoes.forEach((card, indice) => {
-		card.classList.toggle("active", indice === slideAtualPublicacoes);
-	});
+function initSmoothScroll() {
+    if (!document.body.classList.contains('smooth-scroll-page')) {
+        return;
+    }
+
+    const scrollContainer = document.querySelector('.js-scroll');
+    if (!scrollContainer) {
+        return;
+    }
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let offset = window.pageYOffset;
+    const easing = prefersReducedMotion ? 1 : 0.08;
+
+    function syncBodyHeight() {
+        const height = Math.max(scrollContainer.getBoundingClientRect().height, scrollContainer.scrollHeight);
+        document.body.style.height = `${Math.floor(height)}px`;
+    }
+
+    function step() {
+        offset += (window.pageYOffset - offset) * easing;
+        scrollContainer.style.transform = `translate3d(0, ${-offset}px, 0)`;
+        requestAnimationFrame(step);
+    }
+
+    syncBodyHeight();
+    window.addEventListener('load', syncBodyHeight);
+    window.addEventListener('resize', syncBodyHeight);
+    step();
 }
 
-function navegarCarrosselPublicacoes(direcao) {
-	const larguraCard = carrosselPublicacoes.querySelector(".card-publicacao-carrossel").offsetWidth + 30;
+function initTeamCarousel() {
+    const cards = Array.from(document.querySelectorAll('.card'));
+    const dots = Array.from(document.querySelectorAll('.dot'));
+    const memberName = document.querySelector('.member-name');
+    const memberRole = document.querySelector('.member-role');
+    const leftArrow = document.querySelector('.nav-arrow.left');
+    const rightArrow = document.querySelector('.nav-arrow.right');
 
-	slideAtualPublicacoes += direcao;
+    if (!cards.length || !memberName || !memberRole) {
+        return;
+    }
 
-	if (slideAtualPublicacoes < 0) {
-		slideAtualPublicacoes = totalSlidesPublicacoes - 1;
-	} else if (slideAtualPublicacoes >= totalSlidesPublicacoes) {
-		slideAtualPublicacoes = 0;
-	}
+    let currentIndex = 0;
+    let isAnimating = false;
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const dotStep = dots.length ? Math.max(1, Math.ceil(cards.length / dots.length)) : 1;
 
-	carrosselPublicacoes.scrollTo({
-		left: slideAtualPublicacoes * larguraCard,
-		behavior: "smooth"
-	});
+    function updateCarousel(newIndex) {
+        if (isAnimating) {
+            return;
+        }
 
-	atualizarIndicadoresPublicacoes();
-	atualizarAtivoCardsPublicacoes();
+        isAnimating = true;
+        currentIndex = (newIndex + cards.length) % cards.length;
+
+        cards.forEach((card, index) => {
+            const offset = (index - currentIndex + cards.length) % cards.length;
+
+            card.classList.remove('center', 'left-1', 'left-2', 'right-1', 'right-2', 'hidden');
+
+            if (offset === 0) {
+                card.classList.add('center');
+            } else if (offset === 1) {
+                card.classList.add('right-1');
+            } else if (offset === 2) {
+                card.classList.add('right-2');
+            } else if (offset === cards.length - 1) {
+                card.classList.add('left-1');
+            } else if (offset === cards.length - 2) {
+                card.classList.add('left-2');
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+
+        if (dots.length) {
+            const activeDotIndex = Math.floor(currentIndex / dotStep) % dots.length;
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === activeDotIndex);
+            });
+        }
+
+        memberName.style.opacity = '0';
+        memberRole.style.opacity = '0';
+
+        setTimeout(() => {
+            memberName.textContent = teamMembers[currentIndex]?.name || '';
+            memberRole.textContent = teamMembers[currentIndex]?.role || '';
+            memberName.style.opacity = '1';
+            memberRole.style.opacity = '1';
+        }, 300);
+
+        setTimeout(() => {
+            isAnimating = false;
+        }, 800);
+    }
+
+    leftArrow?.addEventListener('click', () => updateCarousel(currentIndex - 1));
+    rightArrow?.addEventListener('click', () => updateCarousel(currentIndex + 1));
+
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => {
+            updateCarousel(index * dotStep);
+        });
+    });
+
+    cards.forEach((card, index) => {
+        card.addEventListener('click', () => {
+            updateCarousel(index);
+        });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') {
+            updateCarousel(currentIndex - 1);
+        } else if (event.key === 'ArrowRight') {
+            updateCarousel(currentIndex + 1);
+        }
+    });
+
+    document.addEventListener('touchstart', (event) => {
+        touchStartX = event.changedTouches[0].screenX;
+    });
+
+    document.addEventListener('touchend', (event) => {
+        touchEndX = event.changedTouches[0].screenX;
+        const swipeThreshold = 50;
+        const difference = touchStartX - touchEndX;
+
+        if (Math.abs(difference) > swipeThreshold) {
+            updateCarousel(difference > 0 ? currentIndex + 1 : currentIndex - 1);
+        }
+    });
+
+    updateCarousel(0);
 }
 
-function irParaSlidePublicacao(indice) {
-	const larguraCard = carrosselPublicacoes.querySelector(".card-publicacao-carrossel").offsetWidth + 30;
-	slideAtualPublicacoes = indice;
+function initPublicationCarousel() {
+    const carousel = document.getElementById('carrosselPublicacoes');
+    const cards = Array.from(document.querySelectorAll('.card-publicacao-carrossel'));
+    const overlay = document.getElementById('overlayTelaCheia');
+    const expandedCarousel = document.getElementById('carrosselExpandido');
 
-	carrosselPublicacoes.scrollTo({
-		left: slideAtualPublicacoes * larguraCard,
-		behavior: "smooth"
-	});
+    if (!carousel || !cards.length) {
+        return;
+    }
 
-	atualizarIndicadoresPublicacoes();
-	atualizarAtivoCardsPublicacoes();
+    let currentSlide = 0;
+    let expandedSlide = 0;
+    let autoPlay = null;
+
+    function updateIndicators() {
+        const indicators = Array.from(document.querySelectorAll('.ponto-indicador-carrossel'));
+        indicators.forEach((indicator, index) => {
+            indicator.classList.toggle('active', index === currentSlide);
+        });
+    }
+
+    function updateActiveCards() {
+        cards.forEach((card, index) => {
+            card.classList.toggle('active', index === currentSlide);
+        });
+    }
+
+    function navigate(direction) {
+        const firstCard = carousel.querySelector('.card-publicacao-carrossel');
+        if (!firstCard) {
+            return;
+        }
+
+        const totalSlides = cards.length;
+        const cardWidth = firstCard.offsetWidth + 30;
+        currentSlide += direction;
+
+        if (currentSlide < 0) {
+            currentSlide = totalSlides - 1;
+        } else if (currentSlide >= totalSlides) {
+            currentSlide = 0;
+        }
+
+        carousel.scrollTo({
+            left: currentSlide * cardWidth,
+            behavior: 'smooth'
+        });
+
+        updateIndicators();
+        updateActiveCards();
+    }
+
+    function goToSlide(index) {
+        const firstCard = carousel.querySelector('.card-publicacao-carrossel');
+        if (!firstCard) {
+            return;
+        }
+
+        currentSlide = index;
+        carousel.scrollTo({
+            left: currentSlide * (firstCard.offsetWidth + 30),
+            behavior: 'smooth'
+        });
+
+        updateIndicators();
+        updateActiveCards();
+    }
+
+    function navigateExpanded(direction) {
+        if (!expandedCarousel) {
+            return;
+        }
+
+        const firstCard = expandedCarousel.querySelector('.card-expandido');
+        if (!firstCard) {
+            return;
+        }
+
+        expandedSlide += direction;
+
+        if (expandedSlide < 0) {
+            expandedSlide = cards.length - 1;
+        } else if (expandedSlide >= cards.length) {
+            expandedSlide = 0;
+        }
+
+        expandedCarousel.scrollTo({
+            left: expandedSlide * (firstCard.offsetWidth + 40),
+            behavior: 'smooth'
+        });
+    }
+
+    function openExpanded() {
+        if (!overlay) {
+            return;
+        }
+
+        overlay.classList.add('ativo');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeExpanded() {
+        if (!overlay) {
+            return;
+        }
+
+        overlay.classList.remove('ativo');
+        document.body.style.overflow = '';
+    }
+
+    function startAutoPlay() {
+        if (autoPlay) {
+            clearInterval(autoPlay);
+        }
+
+        autoPlay = setInterval(() => {
+            navigate(1);
+        }, 5000);
+    }
+
+    carousel.addEventListener('mouseenter', () => {
+        if (autoPlay) {
+            clearInterval(autoPlay);
+        }
+    });
+
+    carousel.addEventListener('mouseleave', startAutoPlay);
+
+    document.addEventListener('keydown', (event) => {
+        const overlayActive = overlay?.classList.contains('ativo');
+
+        if (event.key === 'Escape' && overlayActive) {
+            closeExpanded();
+        } else if (event.key === 'ArrowLeft') {
+            overlayActive ? navigateExpanded(-1) : navigate(-1);
+        } else if (event.key === 'ArrowRight') {
+            overlayActive ? navigateExpanded(1) : navigate(1);
+        }
+    });
+
+    window.navegarCarrosselPublicacoes = navigate;
+    window.irParaSlidePublicacao = goToSlide;
+    window.navegarCarrosselExpandido = navigateExpanded;
+    window.abrirModoExpandido = openExpanded;
+    window.fecharModoExpandido = closeExpanded;
+
+    updateIndicators();
+    updateActiveCards();
+    startAutoPlay();
 }
 
-function navegarCarrosselExpandido(direcao) {
-	const larguraCard = carrosselExpandido.querySelector(".card-expandido").offsetWidth + 40;
+function initFloatingButtonObserver() {
+    const button = document.querySelector('.botao-ver-mais-lateral');
+    if (!button) {
+        return;
+    }
 
-	slideAtualExpandido += direcao;
+    function toggleButtonVisibility() {
+        button.classList.toggle('ativo', window.scrollY > 300);
+    }
 
-	if (slideAtualExpandido < 0) {
-		slideAtualExpandido = totalSlidesPublicacoes - 1;
-	} else if (slideAtualExpandido >= totalSlidesPublicacoes) {
-		slideAtualExpandido = 0;
-	}
+    window.addEventListener('scroll', toggleButtonVisibility);
+    toggleButtonVisibility();
 
-	carrosselExpandido.scrollTo({
-		left: slideAtualExpandido * larguraCard,
-		behavior: "smooth"
-	});
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+            if (!entry.isIntersecting) {
+                return;
+            }
+
+            const sectionId = entry.target.id;
+            button.classList.remove('secao-sobre', 'secao-implementacao', 'secao-regulamento', 'secao-parceiros', 'secao-contato');
+
+            if (sectionId === 'sobre') {
+                button.classList.add('secao-sobre');
+            } else if (sectionId === 'implementacao') {
+                button.classList.add('secao-implementacao');
+            } else if (sectionId === 'regulamento') {
+                button.classList.add('secao-regulamento');
+            } else if (sectionId === 'parceiros') {
+                button.classList.add('secao-parceiros');
+            } else if (sectionId === 'contato') {
+                button.classList.add('secao-contato');
+            }
+        });
+    }, {
+        threshold: 0.3,
+        rootMargin: '-10% 0px -10% 0px'
+    });
+
+    ['sobre', 'implementacao', 'regulamento', 'parceiros', 'contato'].forEach((id) => {
+        const section = document.getElementById(id);
+        if (section) {
+            observer.observe(section);
+        }
+    });
 }
 
-function abrirModoExpandido() {
-	const overlay = document.getElementById("overlayTelaCheia");
-	overlay.classList.add("ativo");
-	document.body.style.overflow = "hidden";
+function initInnovationCards() {
+    const cards = Array.from(document.querySelectorAll('.card-projeto-inovacao'));
+    if (!cards.length) {
+        return;
+    }
+
+    function toggleProjectCard(element) {
+        const isExpanded = element.classList.contains('expandido');
+
+        cards.forEach((card) => {
+            card.classList.remove('expandido');
+        });
+
+        if (!isExpanded) {
+            element.classList.add('expandido');
+        }
+    }
+
+    window.alternarExpandirProjeto = toggleProjectCard;
+
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('.card-projeto-inovacao')) {
+            cards.forEach((card) => {
+                card.classList.remove('expandido');
+            });
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            cards.forEach((card) => {
+                card.classList.remove('expandido');
+            });
+        }
+    });
 }
 
-function fecharModoExpandido() {
-	const overlay = document.getElementById("overlayTelaCheia");
-	overlay.classList.remove("ativo");
-	document.body.style.overflow = "auto";
+function initSettingsTabs() {
+    const buttons = Array.from(document.querySelectorAll('[data-tab-target]'));
+    const panels = Array.from(document.querySelectorAll('[data-tab-panel]'));
+
+    if (!buttons.length || !panels.length) {
+        return;
+    }
+
+    function openTab(tabName) {
+        panels.forEach((panel) => {
+            panel.classList.toggle('active', panel.dataset.tabPanel === tabName);
+        });
+
+        buttons.forEach((button) => {
+            button.classList.toggle('active', button.dataset.tabTarget === tabName);
+        });
+    }
+
+    buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+            openTab(button.dataset.tabTarget);
+        });
+    });
+
+    openTab(buttons.find((button) => button.classList.contains('active'))?.dataset.tabTarget || buttons[0].dataset.tabTarget);
 }
 
-let intervaloAutoPlayPublicacoes = setInterval(() => {
-	navegarCarrosselPublicacoes(1);
-}, 5000);
-
-carrosselPublicacoes.addEventListener("mouseenter", () => {
-	clearInterval(intervaloAutoPlayPublicacoes);
-});
-
-carrosselPublicacoes.addEventListener("mouseleave", () => {
-	intervaloAutoPlayPublicacoes = setInterval(() => {
-		navegarCarrosselPublicacoes(1);
-	}, 5000);
-});
-
-document.addEventListener("keydown", (evento) => {
-	const overlayAtivo = document.getElementById("overlayTelaCheia").classList.contains("ativo");
-
-	if (evento.key === "Escape" && overlayAtivo) {
-		fecharModoExpandido();
-	} else if (evento.key === "ArrowLeft") {
-		if (overlayAtivo) {
-			navegarCarrosselExpandido(-1);
-		} else {
-			navegarCarrosselPublicacoes(-1);
-		}
-	} else if (evento.key === "ArrowRight") {
-		if (overlayAtivo) {
-			navegarCarrosselExpandido(1);
-		} else {
-			navegarCarrosselPublicacoes(1);
-		}
-	}
-});
-
-// Inicializar cards ativos
-atualizarAtivoCardsPublicacoes();
-
-window.addEventListener('scroll', function () {
-	const botao = document.querySelector('.botao-ver-mais-lateral');
-
-	// Ajuste este valor (300) para quando você quer que apareça
-	if (window.scrollY > 300) {
-		botao.classList.add('ativo');
-	} else {
-		botao.classList.remove('ativo');
-	}
-});
-
-// ===== SISTEMA DE MUDANÇA DE COR DO BOTÃO =====
-function iniciarMudancaCoresBotao() {
-	const observer = new IntersectionObserver((entries) => {
-		entries.forEach(entry => {
-			if (entry.isIntersecting) {
-				const secaoId = entry.target.id;
-				const botao = document.querySelector('.botao-ver-mais-lateral');
-
-				if (botao) {
-					// Remove todas as classes de cor antigas
-					botao.classList.remove('secao-sobre', 'secao-implementacao', 'secao-regulamento', 'secao-parceiros', 'secao-contato');
-
-					// Adiciona a nova classe baseada na seção
-					if (secaoId === 'sobre') {
-						botao.classList.add('secao-sobre');
-					} else if (secaoId === 'implementacao') {
-						botao.classList.add('secao-implementacao');
-					} else if (secaoId === 'regulamento') {
-						botao.classList.add('secao-regulamento');
-					} else if (secaoId === 'parceiros') {
-						botao.classList.add('secao-parceiros');
-					} else if (secaoId === 'contato') {
-						botao.classList.add('secao-contato');
-					}
-				}
-			}
-		});
-	}, {
-		threshold: 0.3, // Quando 30% da seção estiver visível
-		rootMargin: '-10% 0px -10% 0px'
-	});
-
-	// Observa cada seção
-	const secoes = ['sobre', 'implementacao', 'regulamento', 'parceiros', 'contato'];
-	secoes.forEach(id => {
-		const secao = document.getElementById(id);
-		if (secao) {
-			observer.observe(secao);
-		}
-	});
-}
-
-// Inicia o sistema quando a página carregar
-document.addEventListener('DOMContentLoaded', function () {
-	iniciarMudancaCoresBotao();
-});
-
-
-// ===== JAVASCRIPT DA SEÇÃO DE INOVAÇÃO =====
-
-function alternarExpandirProjeto(elemento) {
-	const estaExpandido = elemento.classList.contains("expandido");
-
-	// Fecha todos os cards
-	document.querySelectorAll(".card-projeto-inovacao").forEach(card => {
-		card.classList.remove("expandido");
-	});
-
-	// Se não estava expandido, expande o clicado
-	if (!estaExpandido) {
-		elemento.classList.add("expandido");
-	}
-}
-
-// Fechar card ao clicar fora
-document.addEventListener("click", (evento) => {
-	if (!evento.target.closest(".card-projeto-inovacao")) {
-		document.querySelectorAll(".card-projeto-inovacao").forEach(card => {
-			card.classList.remove("expandido");
-		});
-	}
-});
-
-// Navegação por teclado
-document.addEventListener("keydown", (evento) => {
-	if (evento.key === "Escape") {
-		document.querySelectorAll(".card-projeto-inovacao").forEach(card => {
-			card.classList.remove("expandido");
-		});
-	}
+document.addEventListener('DOMContentLoaded', () => {
+    initCursorOrb();
+    initExpandableText();
+    initPublicationFilters();
+    initSmoothScroll();
+    initTeamCarousel();
+    initPublicationCarousel();
+    initFloatingButtonObserver();
+    initInnovationCards();
+    initSettingsTabs();
 });
