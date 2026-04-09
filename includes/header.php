@@ -1,5 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
+if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
     session_start();
 }
 
@@ -43,7 +43,7 @@ $isAdmin = $isLoggedIn && ($currentRole === 'admin' || (int) ($currentUser['id']
         }
 
         .header-user-name {
-            color: white;
+            color: #07240f;
             margin-right: 12px;
             font-weight: 700;
         }
