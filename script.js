@@ -104,28 +104,169 @@ function initExpandableText() {
     observer.observe(text);
 }
 
-function initPublicationFilters() {
-    const buttons = Array.from(document.querySelectorAll('.filtros-tags button'));
-    const cards = Array.from(document.querySelectorAll('.card-publicacao-carrossel'));
+function initProjectsShowcase() {
+    const showcase = document.querySelector('.secao-publicacoes-recentes');
+    const carousel = document.getElementById('carrosselPublicacoes');
+    const buttons = Array.from(showcase?.querySelectorAll('.filtros-tags button') || []);
+    const cards = Array.from(carousel?.querySelectorAll('[data-project-card="true"]') || []);
     const searchField = document.getElementById('campoPesquisa');
+    const prevButton = showcase?.querySelector('[data-carousel-prev]');
+    const nextButton = showcase?.querySelector('[data-carousel-next]');
+    const indicatorsContainer = showcase?.querySelector('[data-carousel-indicators]');
+    const emptyMessage = showcase?.querySelector('[data-carousel-empty-message]');
 
-    if (!buttons.length || !cards.length || !searchField) {
+    if (!showcase || !carousel || !buttons.length || !cards.length || !searchField || !prevButton || !nextButton || !indicatorsContainer) {
         return;
     }
 
+    const hasRealProjects = cards.some((card) => !card.hasAttribute('data-empty-state'));
     let activeTag = buttons.find((button) => button.classList.contains('active'))?.dataset.tag || 'todos';
+    let currentIndex = 0;
+    let filteredCards = [];
+    let autoPlayId = null;
 
-    function filterCards() {
-        const term = searchField.value.toLowerCase();
+    function normalizeValue(value) {
+        return String(value || '').trim().toLowerCase();
+    }
+
+    function stopAutoPlay() {
+        if (autoPlayId !== null) {
+            window.clearInterval(autoPlayId);
+            autoPlayId = null;
+        }
+    }
+
+    function setControlState() {
+        const disableNavigation = !hasRealProjects || filteredCards.length <= 1;
+        prevButton.disabled = disableNavigation;
+        nextButton.disabled = disableNavigation;
+        indicatorsContainer.hidden = disableNavigation || filteredCards.length === 0;
+    }
+
+    function updateActiveCards() {
+        cards.forEach((card) => {
+            card.classList.toggle('active', filteredCards[currentIndex] === card);
+        });
+    }
+
+    function renderIndicators() {
+        indicatorsContainer.innerHTML = '';
+
+        if (!hasRealProjects || filteredCards.length <= 1) {
+            return;
+        }
+
+        filteredCards.forEach((card, index) => {
+            const indicator = document.createElement('button');
+            indicator.type = 'button';
+            indicator.className = 'ponto-indicador-carrossel';
+            indicator.classList.toggle('active', index === currentIndex);
+            indicator.setAttribute('aria-label', `Ir para o projeto ${index + 1}`);
+            indicator.addEventListener('click', () => {
+                goToSlide(index);
+            });
+            indicatorsContainer.appendChild(indicator);
+        });
+    }
+
+    function scrollToCurrent(options = {}) {
+        const behavior = options.behavior || 'smooth';
+        const currentCard = filteredCards[currentIndex];
+
+        if (!currentCard) {
+            carousel.scrollTo({ left: 0, behavior });
+            updateActiveCards();
+            renderIndicators();
+            setControlState();
+            return;
+        }
+
+        const left = Math.max(currentCard.offsetLeft - carousel.offsetLeft, 0);
+        carousel.scrollTo({ left, behavior });
+        updateActiveCards();
+        renderIndicators();
+        setControlState();
+    }
+
+    function startAutoPlay() {
+        stopAutoPlay();
+
+        if (!hasRealProjects || filteredCards.length <= 1) {
+            return;
+        }
+
+        autoPlayId = window.setInterval(() => {
+            currentIndex = (currentIndex + 1) % filteredCards.length;
+            scrollToCurrent({ behavior: 'smooth' });
+        }, 5500);
+    }
+
+    function goToSlide(index) {
+        if (!filteredCards.length) {
+            return;
+        }
+
+        currentIndex = (index + filteredCards.length) % filteredCards.length;
+        scrollToCurrent({ behavior: 'smooth' });
+        startAutoPlay();
+    }
+
+    function navigate(direction) {
+        if (filteredCards.length <= 1) {
+            return;
+        }
+
+        goToSlide(currentIndex + direction);
+    }
+
+    function applyFilters() {
+        const term = normalizeValue(searchField.value);
+        const currentTag = normalizeValue(activeTag);
+
+        filteredCards = cards.filter((card) => {
+            if (card.hasAttribute('data-empty-state')) {
+                return !hasRealProjects;
+            }
+
+            const tagList = normalizeValue(card.dataset.tagList).split('||').filter(Boolean);
+            const searchableContent = [
+                card.dataset.title,
+                card.dataset.category,
+                card.dataset.status,
+                card.dataset.tags,
+            ].map(normalizeValue).join(' ');
+
+            const matchesTag = currentTag === 'todos' || tagList.includes(currentTag);
+            const matchesSearch = term === '' || searchableContent.includes(term);
+
+            return matchesTag && matchesSearch;
+        });
 
         cards.forEach((card) => {
-            const tags = (card.dataset.tags || '').toLowerCase();
-            const title = (card.querySelector('h2')?.textContent || '').toLowerCase();
-            const matchesTag = activeTag === 'todos' || tags.includes(activeTag.toLowerCase());
-            const matchesText = title.includes(term) || tags.includes(term);
-
-            card.style.display = matchesTag && matchesText ? 'block' : 'none';
+            card.hidden = !filteredCards.includes(card);
         });
+
+        const hasNoResults = hasRealProjects && filteredCards.length === 0;
+        if (emptyMessage) {
+            emptyMessage.hidden = !hasNoResults;
+        }
+
+        if (hasNoResults) {
+            currentIndex = 0;
+            stopAutoPlay();
+            carousel.scrollTo({ left: 0, behavior: 'smooth' });
+            updateActiveCards();
+            renderIndicators();
+            setControlState();
+            return;
+        }
+
+        if (currentIndex >= filteredCards.length) {
+            currentIndex = 0;
+        }
+
+        scrollToCurrent({ behavior: 'smooth' });
+        startAutoPlay();
     }
 
     buttons.forEach((button) => {
@@ -133,11 +274,33 @@ function initPublicationFilters() {
             buttons.forEach((item) => item.classList.remove('active'));
             button.classList.add('active');
             activeTag = button.dataset.tag || 'todos';
-            filterCards();
+            applyFilters();
         });
     });
 
-    searchField.addEventListener('keyup', filterCards);
+    searchField.addEventListener('input', applyFilters);
+    prevButton.addEventListener('click', () => navigate(-1));
+    nextButton.addEventListener('click', () => navigate(1));
+
+    carousel.addEventListener('mouseenter', stopAutoPlay);
+    carousel.addEventListener('mouseleave', startAutoPlay);
+
+    window.addEventListener('resize', () => {
+        if (filteredCards.length) {
+            scrollToCurrent({ behavior: 'auto' });
+        }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAutoPlay();
+            return;
+        }
+
+        startAutoPlay();
+    });
+
+    applyFilters();
 }
 
 function initSmoothScroll() {
@@ -279,157 +442,6 @@ function initTeamCarousel() {
     updateCarousel(0);
 }
 
-function initPublicationCarousel() {
-    const carousel = document.getElementById('carrosselPublicacoes');
-    const cards = Array.from(document.querySelectorAll('.card-publicacao-carrossel'));
-    const overlay = document.getElementById('overlayTelaCheia');
-    const expandedCarousel = document.getElementById('carrosselExpandido');
-
-    if (!carousel || !cards.length) {
-        return;
-    }
-
-    let currentSlide = 0;
-    let expandedSlide = 0;
-    let autoPlay = null;
-
-    function updateIndicators() {
-        const indicators = Array.from(document.querySelectorAll('.ponto-indicador-carrossel'));
-        indicators.forEach((indicator, index) => {
-            indicator.classList.toggle('active', index === currentSlide);
-        });
-    }
-
-    function updateActiveCards() {
-        cards.forEach((card, index) => {
-            card.classList.toggle('active', index === currentSlide);
-        });
-    }
-
-    function navigate(direction) {
-        const firstCard = carousel.querySelector('.card-publicacao-carrossel');
-        if (!firstCard) {
-            return;
-        }
-
-        const totalSlides = cards.length;
-        const cardWidth = firstCard.offsetWidth + 30;
-        currentSlide += direction;
-
-        if (currentSlide < 0) {
-            currentSlide = totalSlides - 1;
-        } else if (currentSlide >= totalSlides) {
-            currentSlide = 0;
-        }
-
-        carousel.scrollTo({
-            left: currentSlide * cardWidth,
-            behavior: 'smooth'
-        });
-
-        updateIndicators();
-        updateActiveCards();
-    }
-
-    function goToSlide(index) {
-        const firstCard = carousel.querySelector('.card-publicacao-carrossel');
-        if (!firstCard) {
-            return;
-        }
-
-        currentSlide = index;
-        carousel.scrollTo({
-            left: currentSlide * (firstCard.offsetWidth + 30),
-            behavior: 'smooth'
-        });
-
-        updateIndicators();
-        updateActiveCards();
-    }
-
-    function navigateExpanded(direction) {
-        if (!expandedCarousel) {
-            return;
-        }
-
-        const firstCard = expandedCarousel.querySelector('.card-expandido');
-        if (!firstCard) {
-            return;
-        }
-
-        expandedSlide += direction;
-
-        if (expandedSlide < 0) {
-            expandedSlide = cards.length - 1;
-        } else if (expandedSlide >= cards.length) {
-            expandedSlide = 0;
-        }
-
-        expandedCarousel.scrollTo({
-            left: expandedSlide * (firstCard.offsetWidth + 40),
-            behavior: 'smooth'
-        });
-    }
-
-    function openExpanded() {
-        if (!overlay) {
-            return;
-        }
-
-        overlay.classList.add('ativo');
-        document.body.style.overflow = 'hidden';
-    }
-
-    function closeExpanded() {
-        if (!overlay) {
-            return;
-        }
-
-        overlay.classList.remove('ativo');
-        document.body.style.overflow = '';
-    }
-
-    function startAutoPlay() {
-        if (autoPlay) {
-            clearInterval(autoPlay);
-        }
-
-        autoPlay = setInterval(() => {
-            navigate(1);
-        }, 5000);
-    }
-
-    carousel.addEventListener('mouseenter', () => {
-        if (autoPlay) {
-            clearInterval(autoPlay);
-        }
-    });
-
-    carousel.addEventListener('mouseleave', startAutoPlay);
-
-    document.addEventListener('keydown', (event) => {
-        const overlayActive = overlay?.classList.contains('ativo');
-
-        if (event.key === 'Escape' && overlayActive) {
-            closeExpanded();
-        } else if (event.key === 'ArrowLeft') {
-            overlayActive ? navigateExpanded(-1) : navigate(-1);
-        } else if (event.key === 'ArrowRight') {
-            overlayActive ? navigateExpanded(1) : navigate(1);
-        }
-    });
-
-    window.navegarCarrosselPublicacoes = navigate;
-    window.irParaSlidePublicacao = goToSlide;
-    window.navegarCarrosselExpandido = navigateExpanded;
-    window.abrirModoExpandido = openExpanded;
-    window.fecharModoExpandido = closeExpanded;
-
-    updateIndicators();
-    updateActiveCards();
-    startAutoPlay();
-}
-
 function initFloatingButtonObserver() {
     const button = document.querySelector('.botao-ver-mais-lateral');
     if (!button) {
@@ -544,10 +556,9 @@ function initSettingsTabs() {
 document.addEventListener('DOMContentLoaded', () => {
     initCursorOrb();
     initExpandableText();
-    initPublicationFilters();
+    initProjectsShowcase();
     initSmoothScroll();
     initTeamCarousel();
-    initPublicationCarousel();
     initFloatingButtonObserver();
     initInnovationCards();
     initSettingsTabs();

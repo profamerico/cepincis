@@ -103,81 +103,134 @@ function home_project_excerpt(string $text, int $limit = 150): string
 
                 <!-- ===== CARROSSEL DE PUBLICAÇÕES ===== -->
                 <section class="secao-publicacoes-recentes">
-                    <div class="cabecalho-publicacoes">
-                        <h3 class="titulo-categoria-publicacoes">do CEPIN-CIS:</h3>
-                        <h2 class="titulo-principal-publicacoes">PROJETOS</h2>
+                    <div class="cabecalho-publicacoes cabecalho-publicacoes--home">
+                        <div>
+                            <h3 class="titulo-categoria-publicacoes">do CEPIN-CIS:</h3>
+                            <h2 class="titulo-principal-publicacoes">PROJETOS</h2>
+                        </div>
+                        <p class="subtitulo-publicacoes-home">Um recorte dos projetos reais cadastrados no portal, com busca por termo e filtros por tags para facilitar a exploracao.</p>
                     </div>
 
                     <div class="barra-pesquisa">
-                        <input type="text" id="campoPesquisa" placeholder="Pesquisar por tag...">
+                        <input
+                            type="text"
+                            id="campoPesquisa"
+                            aria-label="Pesquisar projetos"
+                            placeholder="<?php echo empty($homepageProjects) ? 'Nenhum projeto publicado no momento.' : 'Pesquisar projetos por nome, categoria ou tag'; ?>"
+                            <?php echo empty($homepageProjects) ? 'disabled' : ''; ?>
+                        >
                     </div>
 
                     <div class="filtros-tags">
-                        <button data-tag="IoT" class="active">IoT</button>
-                        <button data-tag="UrbanSmart">UrbanSmart</button>
-                        <button data-tag="CarbonZero">CarbonZero</button>
-                        <button data-tag="EcoMat">EcoMat</button>
-                        <button data-tag="EduCIS">EduCIS</button>
+                        <button type="button" data-tag="todos" class="active">Todas</button>
+                        <?php foreach ($homepageProjectTags as $tag): ?>
+                            <button type="button" data-tag="<?php echo htmlspecialchars($tag, ENT_QUOTES, 'UTF-8'); ?>">
+                                <?php echo htmlspecialchars($tag, ENT_QUOTES, 'UTF-8'); ?>
+                            </button>
+                        <?php endforeach; ?>
                     </div>
+
+                    <p class="mensagem-projetos-home" data-carousel-empty-message hidden>Nenhum projeto encontrado para esse filtro.</p>
 
                     <div class="wrapper-carrossel-publicacoes">
                         <div class="container-carrossel-publicacoes" id="carrosselPublicacoes">
+                            <?php if (!empty($homepageProjects)): ?>
+                                <?php foreach ($homepageProjects as $project): ?>
+                                    <?php
+                                    $statusKey = home_project_status_key($project['status'] ?? 'active');
+                                    $statusLabel = home_project_status_label($statusKey);
+                                    $projectTags = $projectManager->getProjectTagList($project);
+                                    $displayTags = $projectManager->getProjectTagList($project, false);
+                                    $searchTags = implode(' ', $projectTags);
+                                    $contactQuery = http_build_query([
+                                        'project' => $project['title'] ?? '',
+                                        'category' => $project['category'] ?? '',
+                                    ]);
+                                    ?>
+                                    <article
+                                        class="card-publicacao-carrossel"
+                                        data-project-card="true"
+                                        data-project-id="<?php echo htmlspecialchars((string) ($project['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                        data-title="<?php echo htmlspecialchars((string) ($project['title'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                        data-category="<?php echo htmlspecialchars((string) ($project['category'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                        data-status="<?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                                        data-tag-list="<?php echo htmlspecialchars(implode('||', $projectTags), ENT_QUOTES, 'UTF-8'); ?>"
+                                        data-tags="<?php echo htmlspecialchars($searchTags, ENT_QUOTES, 'UTF-8'); ?>"
+                                    >
+                                        <div class="topo-card-publicacao">
+                                            <h3 class="categoria-card-publicacao"><?php echo htmlspecialchars((string) ($project['category'] ?? 'Geral'), ENT_QUOTES, 'UTF-8'); ?></h3>
+                                            <span class="status-card-publicacao status-card-publicacao--<?php echo htmlspecialchars($statusKey, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>
+                                            </span>
+                                        </div>
 
-                            <div class="card-publicacao-carrossel" data-tags="concreto python engenharia">
-                                <h3 class="categoria-card-publicacao">Construção Civil</h3>
-                                <h2>Dosador de Concreto Construído com Python</h2>
-                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
-                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
-                            </div>
+                                        <div class="conteudo-card-publicacao">
+                                            <h2 class="titulo-card-publicacao"><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto sem titulo'), ENT_QUOTES, 'UTF-8'); ?></h2>
+                                            <p class="descricao-card-publicacao"><?php echo htmlspecialchars(home_project_excerpt((string) ($project['description'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></p>
+                                        </div>
 
-                            <div class="card-publicacao-carrossel" data-tags="concreto sustentabilidade avaliacao">
-                                <h3 class="categoria-card-publicacao">Sustentabilidade</h3>
-                                <h2>Ferramenta de Avaliação do Concreto</h2>
-                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
-                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
-                            </div>
+                                        <div class="rodape-card-publicacao">
+                                            <div class="lista-tags-projeto-home">
+                                                <?php foreach ($displayTags ?: [(string) ($project['category'] ?? 'Geral')] as $tag): ?>
+                                                    <span class="tag-projeto-home"><?php echo htmlspecialchars($tag, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <?php endforeach; ?>
+                                            </div>
 
-                            <div class="card-publicacao-carrossel" data-tags="concreto sustentabilidade engenharia">
-                                <h3 class="categoria-card-publicacao">Construção Civil</h3>
-                                <h2>Projeto teste</h2>
-                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
-                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
-                            </div>
+                                            <a class="botao-explorar-publicacao" href="./contact.php?<?php echo htmlspecialchars($contactQuery, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <span>Saiba mais</span>
+                                            </a>
+                                        </div>
+                                    </article>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <article class="card-publicacao-carrossel card-publicacao-carrossel--empty" data-project-card="true" data-empty-state="true">
+                                    <div class="topo-card-publicacao">
+                                        <h3 class="categoria-card-publicacao">Projetos</h3>
+                                        <span class="status-card-publicacao status-card-publicacao--pending">Aguardando publicacao</span>
+                                    </div>
 
-                            <div class="card-publicacao-carrossel" data-tags="python engenharia">
-                                <h3 class="categoria-card-publicacao">Engenharia</h3>
-                                <h2>Projeto teste3</h2>
-                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
-                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
-                            </div>
+                                    <div class="conteudo-card-publicacao">
+                                        <h2 class="titulo-card-publicacao">Nenhum projeto cadastrado ainda</h2>
+                                        <p class="descricao-card-publicacao">Assim que os projetos forem adicionados no painel administrativo, este carrossel sera preenchido automaticamente com os dados reais do portal.</p>
+                                    </div>
 
-                            <div class="card-publicacao-carrossel" data-tags="pyhton">
-                                <h3 class="categoria-card-publicacao">Python</h3>
-                                <h2>Projeto teste2</h2>
-                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
-                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
-                            </div>
+                                    <div class="rodape-card-publicacao">
+                                        <div class="lista-tags-projeto-home">
+                                            <span class="tag-projeto-home tag-projeto-home--muted">Sem tags por enquanto</span>
+                                        </div>
 
-                            <div class="card-publicacao-carrossel" data-tags="phyton">
-                                <h3 class="categoria-card-publicacao">Construção Civil</h3>
-                                <h2>Projeto teste4</h2>
-                                <p class="descricao-card-publicacao">Clique aqui para explorar o projeto</p>
-                                <button class="botao-explorar-publicacao"><span>Explorar</span></button>
-                            </div>
+                                        <a class="botao-explorar-publicacao" href="./login.php">
+                                            <span>Acessar portal</span>
+                                        </a>
+                                    </div>
+                                </article>
+                            <?php endif; ?>
 
                         </div>
 
                         <div class="navegacao-carrossel-publicacoes">
-                            <div class="botao-seta-carrossel" onclick="navegarCarrosselPublicacoes(-1)">◄</div>
-                            <div class="botao-seta-carrossel" onclick="navegarCarrosselPublicacoes(1)">►</div>
+                            <button
+                                type="button"
+                                class="botao-seta-carrossel"
+                                data-carousel-prev
+                                aria-label="Projeto anterior"
+                                <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>
+                            >
+                                &#8592;
+                            </button>
+                            <button
+                                type="button"
+                                class="botao-seta-carrossel"
+                                data-carousel-next
+                                aria-label="Proximo projeto"
+                                <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>
+                            >
+                                &#8594;
+                            </button>
                         </div>
 
-                        <div class="indicadores-paginacao-carrossel">
-                            <div class="ponto-indicador-carrossel active" onclick="irParaSlidePublicacao(0)"></div>
-                            <div class="ponto-indicador-carrossel" onclick="irParaSlidePublicacao(1)"></div>
-                            <div class="ponto-indicador-carrossel" onclick="irParaSlidePublicacao(2)"></div>
-                            <div class="ponto-indicador-carrossel" onclick="irParaSlidePublicacao(3)"></div>                            <div class="ponto-indicador-carrossel" onclick="irParaSlidePublicacao(1)"></div>
-                        </div>
+                        <div class="indicadores-paginacao-carrossel" data-carousel-indicators></div>
+
                     </div>
                 </section>
 
