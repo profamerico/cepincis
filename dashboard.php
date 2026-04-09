@@ -51,7 +51,7 @@ $roleLabel = $auth->getRoleLabel($currentUser);
 
     <section class="metrics-grid">
         <article class="metric-card">
-            <span class="metric-label">Projetos vinculados</span>
+            <span class="metric-label">Número de projetos</span>
             <strong class="metric-value"><?php echo (int) $userStats['total']; ?></strong>
             <p>Quantidade total associada ao seu usuario.</p>
         </article>
