@@ -52,7 +52,7 @@ $faviconPath = './img/Captura_de_tela_2026-03-23_165121-removebg-preview.png';
         <nav class="site-nav">
             <div class="site-nav-links">
                 <a href="./about.php#sobre">Sobre</a>
-                <a href="./implement.php">Areas Tematicas</a>
+                <a href="./implement.php">Areas Temáticas</a>
                 <a href="https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf">Regulamento</a>
                 <a href="./contact.php">Contato</a>
             </div>

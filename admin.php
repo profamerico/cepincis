@@ -482,8 +482,14 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                 </div>
 
                 <div class="form-group">
-                    <label for="tags">Tags</label>
-                    <input type="text" id="tags" name="tags" value="<?php echo htmlspecialchars((string) $projectForm['tags'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Ex.: IoT, UrbanSmart, CarbonZero">
+                    <label for="status">Tags</label>
+                    <select id="status" name="status">
+                        <option value="active" <?php echo $projectForm['status'] === 'iot' ? 'selected' : ''; ?>>IoT</option>
+                        <option value="pending" <?php echo $projectForm['status'] === 'urbsmart' ? 'selected' : ''; ?>>UrbanSmart</option>
+                        <option value="completed" <?php echo $projectForm['status'] === 'carbonzero' ? 'selected' : ''; ?>>CarbonZero</option>
+                        <option value="pending" <?php echo $projectForm['status'] === 'educis' ? 'selected' : ''; ?>>EduCIS</option>
+                        <option value="completed" <?php echo $projectForm['status'] === 'ecomat' ? 'selected' : ''; ?>>EcoMat</option>
+                    </select>
                 </div>
 
                 <div class="form-group">

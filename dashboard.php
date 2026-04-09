@@ -39,7 +39,7 @@ $roleLabel = $auth->getRoleLabel($currentUser);
 
         <aside class="panel-hero-aside">
             <span class="dashboard-badge"><?php echo htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8'); ?></span>
-            <h2>Resumo da sessao</h2>
+            <h2>Resumo da sessão</h2>
             <p>Conta conectada como <strong>@<?php echo htmlspecialchars((string) $currentUser['username'], ENT_QUOTES, 'UTF-8'); ?></strong>.</p>
             <ul class="hero-meta-list">
                 <li>Email: <?php echo htmlspecialchars((string) ($currentUser['email'] ?: 'Nao informado'), ENT_QUOTES, 'UTF-8'); ?></li>
