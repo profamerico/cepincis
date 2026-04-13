@@ -192,7 +192,7 @@ header nav a:hover {
 /* ===== HERO ===== */
 .hero {
     text-align: center;
-    padding: 260px 20px;
+    padding: 260px;
     height: 830px;
     background:
         linear-gradient(rgba(43, 43, 43, 0.5), rgba(20, 20, 20, 0.5)),
