@@ -246,13 +246,13 @@ include_once 'includes/header.php';
                 <section id="implementacao" class="panel-card public-section-card">
                     <div class="panel-card-header">
                         <div>
-                            <h2>Implementação</h2>
+                            <h2>Áreas Temáticas</h2>
                         </div>
 
                         <a class="dashboard-btn dashboard-btn--ghost" href="./implement.php">Ver todas as áreas</a>
                     </div>
 
-                    <p class="panel-copy">A implementação do CEPIN-CIS ocorreu durante os anos de 2022 e 2023, com recursos obtidos através do edital nº PRP/IFSP 329/2021.</p>
+                    <p class="panel-copy">As Áreas Temáticas, nas quais serão alinhados os projetos, foram definidas para orientar as atividades do CEPIN-CIS e compreendem:</p>
 
                     <div class="public-topic-grid public-topic-grid--home">
                         <?php foreach ($implementationHighlights as $highlight): ?>
