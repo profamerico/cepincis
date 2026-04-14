@@ -70,9 +70,6 @@ if ($isAdmin) {
 <body<?php echo $bodyClass !== '' ? ' class="' . htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
     <div class="page-loader" data-page-loader>
         <div class="page-loader__inner" role="status" aria-live="polite" aria-label="Carregando pagina">
-            <svg class="page-loader__spinner" viewBox="0 0 66 66" aria-hidden="true">
-                <circle class="page-loader__path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
-            </svg>
             <strong class="page-loader__brand">CEPIN-CIS</strong>
         </div>
     </div>

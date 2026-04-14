@@ -222,24 +222,8 @@ html.js-enabled body.page-loader-ready .page-loader {
 .page-loader__inner {
     display: grid;
     justify-items: center;
-    gap: 14px;
+    gap: 0;
     padding: 24px 28px;
-}
-
-.page-loader__spinner {
-    width: 72px;
-    height: 72px;
-    animation: pageLoaderRotator 1.4s linear infinite;
-}
-
-.page-loader__path {
-    stroke: #0b3e1b;
-    stroke-dasharray: 187;
-    stroke-dashoffset: 0;
-    transform-origin: center;
-    animation:
-        pageLoaderDash 1.4s ease-in-out infinite,
-        pageLoaderColors 5.6s ease-in-out infinite;
 }
 
 .page-loader__brand {
@@ -252,54 +236,6 @@ html.js-enabled body.page-loader-ready .page-loader {
     text-align: center;
 }
 
-@keyframes pageLoaderRotator {
-    0% {
-        transform: rotate(0deg);
-    }
-
-    100% {
-        transform: rotate(270deg);
-    }
-}
-
-@keyframes pageLoaderColors {
-    0% {
-        stroke: #85bf9a;
-    }
-
-    25% {
-        stroke: #4d8d63;
-    }
-
-    50% {
-        stroke: #0b3e1b;
-    }
-
-    75% {
-        stroke: #2f6d44;
-    }
-
-    100% {
-        stroke: #85bf9a;
-    }
-}
-
-@keyframes pageLoaderDash {
-    0% {
-        stroke-dashoffset: 187;
-    }
-
-    50% {
-        stroke-dashoffset: 46.75;
-        transform: rotate(135deg);
-    }
-
-    100% {
-        stroke-dashoffset: 187;
-        transform: rotate(450deg);
-    }
-}
-
 @media (max-width: 768px) {
     html.js-enabled .page-loader {
         padding: 18px;
@@ -308,11 +244,6 @@ html.js-enabled body.page-loader-ready .page-loader {
     .page-loader__inner {
         gap: 12px;
         padding: 18px 20px;
-    }
-
-    .page-loader__spinner {
-        width: 64px;
-        height: 64px;
     }
 
     .page-loader__brand {
@@ -339,11 +270,6 @@ body.motion-enhanced .monitor {
 
     .smooth-scroll-page .js-scroll {
         transform: none !important;
-    }
-
-    .page-loader__spinner,
-    .page-loader__path {
-        animation: none;
     }
 }
 
