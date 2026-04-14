@@ -205,7 +205,9 @@ html.js-enabled .page-loader {
     display: grid;
     place-items: center;
     padding: 24px;
-    background: rgba(241, 246, 241, 0.88);
+    background:
+        radial-gradient(circle at top left, rgba(133, 191, 154, 0.18), transparent 34%),
+        linear-gradient(135deg, rgba(7, 36, 15, 0.96) 0%, rgba(29, 74, 45, 0.98) 100%);
     backdrop-filter: blur(10px);
     opacity: 1;
     visibility: visible;
@@ -230,7 +232,7 @@ html.js-enabled body.page-loader-ready .page-loader {
     font-family: 'Aldrich', sans-serif;
     font-size: clamp(1.15rem, 0.9vw + 1rem, 1.5rem);
     line-height: 1;
-    color: #07240f;
+    color: #ffffff;
     letter-spacing: 0.18em;
     text-transform: uppercase;
     text-align: center;
