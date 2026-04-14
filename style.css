@@ -179,6 +179,29 @@ header nav a:hover {
     height: auto;
 }
 
+.motion-word-wrap {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: bottom;
+}
+
+.motion-word {
+    display: inline-block;
+    will-change: transform, opacity;
+}
+
+body.motion-enhanced .hero,
+body.motion-enhanced .panel-card,
+body.motion-enhanced .metric-card,
+body.motion-enhanced .action-card,
+body.motion-enhanced .card-publicacao-carrossel,
+body.motion-enhanced .public-image-card img,
+body.motion-enhanced .public-map-frame,
+body.motion-enhanced .monitor {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
