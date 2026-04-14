@@ -21,55 +21,26 @@ function initPageLoader() {
         return;
     }
 
-    const loaderLabel = loader.querySelector('[data-page-loader-label]');
-    const pageLabels = {
-        'index.php': 'Home',
-        'about.php': 'Sobre',
-        'contact.php': 'Contato',
-        'implement.php': 'Areas Tematicas',
-        'login.php': 'Login',
-        'register.php': 'Registro',
-        'dashboard.php': 'Dashboard',
-        'profile.php': 'Perfil',
-        'projects.php': 'Projetos',
-        'settings.php': 'Configuracoes',
-        'admin.php': 'Admin',
-        'logout.php': 'Saindo'
-    };
-
-    const defaultLabel = document.body.dataset.loadingPage || 'CEPIN-CIS';
-
-    function setLoaderLabel(nextLabel) {
-        if (!loaderLabel) {
-            return;
-        }
-
-        loaderLabel.textContent = nextLabel || defaultLabel;
-    }
+    const now = () => (typeof performance !== 'undefined' && typeof performance.now === 'function'
+        ? performance.now()
+        : Date.now());
+    const minimumVisibleDuration = prefersReducedMotion() ? 0 : 900;
+    let loaderStartedAt = now();
+    let releaseTimer = null;
 
     function releaseLoader() {
-        document.body.classList.remove('page-loader-leaving');
+        window.clearTimeout(releaseTimer);
+        const elapsed = now() - loaderStartedAt;
+        const remaining = Math.max(0, minimumVisibleDuration - elapsed);
 
-        window.setTimeout(() => {
+        releaseTimer = window.setTimeout(() => {
             document.body.classList.add('page-loader-ready');
-            setLoaderLabel(defaultLabel);
-        }, prefersReducedMotion() ? 0 : 140);
+        }, remaining);
     }
 
-    function armLoader(nextLabel) {
-        setLoaderLabel(nextLabel);
+    function armLoader() {
+        loaderStartedAt = now();
         document.body.classList.remove('page-loader-ready');
-        document.body.classList.add('page-loader-leaving');
-    }
-
-    function getLoaderLabelFromHref(href) {
-        try {
-            const url = new URL(href, window.location.href);
-            const scriptName = (url.pathname.split('/').pop() || 'index.php').toLowerCase();
-            return pageLabels[scriptName] || defaultLabel;
-        } catch (error) {
-            return defaultLabel;
-        }
     }
 
     function isInternalPageNavigation(link) {
@@ -115,11 +86,11 @@ function initPageLoader() {
         }
 
         event.preventDefault();
-        armLoader(getLoaderLabelFromHref(link.href));
+        armLoader();
 
         window.setTimeout(() => {
             window.location.href = link.href;
-        }, prefersReducedMotion() ? 0 : 110);
+        }, prefersReducedMotion() ? 0 : 90);
     });
 
     document.addEventListener('submit', (event) => {
@@ -132,7 +103,7 @@ function initPageLoader() {
             return;
         }
 
-        armLoader(form.dataset.loadingLabel || defaultLabel);
+        armLoader();
     });
 
     window.addEventListener('load', releaseLoader, { once: true });

@@ -14,25 +14,6 @@ $currentRole = strtolower(trim((string) ($currentUser['role'] ?? '')));
 $isAdmin = $isLoggedIn && ($currentRole === 'admin' || (int) ($currentUser['id'] ?? 0) === 1 || strtolower((string) ($currentUser['username'] ?? '')) === 'admin');
 $faviconPath = './img/Captura_de_tela_2026-03-23_165121-removebg-preview.png';
 $currentScript = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
-$loadingLabelMap = [
-    'index.php' => 'Home',
-    'about.php' => 'Sobre',
-    'contact.php' => 'Contato',
-    'implement.php' => 'Areas Tematicas',
-    'login.php' => 'Login',
-    'register.php' => 'Registro',
-    'dashboard.php' => 'Dashboard',
-    'profile.php' => 'Perfil',
-    'projects.php' => 'Projetos',
-    'settings.php' => 'Configuracoes',
-    'admin.php' => 'Admin',
-    'logout.php' => 'Saindo',
-];
-$titlePrefix = trim((string) strtok($pageTitle, '|'));
-$loadingLabel = $loadingLabelMap[$currentScript] ?? ($titlePrefix !== '' ? $titlePrefix : 'CEPIN-CIS');
-if ($loadingLabel === 'CEPIN-CIS') {
-    $loadingLabel = 'Home';
-}
 $mobileAccountLinks = $isLoggedIn
     ? [
         ['href' => './index.php', 'label' => 'Home', 'icon' => 'fa-house'],
@@ -86,29 +67,13 @@ if ($isAdmin) {
         }
     </style>
 </head>
-<body<?php echo $bodyClass !== '' ? ' class="' . htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8') . '"' : ''; ?> data-loading-page="<?php echo htmlspecialchars($loadingLabel, ENT_QUOTES, 'UTF-8'); ?>">
+<body<?php echo $bodyClass !== '' ? ' class="' . htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
     <div class="page-loader" data-page-loader>
-        <div class="page-loader__grid" aria-hidden="true"></div>
-        <div class="page-loader__glow page-loader__glow--one" aria-hidden="true"></div>
-        <div class="page-loader__glow page-loader__glow--two" aria-hidden="true"></div>
-
-        <div class="page-loader__content" role="status" aria-live="polite">
-            <span class="page-loader__eyebrow">Carregando</span>
+        <div class="page-loader__inner" role="status" aria-live="polite" aria-label="Carregando pagina">
+            <svg class="page-loader__spinner" viewBox="0 0 66 66" aria-hidden="true">
+                <circle class="page-loader__path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+            </svg>
             <strong class="page-loader__brand">CEPIN-CIS</strong>
-            <p class="page-loader__page" data-page-loader-label><?php echo htmlspecialchars($loadingLabel, ENT_QUOTES, 'UTF-8'); ?></p>
-
-            <div class="page-loader__ticker" aria-hidden="true">
-                <div class="page-loader__ticker-track">
-                    <span>Pesquisa</span>
-                    <span>Inovacao</span>
-                    <span>Extensao</span>
-                    <span>Pesquisa</span>
-                </div>
-            </div>
-
-            <div class="page-loader__progress" aria-hidden="true">
-                <span></span>
-            </div>
         </div>
     </div>
 
@@ -120,9 +85,7 @@ if ($isAdmin) {
                 }
             }
 
-            window.addEventListener('load', releaseLoader, { once: true });
-            window.addEventListener('pageshow', releaseLoader);
-            window.setTimeout(releaseLoader, 4200);
+            window.setTimeout(releaseLoader, 5000);
         }());
     </script>
 
