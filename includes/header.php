@@ -13,6 +13,26 @@ $displayName = $isLoggedIn
 $currentRole = strtolower(trim((string) ($currentUser['role'] ?? '')));
 $isAdmin = $isLoggedIn && ($currentRole === 'admin' || (int) ($currentUser['id'] ?? 0) === 1 || strtolower((string) ($currentUser['username'] ?? '')) === 'admin');
 $faviconPath = './img/Captura_de_tela_2026-03-23_165121-removebg-preview.png';
+$currentScript = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+$mobileAccountLinks = $isLoggedIn
+    ? [
+        ['href' => './index.php', 'label' => 'Home', 'icon' => 'fa-house'],
+        ['href' => './dashboard.php', 'label' => 'Dashboard', 'icon' => 'fa-table-columns'],
+        ['href' => './profile.php', 'label' => 'Perfil', 'icon' => 'fa-user'],
+        ['href' => './logout.php', 'label' => 'Sair', 'icon' => 'fa-right-from-bracket'],
+    ]
+    : [
+        ['href' => './index.php', 'label' => 'Home', 'icon' => 'fa-house'],
+        ['href' => './login.php', 'label' => 'Entrar', 'icon' => 'fa-right-to-bracket'],
+    ];
+
+if ($isAdmin) {
+    array_splice($mobileAccountLinks, 3, 0, [[
+        'href' => './admin.php',
+        'label' => 'Admin',
+        'icon' => 'fa-shield-halved',
+    ]]);
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -47,8 +67,21 @@ $faviconPath = './img/Captura_de_tela_2026-03-23_165121-removebg-preview.png';
     </style>
 </head>
 <body<?php echo $bodyClass !== '' ? ' class="' . htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
-    <header>
+    <header class="site-header">
         <a href="./index.php" class="logo">CEPIN-CIS</a>
+        <button
+            type="button"
+            class="mobile-nav-toggle"
+            data-mobile-nav-toggle
+            aria-expanded="false"
+            aria-controls="mobileNavDrawer"
+            aria-label="Abrir menu"
+        >
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+
         <nav class="site-nav">
             <div class="site-nav-links">
                 <a href="./about.php#sobre">Sobre</a>
@@ -89,3 +122,49 @@ $faviconPath = './img/Captura_de_tela_2026-03-23_165121-removebg-preview.png';
             </div>
         </nav>
     </header>
+
+    <div class="mobile-nav-overlay" data-mobile-nav-overlay hidden></div>
+
+    <aside class="mobile-nav-drawer" id="mobileNavDrawer" data-mobile-nav-drawer aria-hidden="true">
+        <div class="mobile-nav-drawer-inner">
+            <div class="mobile-nav-drawer-top">
+                <div>
+                    <p class="mobile-nav-kicker">Menu</p>
+                    <strong class="mobile-nav-title">Acesso rapido</strong>
+                </div>
+
+                <button type="button" class="mobile-nav-close" data-mobile-nav-close aria-label="Fechar menu">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <?php if ($isLoggedIn): ?>
+                <div class="mobile-user-badge">
+                    <span>Conectado como</span>
+                    <strong><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></strong>
+                </div>
+            <?php endif; ?>
+
+            <nav class="mobile-account-nav" aria-label="Acesso da conta">
+                <?php foreach ($mobileAccountLinks as $mobileLink): ?>
+                    <?php
+                    $mobileLinkHref = (string) $mobileLink['href'];
+                    $mobileLinkLabel = (string) $mobileLink['label'];
+                    $mobileLinkIcon = (string) $mobileLink['icon'];
+                    $mobileLinkScript = basename(parse_url($mobileLinkHref, PHP_URL_PATH) ?: '');
+                    $isMobileLinkActive = $mobileLinkScript !== '' && $mobileLinkScript === $currentScript;
+                    ?>
+                    <a
+                        href="<?php echo htmlspecialchars($mobileLinkHref, ENT_QUOTES, 'UTF-8'); ?>"
+                        class="mobile-account-link<?php echo $isMobileLinkActive ? ' is-active' : ''; ?>"
+                        <?php echo $isMobileLinkActive ? ' aria-current="page"' : ''; ?>
+                    >
+                        <i class="fa-solid <?php echo htmlspecialchars($mobileLinkIcon, ENT_QUOTES, 'UTF-8'); ?>"></i>
+                        <span><?php echo htmlspecialchars($mobileLinkLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+
+            <p class="mobile-nav-note">A navegacao institucional fica na barra inferior para voce trocar de area sem perder espaco no topo.</p>
+        </div>
+    </aside>

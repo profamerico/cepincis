@@ -481,6 +481,131 @@ function initGlobalSmoothScroll() {
     });
 }
 
+function initMobileNavigation() {
+    const toggle = document.querySelector('[data-mobile-nav-toggle]');
+    const drawer = document.querySelector('[data-mobile-nav-drawer]');
+    const overlay = document.querySelector('[data-mobile-nav-overlay]');
+    const closeButton = document.querySelector('[data-mobile-nav-close]');
+    const compactViewport = window.matchMedia('(max-width: 1100px)');
+
+    if (!toggle || !drawer || !overlay) {
+        return;
+    }
+
+    const drawerLinks = Array.from(drawer.querySelectorAll('a'));
+
+    function setOpen(isOpen) {
+        document.body.classList.toggle('mobile-nav-open', isOpen);
+        toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+        drawer.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+        overlay.hidden = !isOpen;
+    }
+
+    function closeMenu() {
+        setOpen(false);
+    }
+
+    toggle.addEventListener('click', () => {
+        setOpen(!document.body.classList.contains('mobile-nav-open'));
+    });
+
+    closeButton?.addEventListener('click', closeMenu);
+    overlay.addEventListener('click', closeMenu);
+
+    drawerLinks.forEach((link) => {
+        link.addEventListener('click', closeMenu);
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            closeMenu();
+        }
+    });
+
+    function handleViewportChange() {
+        if (!compactViewport.matches) {
+            closeMenu();
+        }
+    }
+
+    if (typeof compactViewport.addEventListener === 'function') {
+        compactViewport.addEventListener('change', handleViewportChange);
+    } else if (typeof compactViewport.addListener === 'function') {
+        compactViewport.addListener(handleViewportChange);
+    }
+}
+
+function initMobileCollapseCards() {
+    const groups = Array.from(document.querySelectorAll('[data-mobile-collapse]'));
+    const compactViewport = window.matchMedia('(max-width: 1100px)');
+
+    if (!groups.length) {
+        return;
+    }
+
+    groups.forEach((group, index) => {
+        const button = group.querySelector('[data-mobile-collapse-toggle]');
+        const content = group.querySelector('[data-mobile-collapse-content]');
+        const inner = group.querySelector('[data-mobile-collapse-inner]');
+
+        if (!button || !content || !inner) {
+            return;
+        }
+
+        if (!content.id) {
+            content.id = `mobileCollapse${index + 1}`;
+        }
+
+        button.setAttribute('aria-controls', content.id);
+        button.setAttribute('aria-expanded', 'false');
+
+        function syncHeight() {
+            const isOpen = group.classList.contains('is-open');
+
+            if (!compactViewport.matches) {
+                content.style.maxHeight = 'none';
+                return;
+            }
+
+            content.style.maxHeight = isOpen ? `${inner.scrollHeight}px` : '0px';
+        }
+
+        button.addEventListener('click', () => {
+            if (!compactViewport.matches) {
+                return;
+            }
+
+            const willOpen = !group.classList.contains('is-open');
+            group.classList.toggle('is-open', willOpen);
+            button.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            syncHeight();
+        });
+
+        const handleViewportChange = () => {
+            if (!compactViewport.matches) {
+                group.classList.remove('is-open');
+                button.setAttribute('aria-expanded', 'false');
+            }
+
+            syncHeight();
+        };
+
+        window.addEventListener('resize', syncHeight);
+
+        if (typeof compactViewport.addEventListener === 'function') {
+            compactViewport.addEventListener('change', handleViewportChange);
+        } else if (typeof compactViewport.addListener === 'function') {
+            compactViewport.addListener(handleViewportChange);
+        }
+
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(syncHeight).catch(() => {});
+        }
+
+        syncHeight();
+    });
+}
+
 function initTeamCarousel() {
     const cards = Array.from(document.querySelectorAll('.card'));
     const dots = Array.from(document.querySelectorAll('.dot'));
@@ -1127,6 +1252,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initProjectsShowcase();
     initSmoothScroll();
     initGlobalSmoothScroll();
+    initMobileNavigation();
+    initMobileCollapseCards();
     initTeamCarousel();
     initFloatingButtonObserver();
     initInnovationCards();

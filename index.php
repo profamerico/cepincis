@@ -229,9 +229,20 @@ include_once 'includes/header.php';
                     <article class="panel-card public-copy-card">
                         <h2>Sobre</h2>
 
-                        <p>Os principais objetivos do CEPIN-CIS são desenvolver investigação fundamental ou aplicada focada em cidades inteligentes e sustentáveis, contribuir ativamente para a inovação por meio da transferência de tecnologia e oferecer atividades de extensão.</p>
+                        <div class="mobile-collapse-card" data-mobile-collapse>
+                            <button type="button" class="mobile-collapse-toggle" data-mobile-collapse-toggle aria-expanded="false">
+                                <span>Ler resumo</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </button>
 
-                        <p>O Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS), implementado no IFSP campus Caraguatatuba, tem como missão fomentar o desenvolvimento de cidades inteligentes e sustentáveis, funcionando como um repositório de tecnologias, laboratório de aplicação e agente de interlocução entre os setores público e privado.</p>
+                            <div class="mobile-collapse-content" data-mobile-collapse-content>
+                                <div class="mobile-collapse-inner" data-mobile-collapse-inner>
+                                    <p>Os principais objetivos do CEPIN-CIS são desenvolver investigação fundamental ou aplicada focada em cidades inteligentes e sustentáveis, contribuir ativamente para a inovação por meio da transferência de tecnologia e oferecer atividades de extensão.</p>
+
+                                    <p>O Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS), implementado no IFSP campus Caraguatatuba, tem como missão fomentar o desenvolvimento de cidades inteligentes e sustentáveis, funcionando como um repositório de tecnologias, laboratório de aplicação e agente de interlocução entre os setores público e privado.</p>
+                                </div>
+                            </div>
+                        </div>
 
                         <div class="hero-actions">
                             <a class="dashboard-btn" href="./about.php#sobre">Saiba mais</a>
@@ -258,7 +269,19 @@ include_once 'includes/header.php';
                         <?php foreach ($implementationHighlights as $highlight): ?>
                             <article class="public-topic-card">
                                 <h3><?php echo htmlspecialchars($highlight['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
-                                <p><?php echo htmlspecialchars($highlight['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+
+                                <div class="mobile-collapse-card mobile-collapse-card--compact" data-mobile-collapse>
+                                    <button type="button" class="mobile-collapse-toggle mobile-collapse-toggle--compact" data-mobile-collapse-toggle aria-expanded="false">
+                                        <span>Ver resumo</span>
+                                        <i class="fa-solid fa-chevron-down"></i>
+                                    </button>
+
+                                    <div class="mobile-collapse-content mobile-collapse-content--compact" data-mobile-collapse-content>
+                                        <div class="mobile-collapse-inner" data-mobile-collapse-inner>
+                                            <p><?php echo htmlspecialchars($highlight['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                        </div>
+                                    </div>
+                                </div>
                             </article>
                         <?php endforeach; ?>
                     </div>
@@ -316,9 +339,20 @@ include_once 'includes/header.php';
                 <section id="regulamento" class="panel-card public-simple-card">
                     <h2>Regulamento</h2>
 
-                    <p>O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento à pesquisa aplicada, à inovação tecnológica e à reflexão crítica sobre os desafios contemporâneos das cidades.</p>
+                    <div class="mobile-collapse-card" data-mobile-collapse>
+                        <button type="button" class="mobile-collapse-toggle" data-mobile-collapse-toggle aria-expanded="false">
+                            <span>Ler texto</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </button>
 
-                    <p>O regulamento estabelece as diretrizes para a participação de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensão que dialoguem com as áreas temáticas do Centro, além de abrir espaço para a colaboração de pesquisadores externos.</p>
+                        <div class="mobile-collapse-content" data-mobile-collapse-content>
+                            <div class="mobile-collapse-inner" data-mobile-collapse-inner>
+                                <p>O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento à pesquisa aplicada, à inovação tecnológica e à reflexão crítica sobre os desafios contemporâneos das cidades.</p>
+
+                                <p>O regulamento estabelece as diretrizes para a participação de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensão que dialoguem com as áreas temáticas do Centro, além de abrir espaço para a colaboração de pesquisadores externos.</p>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="hero-actions">
                         <a class="dashboard-btn" href="<?php echo htmlspecialchars($regulationUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">Clique aqui para ver o regulamento</a>
