@@ -42,7 +42,26 @@ if ($isAdmin) {
     <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></title>
     <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($faviconPath, ENT_QUOTES, 'UTF-8'); ?>">
     <link rel="apple-touch-icon" href="<?php echo htmlspecialchars($faviconPath, ENT_QUOTES, 'UTF-8'); ?>">
-    <script>document.documentElement.classList.add('js-enabled');</script>
+    <script>
+        document.documentElement.classList.add('js-enabled');
+        (function () {
+            var storageKey = 'cepin-theme';
+            var root = document.documentElement;
+
+            try {
+                var storedTheme = window.localStorage.getItem(storageKey);
+                var prefersDark = typeof window.matchMedia === 'function'
+                    && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = storedTheme === 'dark' || storedTheme === 'light'
+                    ? storedTheme
+                    : (prefersDark ? 'dark' : 'light');
+
+                root.setAttribute('data-theme', theme);
+            } catch (error) {
+                root.setAttribute('data-theme', 'light');
+            }
+        }());
+    </script>
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Aldrich&family=Chivo:wght@300;400;700&display=swap" rel="stylesheet">
@@ -110,6 +129,17 @@ if ($isAdmin) {
             </div>
 
             <div class="site-nav-actions">
+                <button
+                    type="button"
+                    class="header-icon-link header-theme-toggle"
+                    data-theme-toggle
+                    aria-pressed="false"
+                    aria-label="Ativar modo escuro"
+                    title="Ativar modo escuro"
+                >
+                    <i class="fa-solid fa-moon" data-theme-toggle-icon></i>
+                </button>
+
                 <?php if ($isLoggedIn): ?>
                     <span class="header-user-badge"><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
 
@@ -183,6 +213,17 @@ if ($isAdmin) {
                     </a>
                 <?php endforeach; ?>
             </nav>
+
+            <button
+                type="button"
+                class="mobile-account-link mobile-theme-toggle"
+                data-theme-toggle
+                aria-pressed="false"
+                aria-label="Ativar modo escuro"
+            >
+                <i class="fa-solid fa-moon" data-theme-toggle-icon></i>
+                <span data-theme-toggle-label>Modo escuro</span>
+            </button>
 
             <p class="mobile-nav-note">A navegacao institucional fica na barra inferior para voce trocar de area sem perder espaco no topo.</p>
         </div>
