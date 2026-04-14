@@ -1531,7 +1531,7 @@ footer {
     transition: all 0.6s ease;
     margin: 0 auto;
     /* Centraliza a seção */
-    background: #e8e8e8;
+    background: #e8e8e800;
     /* Fundo para a seção do carrossel */
     color: #000;
     /* Cor do texto padrão para o carrossel */
@@ -4355,6 +4355,8 @@ body.auth-page header {
 /* ===== HOME PROJECT SHOWCASE REFRESH ===== */
 .secao-publicacoes-recentes {
     position: relative;
+    z-index: 0;
+    isolation: isolate;
     width: min(100% - 48px, 1240px);
     margin: 0 auto 96px;
     padding: 44px clamp(20px, 4vw, 38px) 30px;
@@ -4367,7 +4369,7 @@ body.auth-page header {
     border-radius: 34px;
     background:
         radial-gradient(circle at top left, rgba(104, 171, 127, 0.18), transparent 40%),
-        linear-gradient(145deg, rgba(244, 249, 244, 0.96), rgba(232, 241, 233, 0.98));
+        linear-gradient(145deg, rgba(244, 249, 244, 0.96), rgba(247, 247, 247, 0.98));
     border: 1px solid rgba(15, 75, 36, 0.08);
     box-shadow: 0 28px 60px rgba(7, 36, 15, 0.08);
     z-index: -1;
@@ -5978,9 +5980,24 @@ html[data-theme="dark"] #areas {
 html[data-theme="dark"] .secao-publicacoes-recentes::before {
     background:
         radial-gradient(circle at top left, rgba(133, 191, 154, 0.12), transparent 40%),
+        radial-gradient(circle at bottom right, rgba(77, 141, 99, 0.12), transparent 34%),
         linear-gradient(145deg, rgba(18, 27, 22, 0.98), rgba(12, 18, 15, 0.98));
-    border-color: var(--theme-dark-border);
+    border-color: transparent;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+html[data-theme="dark"] .secao-publicacoes-recentes {
+    background: linear-gradient(180deg, rgba(16, 24, 19, 0.88), rgba(11, 17, 13, 0.94));
+    border: 1px solid var(--theme-dark-border);
+    border-radius: 34px;
     box-shadow: 0 28px 60px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"] .wrapper-carrossel-publicacoes {
+    padding: 6px;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
+    border: 1px solid rgba(133, 191, 154, 0.08);
 }
 
 html[data-theme="dark"] .public-topic-card,
