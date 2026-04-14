@@ -15,6 +15,134 @@ function prefersReducedMotion() {
     return Boolean(reducedMotionQuery.matches);
 }
 
+function initPageLoader() {
+    const loader = document.querySelector('[data-page-loader]');
+    if (!loader || !document.body) {
+        return;
+    }
+
+    const loaderLabel = loader.querySelector('[data-page-loader-label]');
+    const pageLabels = {
+        'index.php': 'Home',
+        'about.php': 'Sobre',
+        'contact.php': 'Contato',
+        'implement.php': 'Areas Tematicas',
+        'login.php': 'Login',
+        'register.php': 'Registro',
+        'dashboard.php': 'Dashboard',
+        'profile.php': 'Perfil',
+        'projects.php': 'Projetos',
+        'settings.php': 'Configuracoes',
+        'admin.php': 'Admin',
+        'logout.php': 'Saindo'
+    };
+
+    const defaultLabel = document.body.dataset.loadingPage || 'CEPIN-CIS';
+
+    function setLoaderLabel(nextLabel) {
+        if (!loaderLabel) {
+            return;
+        }
+
+        loaderLabel.textContent = nextLabel || defaultLabel;
+    }
+
+    function releaseLoader() {
+        document.body.classList.remove('page-loader-leaving');
+
+        window.setTimeout(() => {
+            document.body.classList.add('page-loader-ready');
+            setLoaderLabel(defaultLabel);
+        }, prefersReducedMotion() ? 0 : 140);
+    }
+
+    function armLoader(nextLabel) {
+        setLoaderLabel(nextLabel);
+        document.body.classList.remove('page-loader-ready');
+        document.body.classList.add('page-loader-leaving');
+    }
+
+    function getLoaderLabelFromHref(href) {
+        try {
+            const url = new URL(href, window.location.href);
+            const scriptName = (url.pathname.split('/').pop() || 'index.php').toLowerCase();
+            return pageLabels[scriptName] || defaultLabel;
+        } catch (error) {
+            return defaultLabel;
+        }
+    }
+
+    function isInternalPageNavigation(link) {
+        if (!(link instanceof HTMLAnchorElement)) {
+            return false;
+        }
+
+        const rawHref = link.getAttribute('href') || '';
+        if (!rawHref || rawHref.startsWith('#') || rawHref.startsWith('javascript:') || link.hasAttribute('download')) {
+            return false;
+        }
+
+        if (link.target && link.target !== '_self') {
+            return false;
+        }
+
+        try {
+            const targetUrl = new URL(link.href, window.location.href);
+            const currentUrl = new URL(window.location.href);
+
+            if (targetUrl.origin !== currentUrl.origin) {
+                return false;
+            }
+
+            if (targetUrl.pathname === currentUrl.pathname && targetUrl.search === currentUrl.search) {
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            return false;
+        }
+    }
+
+    document.addEventListener('click', (event) => {
+        if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+            return;
+        }
+
+        const link = event.target.closest('a[href]');
+        if (!isInternalPageNavigation(link)) {
+            return;
+        }
+
+        event.preventDefault();
+        armLoader(getLoaderLabelFromHref(link.href));
+
+        window.setTimeout(() => {
+            window.location.href = link.href;
+        }, prefersReducedMotion() ? 0 : 110);
+    });
+
+    document.addEventListener('submit', (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement) || event.defaultPrevented) {
+            return;
+        }
+
+        if (form.target && form.target !== '_self') {
+            return;
+        }
+
+        armLoader(form.dataset.loadingLabel || defaultLabel);
+    });
+
+    window.addEventListener('load', releaseLoader, { once: true });
+    window.addEventListener('pageshow', releaseLoader);
+
+    if (document.readyState === 'complete') {
+        releaseLoader();
+    }
+}
+
 function getHeaderOffset() {
     const header = document.querySelector('header');
     return (header ? header.offsetHeight : 0) + 18;
@@ -1250,6 +1378,7 @@ function initGsapPageMotion() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    initPageLoader();
     initCursorOrb();
     initExpandableText();
     initProjectsShowcase();
