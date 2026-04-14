@@ -299,22 +299,22 @@ include_once 'includes/header.php';
                             <button class="nav-arrow left" type="button" aria-label="Parceiro anterior">&#8249;</button>
                             <div class="carousel-track">
                                 <div class="card" data-index="0">
-                                    <img src="./img/Kobenhavns.png" alt="Universidade de Copenhagen">
+                                    <img src="./img/copenhagen.png" alt="Universidade de Copenhagen">
                                 </div>
                                 <div class="card" data-index="1">
                                     <img src="./img/Roma 3.png" alt="Universidade de Roma 3">
                                 </div>
                                 <div class="card" data-index="2">
-                                    <img src="./img/FUHZOU UNIVERSITY SLIDER.png" alt="Universidade de Fuzhou">
+                                    <img src="./img/Fuhzou.png" alt="Universidade de Fuzhou">
                                 </div>
                                 <div class="card" data-index="3">
-                                    <img src="./img/getis.png" alt="GETIS">
+                                    <img src="./img/Getis.png" alt="GETIS">
                                 </div>
                                 <div class="card" data-index="4">
                                     <img src="./img/i2v2.png" alt="i2">
                                 </div>
                                 <div class="card" data-index="5">
-                                    <img src="./img/Enasa.png" alt="ENASA">
+                                    <img src="./img/enasa.png" alt="ENASA">
                                 </div>
                             </div>
                             <button class="nav-arrow right" type="button" aria-label="Próximo parceiro">&#8250;</button>
