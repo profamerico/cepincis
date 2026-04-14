@@ -843,6 +843,9 @@ function initGsapPageMotion() {
 
     const gsap = window.gsap;
     const ScrollTrigger = window.ScrollTrigger;
+    const compactViewport = typeof window.matchMedia === 'function'
+        ? window.matchMedia('(max-width: 1100px)').matches
+        : false;
 
     if (ScrollTrigger) {
         gsap.registerPlugin(ScrollTrigger);
@@ -1024,25 +1027,25 @@ function initGsapPageMotion() {
 
     if (document.querySelector('.hero')) {
         introWords(introTimeline, '.hero h1', {
-            yPercent: 132,
+            yPercent: compactViewport ? 108 : 132,
             rotate: 2,
-            duration: 1.1,
-            stagger: 0.05
+            duration: compactViewport ? 0.92 : 1.1,
+            stagger: compactViewport ? 0.038 : 0.05
         }, 0.24);
 
         introWords(introTimeline, '.hero h2', {
-            yPercent: 118,
+            yPercent: compactViewport ? 94 : 118,
             rotate: 2,
-            duration: 0.86,
-            stagger: 0.028
+            duration: compactViewport ? 0.78 : 0.86,
+            stagger: compactViewport ? 0.022 : 0.028
         }, 0.48);
 
         intro(introTimeline, '.hero-buttons .btn', {
             autoAlpha: 0,
-            y: 30,
-            scale: 0.94,
-            duration: 0.72,
-            stagger: 0.12
+            y: compactViewport ? 22 : 30,
+            scale: compactViewport ? 0.97 : 0.94,
+            duration: compactViewport ? 0.62 : 0.72,
+            stagger: compactViewport ? 0.08 : 0.12
         }, 0.7);
     }
 
@@ -1192,7 +1195,7 @@ function initGsapPageMotion() {
         scrub: 1.5
     });
 
-    if (ScrollTrigger && document.querySelector('.hero')) {
+    if (ScrollTrigger && document.querySelector('.hero') && !compactViewport) {
         gsap.to('.hero', {
             backgroundPosition: '50% 62%',
             ease: 'none',
