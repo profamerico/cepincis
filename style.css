@@ -4993,6 +4993,18 @@ body.auth-page footer p {
     margin-top: 6px;
 }
 
+.infraestruturas-list {
+    width: min(100%, 42rem);
+    display: grid;
+    gap: 8px;
+}
+
+.infraestruturas-list p {
+    margin: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
 @media (max-width: 1100px) {
     .public-story-grid,
     .public-contact-grid,
@@ -5601,5 +5613,104 @@ body.auth-page footer p {
     .home-page .hero h2,
     .home-page .hero-buttons {
         width: min(100%, 19rem);
+    }
+}
+
+@media (max-width: 1200px) {
+    .infraestruturas {
+        padding: 52px 24px 60px;
+    }
+
+    .infraestruturas-layout {
+        grid-template-columns: minmax(260px, 0.88fr) minmax(0, 1.12fr);
+        gap: clamp(24px, 4vw, 42px);
+    }
+
+    .monitor {
+        width: min(100%, 500px);
+    }
+
+    .infraestruturas-copy {
+        width: 100%;
+        max-width: 42rem;
+        justify-self: end;
+        justify-items: end;
+        min-width: 0;
+    }
+
+    .descricao-infraestruturas {
+        width: min(100%, 40rem);
+    }
+}
+
+@media (max-width: 980px) {
+    .infraestruturas {
+        padding: 48px 22px 54px;
+        background-size: 84px 84px, 84px 84px, 18px 18px, 18px 18px;
+    }
+
+    .infraestruturas-layout {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+
+    .monitor {
+        width: min(100%, 430px);
+    }
+
+    .infraestruturas-copy {
+        max-width: 100%;
+        justify-self: center;
+        justify-items: center;
+        gap: 14px;
+    }
+
+    .descricao-infraestruturas,
+    .infraestruturas-list {
+        width: min(100%, 38rem);
+        text-align: left;
+    }
+}
+
+@media (max-width: 768px) {
+    .infraestruturas {
+        padding: 42px 16px 48px;
+        background-size: 72px 72px, 72px 72px, 16px 16px, 16px 16px;
+    }
+
+    .titulo-infraestruturas-sobre {
+        font-size: clamp(2.5rem, 11vw, 3.4rem);
+        margin-bottom: 22px;
+    }
+
+    .monitor {
+        width: min(100%, 340px);
+    }
+
+    .descricao-infraestruturas {
+        width: min(100%, 21rem);
+        font-size: 0.98rem;
+        line-height: 1.7;
+    }
+
+    .infraestruturas-list {
+        width: min(100%, 21rem);
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .infraestruturas {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .monitor {
+        width: min(100%, 300px);
+    }
+
+    .descricao-infraestruturas,
+    .infraestruturas-list {
+        width: min(100%, 18.75rem);
     }
 }
