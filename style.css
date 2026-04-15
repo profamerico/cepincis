@@ -1547,6 +1547,7 @@ footer {
     font-size: 14px;
     font-weight: 600;
     color: #666;
+    font-family: 'Aldrich', sans-serif;
     margin-bottom: 10px;
     letter-spacing: 1px;
     transition: all 0.6s ease;
@@ -1556,6 +1557,7 @@ footer {
     font-size: 32px;
     font-weight: bold;
     color: #000;
+    font-family: 'Aldrich', sans-serif;
     transition: all 0.6s ease;
 }
 
@@ -4358,7 +4360,7 @@ body.auth-page header {
     z-index: 0;
     isolation: isolate;
     width: min(100% - 48px, 1240px);
-    margin: 0 auto 96px;
+    margin: clamp(38px, 5vw, 72px) auto 96px;
     padding: 44px clamp(20px, 4vw, 38px) 30px;
 }
 
@@ -4387,6 +4389,27 @@ body.auth-page header {
     display: grid;
     gap: 10px;
     justify-items: center;
+}
+
+.cabecalho-publicacoes--home .titulo-categoria-publicacoes {
+    margin: 0;
+    color: #6a756d;
+    font-family: 'Aldrich', sans-serif;
+    font-size: 0.84rem;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.cabecalho-publicacoes--home .titulo-principal-publicacoes {
+    margin: 0;
+    color: #07240f;
+    font-family: 'Aldrich', sans-serif;
+    font-size: clamp(2.35rem, 5vw, 4.25rem);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    line-height: 0.96;
+    text-transform: uppercase;
 }
 
 .subtitulo-publicacoes-home {
@@ -4711,6 +4734,7 @@ body.auth-page header {
 
 @media (max-width: 900px) {
     .secao-publicacoes-recentes {
+        margin-top: 32px;
         width: min(100% - 28px, 100%);
     }
 
@@ -4721,6 +4745,7 @@ body.auth-page header {
 
 @media (max-width: 640px) {
     .secao-publicacoes-recentes {
+        margin-top: 24px;
         margin-bottom: 72px;
         padding: 28px 18px 24px;
     }
@@ -5039,16 +5064,19 @@ body.auth-page footer p {
 }
 
 .infraestruturas {
+    --infra-bg: #3b7bbb;
+    --infra-grid-major: rgba(255, 255, 255, 0.2);
+    --infra-grid-minor: rgba(255, 255, 255, 0.1);
     min-height: auto;
     height: auto;
     padding: 56px 32px 64px;
     margin: 0;
-    background-color: rgb(59, 123, 187);
-    background-image: linear-gradient(rgba(255, 255, 255, 0.2) 2px,
+    background-color: var(--infra-bg);
+    background-image: linear-gradient(var(--infra-grid-major) 2px,
             transparent 2px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.2) 2px, transparent 1px),
-        linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+        linear-gradient(90deg, var(--infra-grid-major) 2px, transparent 1px),
+        linear-gradient(var(--infra-grid-minor) 1px, transparent 1px),
+        linear-gradient(90deg, var(--infra-grid-minor) 1px, transparent 1px);
     background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
     background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
     color: white;
@@ -5991,15 +6019,18 @@ html[data-theme="dark"] #areas {
 
 html[data-theme="dark"] .secao-publicacoes-recentes::before {
     background:
-        radial-gradient(circle at top left, rgba(133, 191, 154, 0.12), transparent 40%),
-        radial-gradient(circle at bottom right, rgba(77, 141, 99, 0.12), transparent 34%),
-        linear-gradient(145deg, rgba(18, 27, 22, 0.98), rgba(12, 18, 15, 0.98));
+        radial-gradient(circle at top left, rgba(133, 191, 154, 0.16), transparent 34%),
+        radial-gradient(circle at bottom right, rgba(77, 141, 99, 0.14), transparent 30%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
     border-color: transparent;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 html[data-theme="dark"] .secao-publicacoes-recentes {
-    background: linear-gradient(180deg, rgba(16, 24, 19, 0.88), rgba(11, 17, 13, 0.94));
+    background:
+        linear-gradient(104deg, rgba(7, 11, 9, 0.96) 0%, rgba(7, 11, 9, 0.94) 42%, rgba(7, 11, 9, 0.74) 100%),
+        url('./img/ProjetosBG.jpg') right center / auto 122% no-repeat,
+        linear-gradient(180deg, rgba(16, 24, 19, 0.88), rgba(11, 17, 13, 0.94));
     border: 1px solid var(--theme-dark-border);
     border-radius: 34px;
     box-shadow: 0 28px 60px rgba(0, 0, 0, 0.24);
@@ -6008,8 +6039,9 @@ html[data-theme="dark"] .secao-publicacoes-recentes {
 html[data-theme="dark"] .wrapper-carrossel-publicacoes {
     padding: 6px;
     border-radius: 28px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
-    border: 1px solid rgba(133, 191, 154, 0.08);
+    background: linear-gradient(180deg, rgba(7, 11, 9, 0.44), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(133, 191, 154, 0.1);
+    backdrop-filter: blur(12px);
 }
 
 html[data-theme="dark"] .public-topic-card,
@@ -6020,6 +6052,12 @@ html[data-theme="dark"] .stat-card {
 
 html[data-theme="dark"] .public-image-card {
     background: linear-gradient(180deg, rgba(19, 29, 23, 0.94), rgba(12, 18, 15, 0.96));
+}
+
+html[data-theme="dark"] .infraestruturas {
+    --infra-bg: #173246;
+    --infra-grid-major: rgba(223, 239, 232, 0.18);
+    --infra-grid-minor: rgba(223, 239, 232, 0.08);
 }
 
 html[data-theme="dark"] .public-image-card--banner .public-image-card__asset--light {
@@ -6266,4 +6304,13 @@ html[data-theme="dark"] body.public-page footer,
 html[data-theme="dark"] body.app-page footer,
 html[data-theme="dark"] body.auth-page footer {
     color: var(--theme-dark-muted);
+}
+
+@media (max-width: 900px) {
+    html[data-theme="dark"] .secao-publicacoes-recentes {
+        background:
+            linear-gradient(180deg, rgba(7, 11, 9, 0.96) 0%, rgba(7, 11, 9, 0.9) 58%, rgba(7, 11, 9, 0.76) 100%),
+            url('./img/ProjetosBG.jpg') center top / cover no-repeat,
+            linear-gradient(180deg, rgba(16, 24, 19, 0.88), rgba(11, 17, 13, 0.94));
+    }
 }

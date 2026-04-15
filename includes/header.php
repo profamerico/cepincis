@@ -161,11 +161,11 @@ if ($isAdmin) {
                         <i class="fa-solid fa-right-from-bracket"></i>
                     </a>
                 <?php else: ?>
-                    <a href="./index.php" class="header-icon-link header-icon-link--image" aria-label="Home" title="Home">
-                        <img class="imagensdoheader" src="./img/download (1).png" alt="Home">
+                    <a href="./index.php" class="header-icon-link" aria-label="Home" title="Home">
+                        <i class="fa-solid fa-house"></i>
                     </a>
-                    <a href="./login.php" class="header-icon-link header-icon-link--image" aria-label="Login" title="Login">
-                        <img class="imagensdoheader" src="./img/login.png" alt="Login">
+                    <a href="./login.php" class="header-icon-link" aria-label="Entrar" title="Entrar">
+                        <i class="fa-solid fa-user"></i>
                     </a>
                 <?php endif; ?>
             </div>

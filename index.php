@@ -98,7 +98,7 @@ include_once 'includes/header.php';
                 <div class="cabecalho-publicacoes cabecalho-publicacoes--home">
                     <div>
                         <h3 class="titulo-categoria-publicacoes">do CEPIN-CIS:</h3>
-                        <h2 class="titulo-principal-publicacoes">PROJETOS</h2>
+                        <h2 class="titulo-principal-publicacoes">Projetos</h2>
                     </div>
                     <p class="subtitulo-publicacoes-home">Um recorte dos projetos reais cadastrados no portal, com busca por termo e filtros por tags para facilitar a exploração.</p>
                 </div>
