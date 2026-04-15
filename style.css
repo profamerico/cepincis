@@ -4875,6 +4875,10 @@ body.auth-page footer p {
     justify-content: center;
 }
 
+.public-image-card--banner {
+    position: relative;
+}
+
 .public-image-card img {
     width: 100%;
     height: 100%;
@@ -4882,6 +4886,14 @@ body.auth-page footer p {
     display: block;
     object-fit: scale-down;
     border-radius: 22px;
+}
+
+.public-image-card--banner .public-image-card__asset {
+    flex: 0 0 auto;
+}
+
+.public-image-card--banner .public-image-card__asset--dark {
+    display: none;
 }
 
 .public-section-card .panel-card-header,
@@ -6008,6 +6020,14 @@ html[data-theme="dark"] .stat-card {
 
 html[data-theme="dark"] .public-image-card {
     background: linear-gradient(180deg, rgba(19, 29, 23, 0.94), rgba(12, 18, 15, 0.96));
+}
+
+html[data-theme="dark"] .public-image-card--banner .public-image-card__asset--light {
+    display: none;
+}
+
+html[data-theme="dark"] .public-image-card--banner .public-image-card__asset--dark {
+    display: block;
 }
 
 html[data-theme="dark"] .public-partners-panel .carousel-container {

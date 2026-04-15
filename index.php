@@ -249,8 +249,9 @@ include_once 'includes/header.php';
                         </div>
                     </article>
 
-                    <article class="panel-card public-image-card">
-                        <img src="./img/banner.png" alt="Logo CEPIN-CIS">
+                    <article class="panel-card public-image-card public-image-card--banner">
+                        <img class="public-image-card__asset public-image-card__asset--light" src="./img/banner.png" alt="Logo CEPIN-CIS">
+                        <img class="public-image-card__asset public-image-card__asset--dark" src="./img/bannerescuro.png" alt="" aria-hidden="true">
                     </article>
                 </section>
 

@@ -20,8 +20,9 @@ include_once 'includes/header.php';
             <p>Nesse sentido, o CEPIN-CIS direciona seus esforços para desenvolver investigação fundamental ou aplicada voltada ao campo das cidades inteligentes e sustentáveis, mantendo o foco em gerar conhecimento e estratégias capazes de apoiar avanços significativos nessa área. Paralelamente, dedica-se a contribuir ativamente para a inovação por meio da transferência de tecnologia, atuando como ponte entre pesquisa e aplicação prática.</p>
         </article>
 
-        <article class="panel-card public-image-card">
-            <img src="./img/banner.png" alt="Logo CEPIN-CIS">
+        <article class="panel-card public-image-card public-image-card--banner">
+            <img class="public-image-card__asset public-image-card__asset--light" src="./img/banner.png" alt="Logo CEPIN-CIS">
+            <img class="public-image-card__asset public-image-card__asset--dark" src="./img/bannerescuro.png" alt="" aria-hidden="true">
         </article>
     </section>
 </main>

@@ -134,6 +134,8 @@ function initThemeToggle() {
         ? window.matchMedia('(prefers-color-scheme: dark)')
         : null;
     const loader = document.querySelector('[data-page-loader]');
+    const themeLoaderLeadIn = prefersReducedMotion() ? 0 : 240;
+    const themeLoaderVisibleDuration = prefersReducedMotion() ? 0 : 620;
     let themeTransitionStepTimer = null;
     let themeTransitionReleaseTimer = null;
     let isThemeTransitioning = false;
@@ -224,8 +226,8 @@ function initThemeToggle() {
                 root.classList.remove('theme-switching');
                 setThemeButtonsDisabled(false);
                 isThemeTransitioning = false;
-            }, 430);
-        }, 180);
+            }, themeLoaderVisibleDuration);
+        }, themeLoaderLeadIn);
     }
 
     buttons.forEach((button) => {
