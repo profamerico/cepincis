@@ -6092,6 +6092,45 @@ html[data-theme="dark"] .wrapper-carrossel-publicacoes {
     backdrop-filter: blur(12px);
 }
 
+html[data-theme="dark"] body.home-page #implementacao {
+    background:
+        linear-gradient(108deg, rgba(7, 11, 9, 0.96) 0%, rgba(7, 11, 9, 0.93) 40%, rgba(7, 11, 9, 0.72) 100%),
+        url('./img/AreasTematicasBG.jpg') right center / auto 138% no-repeat,
+        linear-gradient(180deg, rgba(16, 24, 19, 0.88), rgba(11, 17, 13, 0.94));
+    border-color: var(--theme-dark-border);
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"] body.home-page #implementacao .public-topic-grid--home {
+    padding: 8px;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(7, 11, 9, 0.42), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(133, 191, 154, 0.1);
+    backdrop-filter: blur(12px);
+}
+
+html[data-theme="dark"] body.home-page #implementacao .public-topic-card {
+    background: linear-gradient(180deg, rgba(7, 11, 9, 0.54), rgba(255, 255, 255, 0.04));
+    border-color: rgba(133, 191, 154, 0.12);
+}
+
+html[data-theme="dark"] body.home-page #regulamento {
+    background:
+        linear-gradient(108deg, rgba(7, 11, 9, 0.96) 0%, rgba(7, 11, 9, 0.92) 42%, rgba(7, 11, 9, 0.68) 100%),
+        url('./img/RegulamentoBG.jpg') right center / auto 132% no-repeat,
+        linear-gradient(180deg, rgba(16, 24, 19, 0.88), rgba(11, 17, 13, 0.94));
+    border-color: var(--theme-dark-border);
+    box-shadow: 0 28px 60px rgba(0, 0, 0, 0.24);
+}
+
+html[data-theme="dark"] body.home-page #regulamento .mobile-collapse-card {
+    padding: 22px;
+    border-radius: 26px;
+    background: linear-gradient(180deg, rgba(7, 11, 9, 0.44), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(133, 191, 154, 0.1);
+    backdrop-filter: blur(12px);
+}
+
 html[data-theme="dark"] .public-topic-card,
 html[data-theme="dark"] .public-contact-item,
 html[data-theme="dark"] .stat-card {
@@ -6363,5 +6402,23 @@ html[data-theme="dark"] body.auth-page footer {
             linear-gradient(180deg, rgba(7, 11, 9, 0.96) 0%, rgba(7, 11, 9, 0.9) 58%, rgba(7, 11, 9, 0.76) 100%),
             url('./img/ProjetosBG.jpg') center top / cover no-repeat,
             linear-gradient(180deg, rgba(16, 24, 19, 0.88), rgba(11, 17, 13, 0.94));
+    }
+
+    html[data-theme="dark"] body.home-page #implementacao {
+        background:
+            linear-gradient(180deg, rgba(7, 11, 9, 0.96) 0%, rgba(7, 11, 9, 0.9) 58%, rgba(7, 11, 9, 0.76) 100%),
+            url('./img/AreasTematicasBG.jpg') center top / cover no-repeat,
+            linear-gradient(180deg, rgba(16, 24, 19, 0.88), rgba(11, 17, 13, 0.94));
+    }
+
+    html[data-theme="dark"] body.home-page #regulamento {
+        background:
+            linear-gradient(180deg, rgba(7, 11, 9, 0.96) 0%, rgba(7, 11, 9, 0.9) 58%, rgba(7, 11, 9, 0.76) 100%),
+            url('./img/RegulamentoBG.jpg') center top / cover no-repeat,
+            linear-gradient(180deg, rgba(16, 24, 19, 0.88), rgba(11, 17, 13, 0.94));
+    }
+
+    html[data-theme="dark"] body.home-page #regulamento .mobile-collapse-card {
+        padding: 18px;
     }
 }
