@@ -25,6 +25,16 @@ $themes = [
     ],
 ];
 
+$themeTags = ['EduCIS', 'EcoMat', 'IoT', 'CarbonZero', 'UrbanSmart'];
+$themes = array_map(
+    static function (array $theme, int $index) use ($themeTags): array {
+        $theme['tag'] = $themeTags[$index] ?? '';
+        return $theme;
+    },
+    $themes,
+    array_keys($themes)
+);
+
 include_once 'includes/header.php';
 ?>
 
@@ -39,6 +49,7 @@ include_once 'includes/header.php';
     <section id="areas" class="public-topic-grid public-topic-grid--wide">
         <?php foreach ($themes as $theme): ?>
             <article class="panel-card public-topic-card">
+                <span class="public-topic-tag"><?php echo htmlspecialchars((string) ($theme['tag'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                 <h3><?php echo htmlspecialchars($theme['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
                 <p><?php echo htmlspecialchars($theme['description'], ENT_QUOTES, 'UTF-8'); ?></p>
             </article>

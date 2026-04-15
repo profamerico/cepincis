@@ -31,6 +31,16 @@ $implementationHighlights = [
     ],
 ];
 
+$implementationHighlightTags = ['EduCIS', 'EcoMat', 'IoT', 'CarbonZero', 'UrbanSmart'];
+$implementationHighlights = array_map(
+    static function (array $highlight, int $index) use ($implementationHighlightTags): array {
+        $highlight['tag'] = $implementationHighlightTags[$index] ?? '';
+        return $highlight;
+    },
+    $implementationHighlights,
+    array_keys($implementationHighlights)
+);
+
 function home_project_status_label(string $status): string
 {
     switch ($status) {
@@ -269,6 +279,7 @@ include_once 'includes/header.php';
                     <div class="public-topic-grid public-topic-grid--home">
                         <?php foreach ($implementationHighlights as $highlight): ?>
                             <article class="public-topic-card">
+                                <span class="public-topic-tag"><?php echo htmlspecialchars((string) ($highlight['tag'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
                                 <h3><?php echo htmlspecialchars($highlight['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
 
                                 <div class="mobile-collapse-card mobile-collapse-card--compact" data-mobile-collapse>

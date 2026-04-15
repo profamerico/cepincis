@@ -4944,6 +4944,22 @@ body.auth-page footer p {
     box-shadow: none;
 }
 
+.public-topic-tag {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    margin-bottom: 14px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(11, 62, 27, 0.12);
+    background: rgba(11, 62, 27, 0.08);
+    color: #0f4b24;
+    font-family: 'Aldrich', sans-serif;
+    font-size: 0.78rem;
+    line-height: 1;
+    letter-spacing: 0.08em;
+}
+
 .public-topic-card h3 {
     margin: 0 0 10px;
     color: #07240f;
@@ -6112,6 +6128,12 @@ html[data-theme="dark"] body.home-page #implementacao .public-topic-grid--home {
 html[data-theme="dark"] body.home-page #implementacao .public-topic-card {
     background: linear-gradient(180deg, rgba(7, 11, 9, 0.54), rgba(255, 255, 255, 0.04));
     border-color: rgba(133, 191, 154, 0.12);
+}
+
+html[data-theme="dark"] .public-topic-tag {
+    background: rgba(133, 191, 154, 0.14);
+    border-color: rgba(133, 191, 154, 0.18);
+    color: var(--theme-dark-soft);
 }
 
 html[data-theme="dark"] body.home-page #regulamento {
