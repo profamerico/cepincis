@@ -6444,3 +6444,183 @@ html[data-theme="dark"] body.auth-page footer {
         padding: 18px;
     }
 }
+
+/* ===== GLOBAL CONTENT BLOCKS ===== */
+.public-contact-grid--blocks {
+    align-items: start;
+}
+
+.public-contact-grid--blocks .content-block {
+    height: 100%;
+}
+
+.public-contact-grid--blocks .content-block--full {
+    grid-column: 1 / -1;
+}
+
+.public-contact-grid--overflow {
+    margin-top: 0;
+}
+
+.content-block-eyebrow {
+    margin: 0 0 12px;
+}
+
+.content-block--map .public-map-frame {
+    margin-top: 8px;
+}
+
+.content-block--toggle {
+    min-height: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border: 1px dashed rgba(7, 36, 15, 0.16);
+    background: linear-gradient(160deg, rgba(247, 250, 247, 0.98), rgba(235, 242, 235, 0.98));
+    color: #0f4b24;
+    cursor: pointer;
+    transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.content-block--toggle:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 22px 40px rgba(7, 36, 15, 0.12);
+    border-color: rgba(15, 75, 36, 0.28);
+}
+
+.content-block-toggle__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    background: rgba(15, 75, 36, 0.08);
+    font-size: 2.8rem;
+    line-height: 1;
+    transition: transform 0.28s ease, background 0.28s ease;
+}
+
+.content-block-toggle__label {
+    font-family: 'Aldrich', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.content-block-toggle__count {
+    color: #5f6d63;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.content-block-reveal {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.36s ease, opacity 0.24s ease, margin-top 0.24s ease;
+}
+
+.content-block-reveal-root.is-open .content-block-reveal {
+    opacity: 1;
+    margin-top: 24px;
+}
+
+.content-block-reveal__inner {
+    padding-top: 4px;
+}
+
+.content-block-reveal-root.is-open .content-block-toggle__icon {
+    transform: rotate(45deg);
+    background: rgba(15, 75, 36, 0.12);
+}
+
+.admin-subtitle {
+    margin-top: 8px;
+    color: #637167;
+    line-height: 1.7;
+}
+
+.form-help {
+    margin: 8px 0 0;
+    color: #6a786f;
+    font-size: 0.92rem;
+    line-height: 1.6;
+}
+
+.checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: #07240f;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.checkbox-row input {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    accent-color: #0f4b24;
+}
+
+.admin-pill--published {
+    background: rgba(18, 125, 74, 0.14);
+    color: #127d4a;
+}
+
+.admin-pill--hidden {
+    background: rgba(98, 112, 102, 0.16);
+    color: #4f5f55;
+}
+
+.admin-pill--page {
+    background: rgba(64, 135, 255, 0.14);
+    color: #204e91;
+}
+
+@media (max-width: 1100px) {
+    .public-contact-grid--blocks .content-block--full {
+        grid-column: auto;
+    }
+}
+
+html[data-theme="dark"] .admin-subtitle,
+html[data-theme="dark"] .form-help {
+    color: var(--theme-dark-muted);
+}
+
+html[data-theme="dark"] .checkbox-row {
+    color: var(--theme-dark-text);
+}
+
+html[data-theme="dark"] .admin-pill--published {
+    background: rgba(82, 200, 137, 0.16);
+    color: #9fe7bd;
+}
+
+html[data-theme="dark"] .admin-pill--hidden {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--theme-dark-muted);
+}
+
+html[data-theme="dark"] .admin-pill--page {
+    background: rgba(107, 155, 255, 0.18);
+    color: #bfd4ff;
+}
+
+html[data-theme="dark"] .content-block--toggle {
+    background: linear-gradient(160deg, rgba(17, 24, 20, 0.98), rgba(12, 18, 15, 0.98));
+    border-color: rgba(133, 191, 154, 0.18);
+    color: var(--theme-dark-text);
+}
+
+html[data-theme="dark"] .content-block-toggle__icon {
+    background: rgba(133, 191, 154, 0.12);
+}
+
+html[data-theme="dark"] .content-block-toggle__count {
+    color: var(--theme-dark-muted);
+}

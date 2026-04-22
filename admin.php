@@ -3,14 +3,20 @@ $pageTitle = 'Painel Admin | CEPIN-CIS';
 $bodyClass = 'app-page admin-page';
 
 require_once 'controllers/AuthController.php';
+require_once 'models/ContentBlock.php';
 require_once 'models/Project.php';
 
 $auth = new AuthController();
 $auth->requireAdmin();
 
 $projectManager = new ProjectManager();
+$contentManager = new ContentBlockManager();
 $currentUser = $auth->getCurrentUser();
 $roleOptions = $auth->getRoleDefinitions();
+$contentPageOptions = $contentManager->getPageDefinitions();
+$contentTypeOptions = $contentManager->getTypeDefinitions();
+$contentWidthOptions = $contentManager->getWidthDefinitions();
+$contentStatusOptions = $contentManager->getStatusDefinitions();
 
 function admin_set_flash(string $type, string $message): void
 {
@@ -66,6 +72,59 @@ function admin_format_tags(array $tags): string
     return implode(', ', $tags);
 }
 
+function admin_content_excerpt(string $text, int $limit = 120): string
+{
+    $text = trim(preg_replace('/\s+/', ' ', $text));
+
+    if ($text === '') {
+        return 'Sem texto complementar.';
+    }
+
+    if (function_exists('mb_strlen') && function_exists('mb_substr')) {
+        if (mb_strlen($text, 'UTF-8') <= $limit) {
+            return $text;
+        }
+
+        return rtrim(mb_substr($text, 0, $limit - 1, 'UTF-8')) . '...';
+    }
+
+    if (strlen($text) <= $limit) {
+        return $text;
+    }
+
+    return rtrim(substr($text, 0, $limit - 1)) . '...';
+}
+
+function admin_format_block_items(array $items): string
+{
+    if (empty($items)) {
+        return 'Sem itens estruturados.';
+    }
+
+    $previewItems = [];
+
+    foreach ($items as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+
+        $label = trim((string) ($item['label'] ?? ''));
+        $value = trim((string) ($item['value'] ?? ''));
+
+        if ($label !== '' && $value !== '') {
+            $previewItems[] = $label . ': ' . $value;
+        } elseif ($value !== '') {
+            $previewItems[] = $value;
+        }
+
+        if (count($previewItems) === 2) {
+            break;
+        }
+    }
+
+    return $previewItems ? implode(' | ', $previewItems) : 'Sem itens estruturados.';
+}
+
 if (empty($_SESSION['admin_csrf'])) {
     $_SESSION['admin_csrf'] = bin2hex(random_bytes(16));
 }
@@ -76,8 +135,10 @@ unset($_SESSION['admin_flash']);
 
 $userFormErrors = [];
 $projectFormErrors = [];
+$contentFormErrors = [];
 $userFormOverrides = null;
 $projectFormOverrides = null;
+$contentFormOverrides = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postedToken = (string) ($_POST['csrf_token'] ?? '');
@@ -182,13 +243,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 $flash = ['type' => 'erro', 'message' => 'Nao foi possivel remover o projeto.'];
                 break;
+
+            case 'save_content_block':
+                $blockId = trim((string) ($_POST['block_id'] ?? ''));
+                $submittedBlock = [
+                    'id' => $blockId,
+                    'page_key' => trim((string) ($_POST['page_key'] ?? 'contact')),
+                    'type' => trim((string) ($_POST['type'] ?? 'contact_info')),
+                    'name' => trim((string) ($_POST['name'] ?? '')),
+                    'eyebrow' => trim((string) ($_POST['eyebrow'] ?? '')),
+                    'title' => trim((string) ($_POST['title'] ?? '')),
+                    'body' => trim((string) ($_POST['body'] ?? '')),
+                    'items_text' => trim((string) ($_POST['items_text'] ?? '')),
+                    'cta_label' => trim((string) ($_POST['cta_label'] ?? '')),
+                    'cta_url' => trim((string) ($_POST['cta_url'] ?? '')),
+                    'embed_url' => trim((string) ($_POST['embed_url'] ?? '')),
+                    'width' => trim((string) ($_POST['width'] ?? 'half')),
+                    'position' => trim((string) ($_POST['position'] ?? '')),
+                    'status' => trim((string) ($_POST['status'] ?? 'published')),
+                    'show_context_note' => isset($_POST['show_context_note']) ? '1' : '0',
+                ];
+
+                $result = $contentManager->adminSaveBlock($blockId !== '' ? $blockId : null, $submittedBlock);
+
+                if ($result['success']) {
+                    admin_set_flash(
+                        'sucesso',
+                        $result['created'] ? 'Bloco de conteudo criado com sucesso.' : 'Bloco de conteudo atualizado com sucesso.'
+                    );
+                    admin_redirect('content');
+                }
+
+                $contentFormErrors = $result['errors'] ?? ['Nao foi possivel salvar o bloco de conteudo.'];
+                $contentFormOverrides = $submittedBlock;
+                break;
+
+            case 'delete_content_block':
+                $blockId = trim((string) ($_POST['block_id'] ?? ''));
+
+                if ($contentManager->deleteBlock($blockId)) {
+                    admin_set_flash('sucesso', 'Bloco de conteudo removido com sucesso.');
+                    admin_redirect('content');
+                }
+
+                $flash = ['type' => 'erro', 'message' => 'Nao foi possivel remover o bloco de conteudo.'];
+                break;
         }
     }
 }
 
 $users = $auth->listUsers();
+$contentBlocks = $contentManager->listBlocks(null, false);
+$contactContentBlocks = $contentManager->getPageBlocks('contact', false);
 $projects = $projectManager->getAllProjects();
 $projectStats = $projectManager->getProjectStats();
+$contentStats = [
+    'total' => count($contentBlocks),
+    'published' => count(array_filter($contentBlocks, static function (array $block): bool {
+        return ($block['status'] ?? 'published') === 'published';
+    })),
+    'contact' => count($contactContentBlocks),
+];
 
 $userMap = [];
 $projectCountByUser = [];
@@ -221,6 +336,14 @@ if (!empty($_GET['edit_project'])) {
     }
 }
 
+$editingContentBlock = null;
+if (!empty($_GET['edit_block'])) {
+    $candidateBlock = $contentManager->getBlock((string) $_GET['edit_block']);
+    if (is_array($candidateBlock)) {
+        $editingContentBlock = $candidateBlock;
+    }
+}
+
 $userForm = [
     'id' => $editingUser['id'] ?? '',
     'username' => $editingUser['username'] ?? '',
@@ -247,6 +370,30 @@ if ($projectFormOverrides !== null) {
     $projectForm = array_merge($projectForm, $projectFormOverrides);
 }
 
+$defaultContentPageKey = $editingContentBlock['page_key'] ?? 'contact';
+$contentForm = [
+    'id' => $editingContentBlock['id'] ?? '',
+    'page_key' => $defaultContentPageKey,
+    'type' => $editingContentBlock['type'] ?? 'contact_info',
+    'name' => $editingContentBlock['name'] ?? '',
+    'eyebrow' => $editingContentBlock['eyebrow'] ?? '',
+    'title' => $editingContentBlock['title'] ?? '',
+    'body' => $editingContentBlock['body'] ?? '',
+    'items_text' => isset($editingContentBlock['items']) ? $contentManager->formatItemsForTextarea($editingContentBlock['items']) : '',
+    'cta_label' => $editingContentBlock['cta_label'] ?? '',
+    'cta_url' => $editingContentBlock['cta_url'] ?? '',
+    'embed_url' => $editingContentBlock['embed_url'] ?? '',
+    'width' => $editingContentBlock['width'] ?? 'half',
+    'position' => isset($editingContentBlock['position']) ? (string) $editingContentBlock['position'] : (string) $contentManager->getNextPosition($defaultContentPageKey),
+    'status' => $editingContentBlock['status'] ?? 'published',
+    'show_context_note' => !empty($editingContentBlock['show_context_note']),
+];
+
+if ($contentFormOverrides !== null) {
+    $contentForm = array_merge($contentForm, $contentFormOverrides);
+    $contentForm['show_context_note'] = !empty($contentFormOverrides['show_context_note']);
+}
+
 $currentRoleLabel = $auth->getRoleLabel($currentUser);
 ?>
 
@@ -257,11 +404,12 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
         <div class="panel-hero-main">
             <p class="eyebrow">Administracao</p>
             <h1>Painel mestre do portal</h1>
-            <p class="hero-copy">Controle usuarios, niveis de acesso e todos os projetos publicados em uma area mais clara, com formularios e tabelas separados por contexto.</p>
+            <p class="hero-copy">Controle usuarios, niveis de acesso, projetos e agora tambem o conteudo global em blocos, com uma base pronta para evoluir para outras paginas alem do contato.</p>
 
             <div class="hero-actions">
                 <a class="dashboard-btn" href="#users">Usuarios</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="#projects">Projetos</a>
+                <a class="dashboard-btn dashboard-btn--ghost" href="#content">Conteudo global</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="dashboard.php">Voltar ao dashboard</a>
             </div>
         </div>
@@ -304,6 +452,21 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
             <span class="metric-label">Sem responsavel</span>
             <strong class="metric-value"><?php echo (int) $projectStats['without_owner']; ?></strong>
             <p>Projetos aguardando reatribuicao.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Blocos globais</span>
+            <strong class="metric-value"><?php echo (int) $contentStats['total']; ?></strong>
+            <p><?php echo (int) $contentStats['published']; ?> publicados, <?php echo (int) $contentStats['contact']; ?> ligados a pagina de contato.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Blocos adicionados</span>
+            <strong class="metric-value"><?php echo (int) $contentStats['total']; ?></strong>
+            <p><?php echo (int) $contentStats['published']; ?> publicados, <?php echo (int) $contentStats['contact']; ?> ligados a pagina de contato.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Blocos deletados</span>
+            <strong class="metric-value"><?php echo (int) $contentStats['total']; ?></strong>
+            <p><?php echo (int) $contentStats['published']; ?> publicados, <?php echo (int) $contentStats['contact']; ?> ligados a pagina de contato.</p>
         </article>
     </section>
 
@@ -482,19 +645,14 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                 </div>
 
                 <div class="form-group">
-                    <label for="status">Tags</label>
-                    <select id="status" name="status">
-                        <option value="active" <?php echo $projectForm['status'] === 'iot' ? 'selected' : ''; ?>>IoT</option>
-                        <option value="pending" <?php echo $projectForm['status'] === 'urbsmart' ? 'selected' : ''; ?>>UrbanSmart</option>
-                        <option value="completed" <?php echo $projectForm['status'] === 'carbonzero' ? 'selected' : ''; ?>>CarbonZero</option>
-                        <option value="pending" <?php echo $projectForm['status'] === 'educis' ? 'selected' : ''; ?>>EduCIS</option>
-                        <option value="completed" <?php echo $projectForm['status'] === 'ecomat' ? 'selected' : ''; ?>>EcoMat</option>
-                    </select>
+                    <label for="tags">Tags</label>
+                    <input type="text" id="tags" name="tags" value="<?php echo htmlspecialchars((string) $projectForm['tags'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="IoT, UrbanSmart, CarbonZero">
+                    <p class="form-help">Separe as tags por virgula para alimentar filtros e cards da home.</p>
                 </div>
 
                 <div class="form-group">
-                    <label for="status">Status</label>
-                    <select id="status" name="status">
+                    <label for="project_status">Status</label>
+                    <select id="project_status" name="status">
                         <option value="active" <?php echo $projectForm['status'] === 'active' ? 'selected' : ''; ?>>Ativo</option>
                         <option value="pending" <?php echo $projectForm['status'] === 'pending' ? 'selected' : ''; ?>>Pendente</option>
                         <option value="completed" <?php echo $projectForm['status'] === 'completed' ? 'selected' : ''; ?>>Concluido</option>
@@ -561,6 +719,212 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                                 <input type="hidden" name="action" value="delete_project">
                                                 <input type="hidden" name="project_id" value="<?php echo htmlspecialchars((string) $project['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                <button type="submit" class="dashboard-btn admin-btn-danger">Excluir</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </article>
+    </section>
+
+    <section id="content" class="admin-workspace">
+        <article class="panel-card">
+            <div class="panel-card-header">
+                <div>
+                    <p class="eyebrow">Conteudo global</p>
+                    <h2><?php echo $contentForm['id'] !== '' ? 'Editar bloco' : 'Novo bloco'; ?></h2>
+                    <p class="admin-subtitle">Arquitetura inicial do CMS interno. Hoje ela alimenta a pagina de contato, mas ja usa pagina, tipo, ordem e visibilidade para crescer depois.</p>
+                </div>
+
+                <?php if ($contentForm['id'] !== ''): ?>
+                    <a class="dashboard-btn dashboard-btn--ghost" href="admin.php#content">Limpar formulario</a>
+                <?php endif; ?>
+            </div>
+
+            <?php foreach ($contentFormErrors as $error): ?>
+                <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
+            <?php endforeach; ?>
+
+            <form method="POST" class="stack-form" data-block-form-root>
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="action" value="save_content_block">
+                <input type="hidden" name="block_id" value="<?php echo htmlspecialchars((string) $contentForm['id'], ENT_QUOTES, 'UTF-8'); ?>">
+
+                <div class="form-group">
+                    <label for="content_page_key">Pagina</label>
+                    <select id="content_page_key" name="page_key">
+                        <?php foreach ($contentPageOptions as $pageKey => $pageMeta): ?>
+                            <option value="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $contentForm['page_key'] === (string) $pageKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $pageMeta['label'], ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="content_type">Tipo de bloco</label>
+                    <select id="content_type" name="type" data-block-type-select>
+                        <?php foreach ($contentTypeOptions as $typeKey => $typeMeta): ?>
+                            <option value="<?php echo htmlspecialchars($typeKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $contentForm['type'] === (string) $typeKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $typeMeta['label'], ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="form-help">Use "Contato principal" para cards com lista de canais, "Mapa incorporado" para iframes e "Card de texto" para blocos genericos.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="content_name">Nome interno</label>
+                    <input type="text" id="content_name" name="name" value="<?php echo htmlspecialchars((string) $contentForm['name'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                    <p class="form-help">Esse nome aparece no painel para identificar o bloco com rapidez.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="content_eyebrow">Eyebrow</label>
+                    <input type="text" id="content_eyebrow" name="eyebrow" value="<?php echo htmlspecialchars((string) $contentForm['eyebrow'], ENT_QUOTES, 'UTF-8'); ?>">
+                </div>
+
+                <div class="form-group">
+                    <label for="content_title">Titulo</label>
+                    <input type="text" id="content_title" name="title" value="<?php echo htmlspecialchars((string) $contentForm['title'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="content_body">Texto principal</label>
+                    <textarea id="content_body" name="body" rows="6"><?php echo htmlspecialchars((string) $contentForm['body'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                </div>
+
+                <div class="form-group" data-block-field-group="contact_info,text_card">
+                    <label for="content_items_text">Itens estruturados</label>
+                    <textarea id="content_items_text" name="items_text" rows="6"><?php echo htmlspecialchars((string) $contentForm['items_text'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <p class="form-help">Uma linha por item no formato: Rotulo | valor | link opcional. Ex.: Email | cepin@dominio.com | mailto:cepin@dominio.com</p>
+                </div>
+
+                <div class="form-group" data-block-field-group="contact_info,text_card">
+                    <label for="content_cta_label">Rotulo do botao</label>
+                    <input type="text" id="content_cta_label" name="cta_label" value="<?php echo htmlspecialchars((string) $contentForm['cta_label'], ENT_QUOTES, 'UTF-8'); ?>">
+                </div>
+
+                <div class="form-group" data-block-field-group="contact_info,text_card">
+                    <label for="content_cta_url">URL do botao</label>
+                    <input type="text" id="content_cta_url" name="cta_url" value="<?php echo htmlspecialchars((string) $contentForm['cta_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="mailto:, https:// ou /rota-interna">
+                </div>
+
+                <div class="form-group" data-block-field-group="map_embed">
+                    <label for="content_embed_url">URL do embed</label>
+                    <textarea id="content_embed_url" name="embed_url" rows="4"><?php echo htmlspecialchars((string) $contentForm['embed_url'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <p class="form-help">Cole apenas o valor de `src` do iframe incorporado.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="content_width">Largura do bloco</label>
+                    <select id="content_width" name="width">
+                        <?php foreach ($contentWidthOptions as $widthKey => $widthLabel): ?>
+                            <option value="<?php echo htmlspecialchars($widthKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $contentForm['width'] === (string) $widthKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($widthLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="content_position">Posicao</label>
+                    <input type="number" id="content_position" name="position" value="<?php echo htmlspecialchars((string) $contentForm['position'], ENT_QUOTES, 'UTF-8'); ?>" min="1" step="1">
+                    <p class="form-help">Quanto menor o numero, mais acima o bloco aparece na pagina.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="content_status">Visibilidade</label>
+                    <select id="content_status" name="status">
+                        <?php foreach ($contentStatusOptions as $statusKey => $statusLabel): ?>
+                            <option value="<?php echo htmlspecialchars($statusKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $contentForm['status'] === (string) $statusKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+
+                <div class="form-group" data-block-field-group="contact_info,text_card">
+                    <label class="checkbox-row" for="content_context_note">
+                        <input type="checkbox" id="content_context_note" name="show_context_note" value="1" <?php echo !empty($contentForm['show_context_note']) ? 'checked' : ''; ?>>
+                        Exibir contexto de projeto/categoria quando o usuario vier da home
+                    </label>
+                </div>
+
+                <button type="submit" class="dashboard-btn"><?php echo $contentForm['id'] !== '' ? 'Salvar bloco' : 'Criar bloco'; ?></button>
+            </form>
+        </article>
+
+        <article class="panel-card">
+            <div class="panel-card-header">
+                <div>
+                    <p class="eyebrow">Builder</p>
+                    <h2>Blocos cadastrados</h2>
+                    <p class="admin-subtitle">Os blocos sao renderizados por pagina, ordenados por posicao e podem ser publicados ou ocultados sem apagar o historico.</p>
+                </div>
+            </div>
+
+            <?php if (empty($contentBlocks)): ?>
+                <p class="admin-empty">Nenhum bloco de conteudo cadastrado ainda.</p>
+            <?php else: ?>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Bloco</th>
+                                <th>Pagina</th>
+                                <th>Tipo</th>
+                                <th>Layout</th>
+                                <th>Atualizado em</th>
+                                <th>Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($contentBlocks as $block): ?>
+                                <?php
+                                $blockId = (string) ($block['id'] ?? '');
+                                $blockStatus = (string) ($block['status'] ?? 'published');
+                                $blockStatusClass = $blockStatus === 'published' ? 'admin-pill--published' : 'admin-pill--hidden';
+                                ?>
+                                <tr>
+                                    <td>
+                                        <strong><?php echo htmlspecialchars((string) ($block['name'] ?? 'Bloco'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                                        <div class="admin-meta"><?php echo htmlspecialchars((string) ($block['title'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="admin-meta"><?php echo htmlspecialchars(admin_content_excerpt((string) ($block['body'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="admin-meta">Itens: <?php echo htmlspecialchars(admin_format_block_items($block['items'] ?? []), ENT_QUOTES, 'UTF-8'); ?></div>
+                                    </td>
+                                    <td>
+                                        <span class="admin-pill admin-pill--page">
+                                            <?php echo htmlspecialchars($contentManager->getPageLabel((string) ($block['page_key'] ?? 'contact')), ENT_QUOTES, 'UTF-8'); ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="admin-meta"><?php echo htmlspecialchars($contentManager->getTypeLabel((string) ($block['type'] ?? 'text_card')), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <?php if ((string) ($block['type'] ?? '') === 'map_embed'): ?>
+                                            <div class="admin-meta">Embed configurado</div>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td>
+                                        <span class="admin-pill <?php echo htmlspecialchars($blockStatusClass, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <?php echo htmlspecialchars($contentManager->getStatusLabel($blockStatus), ENT_QUOTES, 'UTF-8'); ?>
+                                        </span>
+                                        <div class="admin-meta">Posicao: <?php echo (int) ($block['position'] ?? 0); ?></div>
+                                        <div class="admin-meta">Largura: <?php echo htmlspecialchars($contentManager->getWidthLabel((string) ($block['width'] ?? 'half')), ENT_QUOTES, 'UTF-8'); ?></div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars(admin_format_datetime($block['updated_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <a class="dashboard-btn admin-btn-small" href="admin.php?edit_block=<?php echo urlencode($blockId); ?>#content">Editar</a>
+
+                                            <form method="POST" onsubmit="return confirm('Excluir este bloco de conteudo?');">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="action" value="delete_content_block">
+                                                <input type="hidden" name="block_id" value="<?php echo htmlspecialchars($blockId, ENT_QUOTES, 'UTF-8'); ?>">
                                                 <button type="submit" class="dashboard-btn admin-btn-danger">Excluir</button>
                                             </form>
                                         </div>

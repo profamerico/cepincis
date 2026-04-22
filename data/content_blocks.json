@@ -1,0 +1,51 @@
+[
+    {
+        "id": "blk_contact_primary",
+        "page_key": "contact",
+        "type": "contact_info",
+        "name": "Contato principal",
+        "eyebrow": "Canal oficial",
+        "title": "Contato",
+        "body": "Quer saber mais ou colaborar com o CEPIN-CIS? Entre em contato com nossa equipe de pesquisa.",
+        "items": [
+            {
+                "label": "Email institucional",
+                "value": "cepin.cis@ifspcaraguatatuba.edu.br",
+                "url": "mailto:cepin.cis@ifspcaraguatatuba.edu.br"
+            },
+            {
+                "label": "Endereco",
+                "value": "IFSP Campus Caraguatatuba, sala 107B.",
+                "url": ""
+            }
+        ],
+        "cta_label": "Enviar e-mail",
+        "cta_url": "mailto:cepin.cis@ifspcaraguatatuba.edu.br",
+        "embed_url": "",
+        "width": "half",
+        "position": 10,
+        "status": "published",
+        "show_context_note": true,
+        "created_at": "2026-04-15 00:00:00",
+        "updated_at": "2026-04-15 00:00:00"
+    },
+    {
+        "id": "blk_contact_map",
+        "page_key": "contact",
+        "type": "map_embed",
+        "name": "Mapa do campus",
+        "eyebrow": "",
+        "title": "Mapa",
+        "body": "",
+        "items": [],
+        "cta_label": "",
+        "cta_url": "",
+        "embed_url": "https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d228.4439040435433!2d-45.4258447087537!3d-23.636501255140573!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1spt-BR!2sbr!4v1763413745838!5m2!1spt-BR!2sbr",
+        "width": "half",
+        "position": 20,
+        "status": "published",
+        "show_context_note": false,
+        "created_at": "2026-04-15 00:00:00",
+        "updated_at": "2026-04-15 00:00:00"
+    }
+]

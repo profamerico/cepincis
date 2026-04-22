@@ -851,6 +851,46 @@ function initMobileCollapseCards() {
     });
 }
 
+function initContentBlockReveal() {
+    const roots = Array.from(document.querySelectorAll('[data-content-block-reveal-root]'));
+
+    if (!roots.length) {
+        return;
+    }
+
+    roots.forEach((root, index) => {
+        const toggle = root.querySelector('[data-content-block-toggle]');
+        const panel = root.querySelector('[data-content-block-reveal]');
+        const inner = root.querySelector('[data-content-block-reveal-inner]');
+
+        if (!toggle || !panel || !inner) {
+            return;
+        }
+
+        if (!panel.id) {
+            panel.id = `contentBlockReveal${index + 1}`;
+        }
+
+        toggle.setAttribute('aria-controls', panel.id);
+        toggle.setAttribute('aria-expanded', 'false');
+
+        function syncHeight() {
+            const isOpen = root.classList.contains('is-open');
+            panel.style.maxHeight = isOpen ? `${inner.scrollHeight}px` : '0px';
+        }
+
+        toggle.addEventListener('click', () => {
+            const willOpen = !root.classList.contains('is-open');
+            root.classList.toggle('is-open', willOpen);
+            toggle.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
+            syncHeight();
+        });
+
+        window.addEventListener('resize', syncHeight);
+        syncHeight();
+    });
+}
+
 function initTeamCarousel() {
     const cards = Array.from(document.querySelectorAll('.card'));
     const dots = Array.from(document.querySelectorAll('.dot'));
@@ -1077,6 +1117,33 @@ function initSettingsTabs() {
     });
 
     openTab(buttons.find((button) => button.classList.contains('active'))?.dataset.tabTarget || buttons[0].dataset.tabTarget);
+}
+
+function initAdminBlockForm() {
+    const form = document.querySelector('[data-block-form-root]');
+    const typeSelect = document.querySelector('[data-block-type-select]');
+    const groups = Array.from(document.querySelectorAll('[data-block-field-group]'));
+
+    if (!form || !typeSelect || !groups.length) {
+        return;
+    }
+
+    function syncFieldGroups() {
+        const currentType = typeSelect.value;
+
+        groups.forEach((group) => {
+            const allowedTypes = (group.dataset.blockFieldGroup || '')
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean);
+
+            const shouldShow = allowedTypes.length === 0 || allowedTypes.includes(currentType);
+            group.hidden = !shouldShow;
+        });
+    }
+
+    typeSelect.addEventListener('change', syncFieldGroups);
+    syncFieldGroups();
 }
 
 function initGsapPageMotion() {
@@ -1504,9 +1571,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initGlobalSmoothScroll();
     initMobileNavigation();
     initMobileCollapseCards();
+    initContentBlockReveal();
     initTeamCarousel();
     initFloatingButtonObserver();
     initInnovationCards();
     initSettingsTabs();
+    initAdminBlockForm();
     initGsapPageMotion();
 });
