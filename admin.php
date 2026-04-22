@@ -249,7 +249,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $submittedBlock = [
                     'id' => $blockId,
                     'page_key' => trim((string) ($_POST['page_key'] ?? 'contact')),
-                    'type' => trim((string) ($_POST['type'] ?? 'contact_info')),
+                    'type' => trim((string) ($_POST['type'] ?? '')),
                     'name' => trim((string) ($_POST['name'] ?? '')),
                     'eyebrow' => trim((string) ($_POST['eyebrow'] ?? '')),
                     'title' => trim((string) ($_POST['title'] ?? '')),
@@ -295,6 +295,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $users = $auth->listUsers();
 $contentBlocks = $contentManager->listBlocks(null, false);
 $contactContentBlocks = $contentManager->getPageBlocks('contact', false);
+$thematicContentBlocks = $contentManager->getPageBlocks('thematic_areas', false);
 $projects = $projectManager->getAllProjects();
 $projectStats = $projectManager->getProjectStats();
 $contentStats = [
@@ -302,7 +303,14 @@ $contentStats = [
     'published' => count(array_filter($contentBlocks, static function (array $block): bool {
         return ($block['status'] ?? 'published') === 'published';
     })),
-    'contact' => count($contactContentBlocks),
+    'contact_total' => count($contactContentBlocks),
+    'contact_published' => count(array_filter($contactContentBlocks, static function (array $block): bool {
+        return ($block['status'] ?? 'published') === 'published';
+    })),
+    'thematic_total' => count($thematicContentBlocks),
+    'thematic_published' => count(array_filter($thematicContentBlocks, static function (array $block): bool {
+        return ($block['status'] ?? 'published') === 'published';
+    })),
 ];
 
 $userMap = [];
@@ -374,7 +382,7 @@ $defaultContentPageKey = $editingContentBlock['page_key'] ?? 'contact';
 $contentForm = [
     'id' => $editingContentBlock['id'] ?? '',
     'page_key' => $defaultContentPageKey,
-    'type' => $editingContentBlock['type'] ?? 'contact_info',
+    'type' => $editingContentBlock['type'] ?? $contentManager->getDefaultTypeForPage($defaultContentPageKey),
     'name' => $editingContentBlock['name'] ?? '',
     'eyebrow' => $editingContentBlock['eyebrow'] ?? '',
     'title' => $editingContentBlock['title'] ?? '',
@@ -394,6 +402,10 @@ if ($contentFormOverrides !== null) {
     $contentForm['show_context_note'] = !empty($contentFormOverrides['show_context_note']);
 }
 
+if (!$contentManager->isTypeAllowedForPage((string) $contentForm['page_key'], (string) $contentForm['type'])) {
+    $contentForm['type'] = $contentManager->getDefaultTypeForPage((string) $contentForm['page_key']);
+}
+
 $currentRoleLabel = $auth->getRoleLabel($currentUser);
 ?>
 
@@ -404,7 +416,7 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
         <div class="panel-hero-main">
             <p class="eyebrow">Administracao</p>
             <h1>Painel mestre do portal</h1>
-            <p class="hero-copy">Controle usuarios, niveis de acesso, projetos e agora tambem o conteudo global em blocos, com uma base pronta para evoluir para outras paginas alem do contato.</p>
+            <p class="hero-copy">Controle usuarios, niveis de acesso, projetos e o conteudo global em blocos. Agora o builder ja abastece Contato e Areas Tematicas a partir do mesmo painel mestre.</p>
 
             <div class="hero-actions">
                 <a class="dashboard-btn" href="#users">Usuarios</a>
@@ -456,17 +468,17 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
         <article class="metric-card">
             <span class="metric-label">Blocos globais</span>
             <strong class="metric-value"><?php echo (int) $contentStats['total']; ?></strong>
-            <p><?php echo (int) $contentStats['published']; ?> publicados, <?php echo (int) $contentStats['contact']; ?> ligados a pagina de contato.</p>
+            <p><?php echo (int) $contentStats['published']; ?> publicados no total entre as paginas administraveis.</p>
         </article>
         <article class="metric-card">
-            <span class="metric-label">Blocos adicionados</span>
-            <strong class="metric-value"><?php echo (int) $contentStats['total']; ?></strong>
-            <p><?php echo (int) $contentStats['published']; ?> publicados, <?php echo (int) $contentStats['contact']; ?> ligados a pagina de contato.</p>
+            <span class="metric-label">Contato</span>
+            <strong class="metric-value"><?php echo (int) $contentStats['contact_total']; ?></strong>
+            <p><?php echo (int) $contentStats['contact_published']; ?> publicados na pagina de contato.</p>
         </article>
         <article class="metric-card">
-            <span class="metric-label">Blocos deletados</span>
-            <strong class="metric-value"><?php echo (int) $contentStats['total']; ?></strong>
-            <p><?php echo (int) $contentStats['published']; ?> publicados, <?php echo (int) $contentStats['contact']; ?> ligados a pagina de contato.</p>
+            <span class="metric-label">Areas tematicas</span>
+            <strong class="metric-value"><?php echo (int) $contentStats['thematic_total']; ?></strong>
+            <p><?php echo (int) $contentStats['thematic_published']; ?> publicados na pagina de Areas Tematicas.</p>
         </article>
     </section>
 
@@ -738,7 +750,7 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                 <div>
                     <p class="eyebrow">Conteudo global</p>
                     <h2><?php echo $contentForm['id'] !== '' ? 'Editar bloco' : 'Novo bloco'; ?></h2>
-                    <p class="admin-subtitle">Arquitetura inicial do CMS interno. Hoje ela alimenta a pagina de contato, mas ja usa pagina, tipo, ordem e visibilidade para crescer depois.</p>
+                    <p class="admin-subtitle">CMS interno por blocos. Hoje ele abastece Contato e Areas Tematicas com pagina, tipo, ordem e visibilidade controlados pelo admin.</p>
                 </div>
 
                 <?php if ($contentForm['id'] !== ''): ?>
@@ -757,7 +769,7 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
 
                 <div class="form-group">
                     <label for="content_page_key">Pagina</label>
-                    <select id="content_page_key" name="page_key">
+                    <select id="content_page_key" name="page_key" data-block-page-select>
                         <?php foreach ($contentPageOptions as $pageKey => $pageMeta): ?>
                             <option value="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $contentForm['page_key'] === (string) $pageKey ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars((string) $pageMeta['label'], ENT_QUOTES, 'UTF-8'); ?>
@@ -770,12 +782,29 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                     <label for="content_type">Tipo de bloco</label>
                     <select id="content_type" name="type" data-block-type-select>
                         <?php foreach ($contentTypeOptions as $typeKey => $typeMeta): ?>
-                            <option value="<?php echo htmlspecialchars($typeKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $contentForm['type'] === (string) $typeKey ? 'selected' : ''; ?>>
+                            <?php
+                            $allowedPages = [];
+
+                            foreach ($contentPageOptions as $pageKey => $pageMeta) {
+                                $pageAllowedTypes = $pageMeta['allowed_types'] ?? array_keys($contentTypeOptions);
+                                if (in_array($typeKey, $pageAllowedTypes, true)) {
+                                    $allowedPages[] = $pageKey;
+                                }
+                            }
+                            ?>
+                            <option
+                                value="<?php echo htmlspecialchars($typeKey, ENT_QUOTES, 'UTF-8'); ?>"
+                                data-allowed-pages="<?php echo htmlspecialchars(implode(',', $allowedPages), ENT_QUOTES, 'UTF-8'); ?>"
+                                data-type-description="<?php echo htmlspecialchars((string) ($typeMeta['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                                <?php echo (string) $contentForm['type'] === (string) $typeKey ? 'selected' : ''; ?>
+                            >
                                 <?php echo htmlspecialchars((string) $typeMeta['label'], ENT_QUOTES, 'UTF-8'); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <p class="form-help">Use "Contato principal" para cards com lista de canais, "Mapa incorporado" para iframes e "Card de texto" para blocos genericos.</p>
+                    <p class="form-help" data-block-type-help data-default-help="Cada pagina libera apenas os tipos de bloco que fazem sentido para o layout dela.">
+                        <?php echo htmlspecialchars((string) ($contentTypeOptions[$contentForm['type']]['description'] ?? 'Cada pagina libera apenas os tipos de bloco que fazem sentido para o layout dela.'), ENT_QUOTES, 'UTF-8'); ?>
+                    </p>
                 </div>
 
                 <div class="form-group">
@@ -785,8 +814,9 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                 </div>
 
                 <div class="form-group">
-                    <label for="content_eyebrow">Eyebrow</label>
+                    <label for="content_eyebrow">Eyebrow / tag</label>
                     <input type="text" id="content_eyebrow" name="eyebrow" value="<?php echo htmlspecialchars((string) $contentForm['eyebrow'], ENT_QUOTES, 'UTF-8'); ?>">
+                    <p class="form-help">Use esse campo como selo curto do bloco, como "Canal oficial", "CEPIN-CIS" ou "EduCIS".</p>
                 </div>
 
                 <div class="form-group">
@@ -799,18 +829,18 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                     <textarea id="content_body" name="body" rows="6"><?php echo htmlspecialchars((string) $contentForm['body'], ENT_QUOTES, 'UTF-8'); ?></textarea>
                 </div>
 
-                <div class="form-group" data-block-field-group="contact_info,text_card">
+                <div class="form-group" data-block-field-group="contact_info,text_card,thematic_cta">
                     <label for="content_items_text">Itens estruturados</label>
                     <textarea id="content_items_text" name="items_text" rows="6"><?php echo htmlspecialchars((string) $contentForm['items_text'], ENT_QUOTES, 'UTF-8'); ?></textarea>
                     <p class="form-help">Uma linha por item no formato: Rotulo | valor | link opcional. Ex.: Email | cepin@dominio.com | mailto:cepin@dominio.com</p>
                 </div>
 
-                <div class="form-group" data-block-field-group="contact_info,text_card">
+                <div class="form-group" data-block-field-group="contact_info,text_card,thematic_intro,thematic_cta">
                     <label for="content_cta_label">Rotulo do botao</label>
                     <input type="text" id="content_cta_label" name="cta_label" value="<?php echo htmlspecialchars((string) $contentForm['cta_label'], ENT_QUOTES, 'UTF-8'); ?>">
                 </div>
 
-                <div class="form-group" data-block-field-group="contact_info,text_card">
+                <div class="form-group" data-block-field-group="contact_info,text_card,thematic_intro,thematic_cta">
                     <label for="content_cta_url">URL do botao</label>
                     <input type="text" id="content_cta_url" name="cta_url" value="<?php echo htmlspecialchars((string) $contentForm['cta_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="mailto:, https:// ou /rota-interna">
                 </div>

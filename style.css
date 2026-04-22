@@ -6450,11 +6450,26 @@ html[data-theme="dark"] body.auth-page footer {
     align-items: start;
 }
 
+.public-topic-grid--blocks,
+.public-cta-grid--blocks {
+    align-items: start;
+}
+
 .public-contact-grid--blocks .content-block {
     height: 100%;
 }
 
+.public-topic-grid--blocks .content-block,
+.public-cta-grid--blocks .content-block {
+    height: 100%;
+}
+
 .public-contact-grid--blocks .content-block--full {
+    grid-column: 1 / -1;
+}
+
+.public-topic-grid--blocks .content-block--full,
+.public-cta-grid--blocks .content-block--full {
     grid-column: 1 / -1;
 }
 

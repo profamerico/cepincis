@@ -8,6 +8,12 @@ class ContentBlockManager
         'contact' => [
             'label' => 'Contato',
             'path' => 'contact.php',
+            'allowed_types' => ['contact_info', 'map_embed', 'text_card'],
+        ],
+        'thematic_areas' => [
+            'label' => 'Areas tematicas',
+            'path' => 'implement.php',
+            'allowed_types' => ['thematic_intro', 'thematic_topic', 'thematic_cta'],
         ],
     ];
 
@@ -23,6 +29,18 @@ class ContentBlockManager
         'text_card' => [
             'label' => 'Card de texto',
             'description' => 'Bloco generico para titulo, texto, lista e botao.',
+        ],
+        'thematic_intro' => [
+            'label' => 'Intro de areas',
+            'description' => 'Bloco de abertura da pagina de Areas Tematicas.',
+        ],
+        'thematic_topic' => [
+            'label' => 'Area tematica',
+            'description' => 'Card com tag, titulo e descricao de uma area tematica.',
+        ],
+        'thematic_cta' => [
+            'label' => 'CTA tematico',
+            'description' => 'Card complementar para regulamento, contato ou chamadas finais.',
         ],
     ];
 
@@ -60,6 +78,30 @@ class ContentBlockManager
     public function getStatusDefinitions(): array
     {
         return self::STATUS_DEFINITIONS;
+    }
+
+    public function getAllowedTypesForPage(string $pageKey): array
+    {
+        $pageKey = $this->normalizePageKey($pageKey);
+        $allowedTypes = self::PAGE_DEFINITIONS[$pageKey]['allowed_types'] ?? array_keys(self::TYPE_DEFINITIONS);
+
+        return array_values(array_filter($allowedTypes, static function (string $type): bool {
+            return isset(self::TYPE_DEFINITIONS[$type]);
+        }));
+    }
+
+    public function getDefaultTypeForPage(string $pageKey): string
+    {
+        $allowedTypes = $this->getAllowedTypesForPage($pageKey);
+
+        return $allowedTypes[0] ?? 'text_card';
+    }
+
+    public function isTypeAllowedForPage(string $pageKey, string $type): bool
+    {
+        $normalizedType = $this->normalizeType($type);
+
+        return in_array($normalizedType, $this->getAllowedTypesForPage($pageKey), true);
     }
 
     public function getPageLabel(string $pageKey): string
@@ -181,7 +223,8 @@ class ContentBlockManager
         }
 
         $pageKey = $this->normalizePageKey((string) ($data['page_key'] ?? 'contact'));
-        $type = $this->normalizeType((string) ($data['type'] ?? 'contact_info'));
+        $typeInput = trim((string) ($data['type'] ?? ''));
+        $type = $typeInput !== '' ? $this->normalizeType($typeInput) : $this->getDefaultTypeForPage($pageKey);
         $width = $this->normalizeWidth((string) ($data['width'] ?? 'half'));
         $status = $this->normalizeStatus((string) ($data['status'] ?? 'published'));
         $name = trim((string) ($data['name'] ?? ''));
@@ -204,6 +247,10 @@ class ContentBlockManager
 
         if ($title === '') {
             $errors[] = 'Titulo do bloco e obrigatorio.';
+        }
+
+        if (!$this->isTypeAllowedForPage($pageKey, $type)) {
+            $errors[] = 'Esse tipo de bloco nao esta disponivel para a pagina selecionada.';
         }
 
         if ($type === 'map_embed' && $embedUrl === '') {
@@ -358,6 +405,164 @@ class ContentBlockManager
                 'created_at' => $timestamp,
                 'updated_at' => $timestamp,
             ],
+            [
+                'id' => 'blk_thematic_intro',
+                'page_key' => 'thematic_areas',
+                'type' => 'thematic_intro',
+                'name' => 'Intro Areas Tematicas',
+                'eyebrow' => 'CEPIN-CIS',
+                'title' => 'Areas tematicas',
+                'body' => 'As Areas Tematicas nas quais serao alinhadas as linhas de pesquisa foram definidas para orientar as atividades do CEPIN-CIS e compreendem:',
+                'items' => [],
+                'cta_label' => '',
+                'cta_url' => '',
+                'embed_url' => '',
+                'width' => 'full',
+                'position' => 10,
+                'status' => 'published',
+                'show_context_note' => false,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            [
+                'id' => 'blk_thematic_educis',
+                'page_key' => 'thematic_areas',
+                'type' => 'thematic_topic',
+                'name' => 'Area Tematica EduCIS',
+                'eyebrow' => 'EduCIS',
+                'title' => 'Formacao de recursos humanos para cidades inteligentes e sustentaveis',
+                'body' => 'Desenvolvimento de recursos humanos e metodos ageis de capacitacao para impulsionar a inovacao em Cidades Inteligentes e Sustentaveis.',
+                'items' => [],
+                'cta_label' => '',
+                'cta_url' => '',
+                'embed_url' => '',
+                'width' => 'half',
+                'position' => 20,
+                'status' => 'published',
+                'show_context_note' => false,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            [
+                'id' => 'blk_thematic_ecomat',
+                'page_key' => 'thematic_areas',
+                'type' => 'thematic_topic',
+                'name' => 'Area Tematica EcoMat',
+                'eyebrow' => 'EcoMat',
+                'title' => 'Novos materiais e economia circular',
+                'body' => 'Investigar materiais sustentaveis e promover economia circular, reduzindo o impacto ambiental.',
+                'items' => [],
+                'cta_label' => '',
+                'cta_url' => '',
+                'embed_url' => '',
+                'width' => 'half',
+                'position' => 30,
+                'status' => 'published',
+                'show_context_note' => false,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            [
+                'id' => 'blk_thematic_iot',
+                'page_key' => 'thematic_areas',
+                'type' => 'thematic_topic',
+                'name' => 'Area Tematica IoT',
+                'eyebrow' => 'IoT',
+                'title' => 'Desenvolvimento tecnologico e conectividade para cidades inteligentes e sustentaveis',
+                'body' => 'Desenvolver tecnologias avancadas e solucoes de conectividade para criar ambientes urbanos mais inteligentes, eficientes e sustentaveis.',
+                'items' => [],
+                'cta_label' => '',
+                'cta_url' => '',
+                'embed_url' => '',
+                'width' => 'half',
+                'position' => 40,
+                'status' => 'published',
+                'show_context_note' => false,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            [
+                'id' => 'blk_thematic_carbonzero',
+                'page_key' => 'thematic_areas',
+                'type' => 'thematic_topic',
+                'name' => 'Area Tematica CarbonZero',
+                'eyebrow' => 'CarbonZero',
+                'title' => 'Descarbonizacao do ambiente construido',
+                'body' => 'Promover a reducao das emissoes de carbono em edificios, infraestrutura, mobilidade urbana, fontes de energia e saneamento ambiental.',
+                'items' => [],
+                'cta_label' => '',
+                'cta_url' => '',
+                'embed_url' => '',
+                'width' => 'half',
+                'position' => 50,
+                'status' => 'published',
+                'show_context_note' => false,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            [
+                'id' => 'blk_thematic_urbansmart',
+                'page_key' => 'thematic_areas',
+                'type' => 'thematic_topic',
+                'name' => 'Area Tematica UrbanSmart',
+                'eyebrow' => 'UrbanSmart',
+                'title' => 'Monitoramento e operacoes urbanas inteligentes',
+                'body' => 'Desenvolver solucoes para monitorar e gerenciar a infraestrutura urbana com gemeos digitais, plataformas digitais, sistemas autonomos e drones, ampliando a resiliencia climatica.',
+                'items' => [],
+                'cta_label' => '',
+                'cta_url' => '',
+                'embed_url' => '',
+                'width' => 'half',
+                'position' => 60,
+                'status' => 'published',
+                'show_context_note' => false,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            [
+                'id' => 'blk_thematic_regulation',
+                'page_key' => 'thematic_areas',
+                'type' => 'thematic_cta',
+                'name' => 'Regulamento CEPIN-CIS',
+                'eyebrow' => '',
+                'title' => 'Regulamento',
+                'body' => 'O regulamento do Centro de Pesquisa e Inovacao em Cidades Inteligentes e Sustentaveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missao do CEPIN-CIS como espaco de fomento a pesquisa aplicada, a inovacao tecnologica e a reflexao critica sobre os desafios contemporaneos das cidades.' . PHP_EOL . PHP_EOL . 'O regulamento estabelece as diretrizes para a participacao de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensao que dialoguem com as areas tematicas do Centro, alem de abrir espaco para a colaboracao de pesquisadores externos.',
+                'items' => [],
+                'cta_label' => 'Clique aqui para ver o regulamento',
+                'cta_url' => 'https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf',
+                'embed_url' => '',
+                'width' => 'half',
+                'position' => 70,
+                'status' => 'published',
+                'show_context_note' => false,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
+            [
+                'id' => 'blk_thematic_contact',
+                'page_key' => 'thematic_areas',
+                'type' => 'thematic_cta',
+                'name' => 'Contato Areas Tematicas',
+                'eyebrow' => '',
+                'title' => 'Contato',
+                'body' => 'Quer saber mais ou colaborar com o CEPIN-CIS? Entre em contato com nossa equipe de pesquisa.',
+                'items' => [
+                    [
+                        'label' => 'Email institucional',
+                        'value' => 'cepin.cis@ifspcaraguatatuba.edu.br',
+                        'url' => 'mailto:cepin.cis@ifspcaraguatatuba.edu.br',
+                    ],
+                ],
+                'cta_label' => 'Enviar E-mail',
+                'cta_url' => './contact.php',
+                'embed_url' => '',
+                'width' => 'half',
+                'position' => 80,
+                'status' => 'published',
+                'show_context_note' => false,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ],
         ];
     }
 
@@ -429,11 +634,17 @@ class ContentBlockManager
     {
         $createdAt = (string) ($block['created_at'] ?? $this->now());
         $updatedAt = (string) ($block['updated_at'] ?? $createdAt);
+        $pageKey = $this->normalizePageKey((string) ($block['page_key'] ?? 'contact'));
+        $type = $this->normalizeType((string) ($block['type'] ?? $this->getDefaultTypeForPage($pageKey)));
+
+        if (!$this->isTypeAllowedForPage($pageKey, $type)) {
+            $type = $this->getDefaultTypeForPage($pageKey);
+        }
 
         return [
             'id' => (string) ($block['id'] ?? uniqid('blk_')),
-            'page_key' => $this->normalizePageKey((string) ($block['page_key'] ?? 'contact')),
-            'type' => $this->normalizeType((string) ($block['type'] ?? 'contact_info')),
+            'page_key' => $pageKey,
+            'type' => $type,
             'name' => trim((string) ($block['name'] ?? '')),
             'eyebrow' => trim((string) ($block['eyebrow'] ?? '')),
             'title' => trim((string) ($block['title'] ?? '')),

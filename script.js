@@ -1121,11 +1121,44 @@ function initSettingsTabs() {
 
 function initAdminBlockForm() {
     const form = document.querySelector('[data-block-form-root]');
+    const pageSelect = document.querySelector('[data-block-page-select]');
     const typeSelect = document.querySelector('[data-block-type-select]');
+    const typeHelp = document.querySelector('[data-block-type-help]');
     const groups = Array.from(document.querySelectorAll('[data-block-field-group]'));
+    const typeOptions = typeSelect ? Array.from(typeSelect.options) : [];
 
     if (!form || !typeSelect || !groups.length) {
         return;
+    }
+
+    function syncTypeOptions() {
+        if (!pageSelect || !typeOptions.length) {
+            return;
+        }
+
+        const currentPage = pageSelect.value;
+        let firstAllowedOption = null;
+
+        typeOptions.forEach((option) => {
+            const allowedPages = (option.dataset.allowedPages || '')
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean);
+            const isAllowed = allowedPages.length === 0 || allowedPages.includes(currentPage);
+
+            option.hidden = !isAllowed;
+            option.disabled = !isAllowed;
+
+            if (isAllowed && !firstAllowedOption) {
+                firstAllowedOption = option;
+            }
+        });
+
+        if (typeSelect.selectedOptions.length === 0 || typeSelect.selectedOptions[0].disabled) {
+            if (firstAllowedOption) {
+                typeSelect.value = firstAllowedOption.value;
+            }
+        }
     }
 
     function syncFieldGroups() {
@@ -1139,10 +1172,27 @@ function initAdminBlockForm() {
 
             const shouldShow = allowedTypes.length === 0 || allowedTypes.includes(currentType);
             group.hidden = !shouldShow;
+
+            group.querySelectorAll('input, textarea, select').forEach((control) => {
+                control.disabled = !shouldShow;
+            });
+        });
+
+        if (typeHelp) {
+            const selectedOption = typeSelect.selectedOptions[0];
+            typeHelp.textContent = selectedOption?.dataset.typeDescription || typeHelp.dataset.defaultHelp || '';
+        }
+    }
+
+    if (pageSelect) {
+        pageSelect.addEventListener('change', () => {
+            syncTypeOptions();
+            syncFieldGroups();
         });
     }
 
     typeSelect.addEventListener('change', syncFieldGroups);
+    syncTypeOptions();
     syncFieldGroups();
 }
 
