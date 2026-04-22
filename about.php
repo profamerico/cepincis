@@ -1,7 +1,296 @@
 <?php
 $pageTitle = 'Sobre | CEPIN-CIS';
 $bodyClass = 'public-page';
-$regulationUrl = 'https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf';
+
+require_once 'models/ContentBlock.php';
+
+$contentManager = new ContentBlockManager();
+$aboutBlocks = array_values($contentManager->getPageBlocks('about'));
+$aboutLayout = $contentManager->getPageLayout('about');
+
+function about_render_body(string $text): string
+{
+    $text = trim($text);
+
+    if ($text === '') {
+        return '';
+    }
+
+    $paragraphs = preg_split('/\r\n\r\n|\n\n|\r\r/', $text) ?: [$text];
+    $markup = [];
+
+    foreach ($paragraphs as $paragraph) {
+        $paragraph = trim((string) $paragraph);
+        if ($paragraph === '') {
+            continue;
+        }
+
+        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES, 'UTF-8')) . '</p>';
+    }
+
+    return implode(PHP_EOL, $markup);
+}
+
+function about_render_list(array $items): string
+{
+    if (empty($items)) {
+        return '';
+    }
+
+    $lines = [];
+
+    foreach ($items as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+
+        $label = trim((string) ($item['label'] ?? ''));
+        $value = trim((string) ($item['value'] ?? ''));
+
+        if ($label === '' && $value === '') {
+            continue;
+        }
+
+        $line = $label !== '' ? '<strong>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ':</strong> ' : '';
+        $line .= htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        $lines[] = '<li>' . $line . '</li>';
+    }
+
+    if (empty($lines)) {
+        return '';
+    }
+
+    return '<ul class="content-block-list">' . implode('', $lines) . '</ul>';
+}
+
+function about_render_contact_items(array $items): void
+{
+    if (empty($items)) {
+        return;
+    }
+    ?>
+    <div class="public-contact-list">
+        <?php foreach ($items as $item): ?>
+            <?php
+            $itemLabel = trim((string) ($item['label'] ?? ''));
+            $itemValue = trim((string) ($item['value'] ?? ''));
+            $itemUrl = trim((string) ($item['url'] ?? ''));
+            if ($itemLabel === '' && $itemValue === '') {
+                continue;
+            }
+            ?>
+            <div class="public-contact-item">
+                <?php if ($itemLabel !== ''): ?>
+                    <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                <?php endif; ?>
+
+                <?php if ($itemUrl !== ''): ?>
+                    <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES, 'UTF-8'); ?>">
+                        <?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?>
+                    </a>
+                <?php else: ?>
+                    <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?></span>
+                <?php endif; ?>
+            </div>
+        <?php endforeach; ?>
+    </div>
+    <?php
+}
+
+function about_is_infrastructure_block(array $block): bool
+{
+    $type = (string) ($block['type'] ?? '');
+    $name = strtolower(trim((string) ($block['name'] ?? '')));
+    $title = strtolower(trim((string) ($block['title'] ?? '')));
+
+    if ($type !== 'about_list') {
+        return false;
+    }
+
+    return strpos($name, 'infra') !== false || strpos($title, 'infra') !== false;
+}
+
+function about_next_heading_tag(array $block, bool &$pageHeadingUsed): ?string
+{
+    if (trim((string) ($block['title'] ?? '')) === '') {
+        return null;
+    }
+
+    if (!$pageHeadingUsed) {
+        $pageHeadingUsed = true;
+        return 'h1';
+    }
+
+    return 'h2';
+}
+
+function about_block_classes(array $block): string
+{
+    if (about_is_infrastructure_block($block)) {
+        return 'about-block about-block--infrastructure infraestruturas';
+    }
+
+    $type = (string) ($block['type'] ?? 'about_text');
+    $height = (string) ($block['height'] ?? 'regular');
+    $classes = ['panel-card', 'content-block', 'about-block', 'content-block--height-' . $height];
+
+    switch ($type) {
+        case 'about_media':
+            $classes[] = 'public-image-card';
+            $classes[] = 'public-image-card--banner';
+            $classes[] = 'about-block--media';
+            break;
+        case 'about_list':
+            $classes[] = 'public-section-card';
+            $classes[] = 'about-block--list';
+            break;
+        case 'about_cta':
+            $classes[] = !empty($block['items']) ? 'public-copy-card' : 'public-simple-card';
+            $classes[] = 'about-block--cta';
+            break;
+        case 'about_text':
+        default:
+            $classes[] = 'public-copy-card';
+            $classes[] = 'about-block--text';
+            break;
+    }
+
+    return implode(' ', $classes);
+}
+
+function about_render_block(array $block, ?string $headingTag, ContentBlockManager $contentManager, array $layout): void
+{
+    $columns = max(1, (int) ($layout['columns'] ?? 4));
+    $span = $contentManager->getWidthSpan((string) ($block['width'] ?? 'span_1'), $columns);
+    $type = (string) ($block['type'] ?? 'about_text');
+    $isInfrastructureBlock = about_is_infrastructure_block($block);
+
+    if ($isInfrastructureBlock) {
+        $headingTag = $headingTag ?? 'h2';
+        $monitorImage = trim((string) ($block['media_url'] ?? ''));
+        if ($monitorImage === '') {
+            $monitorImage = './img/Monitor.png';
+        }
+        $monitorAlt = trim((string) ($block['media_alt'] ?? ''));
+        if ($monitorAlt === '') {
+            $monitorAlt = 'Monitor ilustrando a infraestrutura do CEPIN-CIS';
+        }
+        ?>
+        <section
+            class="<?php echo htmlspecialchars(about_block_classes($block), ENT_QUOTES, 'UTF-8'); ?>"
+            style="grid-column: span <?php echo $span; ?> / span <?php echo $span; ?>;"
+        >
+            <div class="infraestruturas-inner">
+                <<?php echo $headingTag; ?> class="titulo-infraestruturas-sobre">
+                    <?php echo htmlspecialchars((string) ($block['title'] ?? 'Infraestruturas'), ENT_QUOTES, 'UTF-8'); ?>
+                </<?php echo $headingTag; ?>>
+
+                <div class="infraestruturas-layout">
+                    <img
+                        src="<?php echo htmlspecialchars($monitorImage, ENT_QUOTES, 'UTF-8'); ?>"
+                        alt="<?php echo htmlspecialchars($monitorAlt, ENT_QUOTES, 'UTF-8'); ?>"
+                        class="monitor"
+                    >
+
+                    <div class="infraestruturas-copy">
+                        <?php if ((string) ($block['body'] ?? '') !== ''): ?>
+                            <p class="descricao-infraestruturas"><?php echo nl2br(htmlspecialchars((string) $block['body'], ENT_QUOTES, 'UTF-8')); ?></p>
+                        <?php endif; ?>
+
+                        <?php if (!empty($block['items'])): ?>
+                            <div class="descricao-infraestruturas infraestruturas-list">
+                                <?php foreach ($block['items'] as $item): ?>
+                                    <?php
+                                    if (!is_array($item)) {
+                                        continue;
+                                    }
+
+                                    $itemLabel = trim((string) ($item['label'] ?? ''));
+                                    $itemValue = trim((string) ($item['value'] ?? ''));
+                                    if ($itemLabel === '' && $itemValue === '') {
+                                        continue;
+                                    }
+                                    ?>
+                                    <p>
+                                        <?php if ($itemLabel !== ''): ?>
+                                            <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES, 'UTF-8'); ?>:</strong>
+                                        <?php endif; ?>
+                                        <?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?>
+                                    </p>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <?php
+        return;
+    }
+
+    ?>
+    <article
+        class="<?php echo htmlspecialchars(about_block_classes($block), ENT_QUOTES, 'UTF-8'); ?>"
+        style="grid-column: span <?php echo $span; ?> / span <?php echo $span; ?>;"
+    >
+        <?php if ($type === 'about_media'): ?>
+            <img
+                class="public-image-card__asset public-image-card__asset--light"
+                src="<?php echo htmlspecialchars((string) ($block['media_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                alt="<?php echo htmlspecialchars((string) ($block['media_alt'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+            >
+
+            <?php if ((string) ($block['media_dark_url'] ?? '') !== ''): ?>
+                <img
+                    class="public-image-card__asset public-image-card__asset--dark"
+                    src="<?php echo htmlspecialchars((string) ($block['media_dark_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                    alt=""
+                    aria-hidden="true"
+                >
+            <?php endif; ?>
+        <?php else: ?>
+            <?php if ((string) ($block['eyebrow'] ?? '') !== ''): ?>
+                <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></p>
+            <?php endif; ?>
+
+            <?php if ($headingTag !== null): ?>
+                <<?php echo $headingTag; ?>>
+                    <?php echo htmlspecialchars((string) ($block['title'] ?? 'Bloco'), ENT_QUOTES, 'UTF-8'); ?>
+                </<?php echo $headingTag; ?>>
+            <?php endif; ?>
+
+            <?php echo about_render_body((string) ($block['body'] ?? '')); ?>
+
+            <?php if ($type === 'about_list'): ?>
+                <?php echo about_render_list($block['items'] ?? []); ?>
+            <?php elseif (!empty($block['items'])): ?>
+                <?php about_render_contact_items($block['items']); ?>
+            <?php endif; ?>
+
+            <?php if ((string) ($block['cta_label'] ?? '') !== '' && (string) ($block['cta_url'] ?? '') !== ''): ?>
+                <div class="hero-actions">
+                    <a class="dashboard-btn" href="<?php echo htmlspecialchars((string) $block['cta_url'], ENT_QUOTES, 'UTF-8'); ?>">
+                        <?php echo htmlspecialchars((string) $block['cta_label'], ENT_QUOTES, 'UTF-8'); ?>
+                    </a>
+                </div>
+            <?php endif; ?>
+        <?php endif; ?>
+    </article>
+    <?php
+}
+
+$gridStyleClass = (string) ($aboutLayout['grid_style'] ?? 'standard') === 'dense'
+    ? 'content-layout-grid content-layout-grid--dense'
+    : 'content-layout-grid';
+$layoutStyle = sprintf(
+    '--content-layout-columns:%d; --content-layout-mobile-columns:%d; --content-layout-gap:%dpx; --content-layout-width:%dpx; --content-layout-padding:%dpx; --content-layout-min-height:%dpx;',
+    (int) ($aboutLayout['columns'] ?? 4),
+    (int) ($aboutLayout['mobile_columns'] ?? 1),
+    (int) ($aboutLayout['gap'] ?? 24),
+    (int) ($aboutLayout['container_width'] ?? 1220),
+    (int) ($aboutLayout['block_padding'] ?? 32),
+    (int) ($aboutLayout['block_min_height'] ?? 210)
+);
 
 include_once 'includes/header.php';
 ?>
@@ -9,97 +298,21 @@ include_once 'includes/header.php';
 <div class="ball"></div>
 
 <main class="page-shell public-shell">
-    <section id="sobre" class="public-story-grid">
-        <article class="panel-card public-copy-card public-copy-card--featured">
-            <h1>Sobre nós</h1>
-
-            <p>O Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS), implementado no IFSP campus Caraguatatuba, tem como missão fomentar o desenvolvimento de cidades inteligentes e sustentáveis. Para isso, atua como um repositório de tecnologias, um espaço dedicado à experimentação prática e um agente de interlocução capaz de estabelecer conexões produtivas entre os setores público e privado.</p>
-
-            <p>Sua atuação se estrutura de maneira a promover, de forma inclusiva, colaborativa e equitativa, o debate e a construção de soluções que contemplem as dimensões ambientais, econômicas, sociais e culturais da sustentabilidade, buscando ampliar a capacidade dos cidadãos de contribuir para esse processo e, ao mesmo tempo, usufruir dos benefícios decorrentes de um desenvolvimento urbano mais viável, resiliente e comprometido com o futuro sustentável das cidades.</p>
-
-            <p>Nesse sentido, o CEPIN-CIS direciona seus esforços para desenvolver investigação fundamental ou aplicada voltada ao campo das cidades inteligentes e sustentáveis, mantendo o foco em gerar conhecimento e estratégias capazes de apoiar avanços significativos nessa área. Paralelamente, dedica-se a contribuir ativamente para a inovação por meio da transferência de tecnologia, atuando como ponte entre pesquisa e aplicação prática.</p>
-        </article>
-
-        <article class="panel-card public-image-card public-image-card--banner">
-            <img class="public-image-card__asset public-image-card__asset--light" src="./img/banner.png" alt="Logo CEPIN-CIS">
-            <img class="public-image-card__asset public-image-card__asset--dark" src="./img/bannerescuro.png" alt="" aria-hidden="true">
-        </article>
+    <section id="sobre" class="about-layout-shell" style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES, 'UTF-8'); ?>">
+        <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES, 'UTF-8'); ?>">
+            <?php if (empty($aboutBlocks)): ?>
+                <article class="panel-card public-copy-card about-block content-block content-block--height-regular" style="grid-column: 1 / -1;">
+                    <h1>Sobre em atualizacao</h1>
+                    <p>Os blocos da pagina Sobre ainda nao foram publicados no painel mestre.</p>
+                </article>
+            <?php else: ?>
+                <?php $pageHeadingUsed = false; ?>
+                <?php foreach ($aboutBlocks as $block): ?>
+                    <?php about_render_block($block, about_next_heading_tag($block, $pageHeadingUsed), $contentManager, $aboutLayout); ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
     </section>
 </main>
-
-<section id="infraestruturas" class="infraestruturas">
-    <div class="infraestruturas-inner">
-        <h2 class="titulo-infraestruturas-sobre">Infraestruturas</h2>
-
-        <div class="infraestruturas-layout">
-            <img src="./img/Monitor.png" alt="Monitor ilustrando a infraestrutura" class="monitor">
-
-            <div class="infraestruturas-copy">
-                <p class="descricao-infraestruturas">O CEPIN-CIS está localizado na sala 107B do IFSP Câmpus Caraguatatuba, sua infraestrutura conta com:</p>
-
-                <div class="descricao-infraestruturas infraestruturas-list">
-                    <p>03 Desktop HP 280 G5 SFF; Processador Intel® Core™ i7 da 10ª geração; Windows 10 Pro; SSD 512 GB.</p>
-                    <p>PCIe® NVMe™; 16 GB; AMD Radeon™.</p>
-                    <p>03 Monitor LG 23.8 Full HD 75Hz 5ms HDMI.</p>
-                    <p>01 Notebook VAIO® FE15AMD® Ryzen 7; Windows 11 Home 16GB 512GB SSD FullHD.</p>
-                    <p>01 Switch TP-Link 8 Portas TL-SG108E.</p>
-                    <p>07 Kit Arduino contendo sensores, display, motores e a placa Mega 2560 R3.</p>
-                    <p>01 Kit sensores diversos compatíveis com Arduino.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="page-shell public-shell">
-    <section id="regulamento" class="panel-card public-simple-card">
-        <h2>Regulamento</h2>
-
-        <p>O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento à pesquisa aplicada, à inovação tecnológica e à reflexão crítica sobre os desafios contemporâneos das cidades.</p>
-
-        <p>O regulamento estabelece as diretrizes para a participação de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensão que dialoguem com as áreas temáticas do Centro, além de abrir espaço para a colaboração de pesquisadores externos.</p>
-
-        <div class="hero-actions">
-            <a class="dashboard-btn" href="<?php echo htmlspecialchars($regulationUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">Clique aqui para ver o regulamento</a>
-        </div>
-    </section>
-
-    <section id="contato" class="public-contact-grid">
-        <article class="panel-card public-copy-card">
-            <h2>Contato</h2>
-
-            <p>Quer saber mais ou colaborar com o CEPIN-CIS? Entre em contato com nossa equipe de pesquisa.</p>
-
-            <div class="public-contact-list">
-                <div class="public-contact-item">
-                    <strong>Email institucional</strong>
-                    <a href="mailto:cepin.cis@ifspcaraguatatuba.edu.br">cepin.cis@ifspcaraguatatuba.edu.br</a>
-                </div>
-
-                <div class="public-contact-item">
-                    <strong>Endereço</strong>
-                    <span>IFSP Campus Caraguatatuba, sala 107B.</span>
-                </div>
-            </div>
-
-            <div class="hero-actions">
-                <a class="dashboard-btn" href="mailto:cepin.cis@ifspcaraguatatuba.edu.br">Enviar E-mail</a>
-            </div>
-        </article>
-
-        <article class="panel-card public-map-card">
-            <h2>Mapa</h2>
-
-            <iframe
-                class="public-map-frame"
-                src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d228.4439040435433!2d-45.4258447087537!3d-23.636501255140573!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1spt-BR!2sbr!4v1763413745838!5m2!1spt-BR!2sbr"
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-                allowfullscreen=""
-                title="Mapa do IFSP Campus Caraguatatuba"
-            ></iframe>
-        </article>
-    </section>
-</section>
 
 <?php include_once 'includes/footer.php'; ?>

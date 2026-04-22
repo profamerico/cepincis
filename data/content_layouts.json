@@ -1,0 +1,12 @@
+{
+    "about": {
+        "page_key": "about",
+        "grid_style": "dense",
+        "columns": 4,
+        "mobile_columns": 1,
+        "gap": 24,
+        "container_width": 1220,
+        "block_padding": 32,
+        "block_min_height": 210
+    }
+}

@@ -1123,12 +1123,71 @@ function initAdminBlockForm() {
     const form = document.querySelector('[data-block-form-root]');
     const pageSelect = document.querySelector('[data-block-page-select]');
     const typeSelect = document.querySelector('[data-block-type-select]');
+    const widthSelect = document.querySelector('[data-block-width-select]');
+    const heightSelect = document.querySelector('[data-block-height-select]');
     const typeHelp = document.querySelector('[data-block-type-help]');
     const groups = Array.from(document.querySelectorAll('[data-block-field-group]'));
     const typeOptions = typeSelect ? Array.from(typeSelect.options) : [];
+    const widthOptions = widthSelect ? Array.from(widthSelect.options) : [];
+    const layoutBuilder = document.querySelector('[data-layout-builder]');
+    const layoutPreview = layoutBuilder?.querySelector('[data-layout-preview]') || null;
+    const layoutInputs = layoutBuilder ? Array.from(layoutBuilder.querySelectorAll('[data-layout-input]')) : [];
+    const previewBlocks = layoutBuilder ? Array.from(layoutBuilder.querySelectorAll('[data-preview-width]')) : [];
+    const draftCard = layoutBuilder?.querySelector('[data-layout-preview-draft]') || null;
+    const draftTitle = layoutBuilder?.querySelector('[data-layout-draft-title]') || null;
+    const draftMeta = layoutBuilder?.querySelector('[data-layout-draft-meta]') || null;
+    const nameInput = document.getElementById('content_name');
+    const statusSelect = document.getElementById('content_status');
 
     if (!form || !typeSelect || !groups.length) {
         return;
+    }
+
+    function clampNumber(value, min, max, fallback) {
+        const parsed = Number.parseInt(value, 10);
+
+        if (Number.isNaN(parsed)) {
+            return fallback;
+        }
+
+        return Math.min(max, Math.max(min, parsed));
+    }
+
+    function resolveSpan(width, columns) {
+        switch (width) {
+            case 'full':
+                return columns;
+            case 'span_4':
+                return Math.min(4, columns);
+            case 'span_3':
+                return Math.min(3, columns);
+            case 'span_2':
+                return Math.min(2, columns);
+            case 'span_1':
+            case 'half':
+            default:
+                return 1;
+        }
+    }
+
+    function resolveHeightFactor(height) {
+        switch (height) {
+            case 'compact':
+                return 0.82;
+            case 'tall':
+                return 1.34;
+            case 'regular':
+            default:
+                return 1;
+        }
+    }
+
+    function getSelectedOptionLabel(select, fallback = '') {
+        if (!select || !select.selectedOptions.length) {
+            return fallback;
+        }
+
+        return select.selectedOptions[0].textContent.trim() || fallback;
     }
 
     function syncTypeOptions() {
@@ -1161,6 +1220,36 @@ function initAdminBlockForm() {
         }
     }
 
+    function syncWidthOptions() {
+        if (!pageSelect || !widthOptions.length || !widthSelect) {
+            return;
+        }
+
+        const currentPage = pageSelect.value;
+        let firstAllowedOption = null;
+
+        widthOptions.forEach((option) => {
+            const allowedPages = (option.dataset.allowedPages || '')
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean);
+            const isAllowed = allowedPages.length === 0 || allowedPages.includes(currentPage);
+
+            option.hidden = !isAllowed;
+            option.disabled = !isAllowed;
+
+            if (isAllowed && !firstAllowedOption) {
+                firstAllowedOption = option;
+            }
+        });
+
+        if (widthSelect.selectedOptions.length === 0 || widthSelect.selectedOptions[0].disabled) {
+            if (firstAllowedOption) {
+                widthSelect.value = firstAllowedOption.value;
+            }
+        }
+    }
+
     function syncFieldGroups() {
         const currentType = typeSelect.value;
 
@@ -1184,16 +1273,93 @@ function initAdminBlockForm() {
         }
     }
 
+    function syncLayoutBuilderVisibility() {
+        if (!layoutBuilder || !pageSelect) {
+            return;
+        }
+
+        layoutBuilder.hidden = pageSelect.value !== layoutBuilder.dataset.layoutBuilderPage;
+    }
+
+    function syncLayoutPreview() {
+        if (!layoutBuilder || !layoutPreview || !pageSelect) {
+            return;
+        }
+
+        const isLayoutPage = pageSelect.value === layoutBuilder.dataset.layoutBuilderPage;
+        layoutBuilder.hidden = !isLayoutPage;
+
+        if (!isLayoutPage) {
+            return;
+        }
+
+        const columns = clampNumber(layoutBuilder.querySelector('[data-layout-input="columns"]')?.value, 1, 4, 4);
+        const gap = clampNumber(layoutBuilder.querySelector('[data-layout-input="gap"]')?.value, 12, 56, 24);
+        const containerWidth = clampNumber(layoutBuilder.querySelector('[data-layout-input="container_width"]')?.value, 880, 1480, 1220);
+        const blockMinHeight = clampNumber(layoutBuilder.querySelector('[data-layout-input="block_min_height"]')?.value, 140, 420, 210);
+        const gridStyle = layoutBuilder.querySelector('[data-layout-input="grid_style"]')?.value === 'dense' ? 'row dense' : 'row';
+
+        layoutPreview.style.setProperty('--admin-layout-columns', String(columns));
+        layoutPreview.style.setProperty('--admin-layout-gap', `${gap}px`);
+        layoutPreview.style.setProperty('--admin-layout-width', `${containerWidth}px`);
+        layoutPreview.style.setProperty('--admin-layout-min-height', `${blockMinHeight}px`);
+        layoutPreview.style.setProperty('--admin-layout-flow', gridStyle);
+
+        previewBlocks.forEach((block) => {
+            const previewWidth = block.dataset.previewWidth || 'span_1';
+            const previewHeight = block.dataset.previewHeight || 'regular';
+            const previewSpan = resolveSpan(previewWidth, columns);
+
+            block.style.gridColumn = `span ${previewSpan} / span ${previewSpan}`;
+            block.style.setProperty('--admin-block-height-factor', String(resolveHeightFactor(previewHeight)));
+        });
+
+        if (draftCard) {
+            const draftWidth = widthSelect?.value || draftCard.dataset.previewWidth || 'span_1';
+            const draftHeight = heightSelect?.value || draftCard.dataset.previewHeight || 'regular';
+            const draftSpan = resolveSpan(draftWidth, columns);
+
+            draftCard.dataset.previewWidth = draftWidth;
+            draftCard.dataset.previewHeight = draftHeight;
+            draftCard.style.gridColumn = `span ${draftSpan} / span ${draftSpan}`;
+            draftCard.style.setProperty('--admin-block-height-factor', String(resolveHeightFactor(draftHeight)));
+            draftCard.classList.toggle('admin-layout-preview-block--hidden', statusSelect?.value === 'hidden');
+
+            if (draftTitle) {
+                draftTitle.textContent = nameInput?.value.trim() || 'Bloco em edicao';
+            }
+
+            if (draftMeta) {
+                draftMeta.textContent = `${getSelectedOptionLabel(widthSelect, 'Largura')} · ${getSelectedOptionLabel(heightSelect, 'Regular')}`;
+            }
+        }
+    }
+
     if (pageSelect) {
         pageSelect.addEventListener('change', () => {
             syncTypeOptions();
+            syncWidthOptions();
             syncFieldGroups();
+            syncLayoutBuilderVisibility();
+            syncLayoutPreview();
         });
     }
 
     typeSelect.addEventListener('change', syncFieldGroups);
+    widthSelect?.addEventListener('change', syncLayoutPreview);
+    heightSelect?.addEventListener('change', syncLayoutPreview);
+    nameInput?.addEventListener('input', syncLayoutPreview);
+    statusSelect?.addEventListener('change', syncLayoutPreview);
+    layoutInputs.forEach((input) => {
+        input.addEventListener('input', syncLayoutPreview);
+        input.addEventListener('change', syncLayoutPreview);
+    });
+
     syncTypeOptions();
+    syncWidthOptions();
     syncFieldGroups();
+    syncLayoutBuilderVisibility();
+    syncLayoutPreview();
 }
 
 function initGsapPageMotion() {

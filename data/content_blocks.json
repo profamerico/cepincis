@@ -205,5 +205,162 @@
         "show_context_note": false,
         "created_at": "2026-04-22 00:00:00",
         "updated_at": "2026-04-22 00:00:00"
+    },
+    {
+        "id": "blk_about_intro",
+        "page_key": "about",
+        "type": "about_text",
+        "name": "Sobre CEPIN-CIS",
+        "eyebrow": "CEPIN-CIS",
+        "title": "Sobre nos",
+        "body": "O Centro de Pesquisa e Inovacao em Cidades Inteligentes e Sustentaveis (CEPIN-CIS), implementado no IFSP campus Caraguatatuba, tem como missao fomentar o desenvolvimento de cidades inteligentes e sustentaveis. Para isso, atua como um repositorio de tecnologias, um espaco dedicado a experimentacao pratica e um agente de interlocucao capaz de estabelecer conexoes produtivas entre os setores publico e privado.\n\nSua atuacao se estrutura de maneira a promover, de forma inclusiva, colaborativa e equitativa, o debate e a construcao de solucoes que contemplem as dimensoes ambientais, economicas, sociais e culturais da sustentabilidade.\n\nNesse sentido, o CEPIN-CIS direciona seus esforcos para desenvolver investigacao fundamental ou aplicada voltada ao campo das cidades inteligentes e sustentaveis, aproximando pesquisa, transferencia de tecnologia e aplicacao pratica.",
+        "items": [],
+        "cta_label": "",
+        "cta_url": "",
+        "embed_url": "",
+        "media_url": "",
+        "media_dark_url": "",
+        "media_alt": "",
+        "width": "span_2",
+        "height": "tall",
+        "position": 10,
+        "status": "published",
+        "show_context_note": false,
+        "created_at": "2026-04-22 00:00:00",
+        "updated_at": "2026-04-22 00:00:00"
+    },
+    {
+        "id": "blk_about_banner",
+        "page_key": "about",
+        "type": "about_media",
+        "name": "Banner institucional",
+        "eyebrow": "",
+        "title": "",
+        "body": "",
+        "items": [],
+        "cta_label": "",
+        "cta_url": "",
+        "embed_url": "",
+        "media_url": "./img/banner.png",
+        "media_dark_url": "./img/bannerescuro.png",
+        "media_alt": "Logo CEPIN-CIS",
+        "width": "span_2",
+        "height": "tall",
+        "position": 20,
+        "status": "published",
+        "show_context_note": false,
+        "created_at": "2026-04-22 00:00:00",
+        "updated_at": "2026-04-22 00:00:00"
+    },
+    {
+        "id": "blk_about_infrastructure",
+        "page_key": "about",
+        "type": "about_list",
+        "name": "Infraestruturas",
+        "eyebrow": "Estrutura",
+        "title": "Infraestruturas",
+        "body": "O CEPIN-CIS esta localizado na sala 107B do IFSP Campus Caraguatatuba, e sua infraestrutura conta com os seguintes recursos:",
+        "items": [
+            {
+                "label": "",
+                "value": "03 Desktop HP 280 G5 SFF com processador Intel Core i7 de 10a geracao, SSD 512 GB e 16 GB de RAM.",
+                "url": ""
+            },
+            {
+                "label": "",
+                "value": "03 monitores LG 23.8 Full HD 75Hz 5ms HDMI.",
+                "url": ""
+            },
+            {
+                "label": "",
+                "value": "01 notebook VAIO FE15 AMD Ryzen 7 com Windows 11, 16 GB e SSD 512 GB.",
+                "url": ""
+            },
+            {
+                "label": "",
+                "value": "01 switch TP-Link 8 portas TL-SG108E.",
+                "url": ""
+            },
+            {
+                "label": "",
+                "value": "07 kits Arduino com sensores, display, motores e placa Mega 2560 R3.",
+                "url": ""
+            },
+            {
+                "label": "",
+                "value": "01 kit de sensores diversos compativeis com Arduino.",
+                "url": ""
+            }
+        ],
+        "cta_label": "",
+        "cta_url": "",
+        "embed_url": "",
+        "media_url": "./img/Monitor.png",
+        "media_dark_url": "",
+        "media_alt": "Monitor ilustrando a infraestrutura do CEPIN-CIS",
+        "width": "full",
+        "height": "regular",
+        "position": 30,
+        "status": "published",
+        "show_context_note": false,
+        "created_at": "2026-04-22 00:00:00",
+        "updated_at": "2026-04-22 00:00:00"
+    },
+    {
+        "id": "blk_about_regulation",
+        "page_key": "about",
+        "type": "about_cta",
+        "name": "Regulamento sobre",
+        "eyebrow": "",
+        "title": "Regulamento",
+        "body": "O regulamento do Centro de Pesquisa e Inovacao em Cidades Inteligentes e Sustentaveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missao do CEPIN-CIS como espaco de fomento a pesquisa aplicada, a inovacao tecnologica e a reflexao critica sobre os desafios contemporaneos das cidades.\n\nO regulamento estabelece as diretrizes para a participacao de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensao que dialoguem com as areas tematicas do Centro, alem de abrir espaco para a colaboracao de pesquisadores externos.",
+        "items": [],
+        "cta_label": "Clique aqui para ver o regulamento",
+        "cta_url": "https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf",
+        "embed_url": "",
+        "media_url": "",
+        "media_dark_url": "",
+        "media_alt": "",
+        "width": "span_2",
+        "height": "regular",
+        "position": 40,
+        "status": "published",
+        "show_context_note": false,
+        "created_at": "2026-04-22 00:00:00",
+        "updated_at": "2026-04-22 00:00:00"
+    },
+    {
+        "id": "blk_about_contact",
+        "page_key": "about",
+        "type": "about_cta",
+        "name": "Contato sobre",
+        "eyebrow": "",
+        "title": "Contato",
+        "body": "Quer saber mais ou colaborar com o CEPIN-CIS? Entre em contato com nossa equipe de pesquisa.",
+        "items": [
+            {
+                "label": "Email institucional",
+                "value": "cepin.cis@ifspcaraguatatuba.edu.br",
+                "url": "mailto:cepin.cis@ifspcaraguatatuba.edu.br"
+            },
+            {
+                "label": "Endereco",
+                "value": "IFSP Campus Caraguatatuba, sala 107B.",
+                "url": ""
+            }
+        ],
+        "cta_label": "Enviar E-mail",
+        "cta_url": "mailto:cepin.cis@ifspcaraguatatuba.edu.br",
+        "embed_url": "",
+        "media_url": "",
+        "media_dark_url": "",
+        "media_alt": "",
+        "width": "span_2",
+        "height": "regular",
+        "position": 50,
+        "status": "published",
+        "show_context_note": false,
+        "created_at": "2026-04-22 00:00:00",
+        "updated_at": "2026-04-22 00:00:00"
     }
 ]
