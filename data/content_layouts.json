@@ -1,4 +1,24 @@
 {
+    "contact": {
+        "page_key": "contact",
+        "grid_style": "standard",
+        "columns": 2,
+        "mobile_columns": 1,
+        "gap": 24,
+        "container_width": 1180,
+        "block_padding": 28,
+        "block_min_height": 210
+    },
+    "thematic_areas": {
+        "page_key": "thematic_areas",
+        "grid_style": "standard",
+        "columns": 2,
+        "mobile_columns": 1,
+        "gap": 22,
+        "container_width": 1180,
+        "block_padding": 28,
+        "block_min_height": 200
+    },
     "about": {
         "page_key": "about",
         "grid_style": "dense",

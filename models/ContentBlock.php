@@ -11,14 +11,14 @@ class ContentBlockManager
             'path' => 'contact.php',
             'allowed_types' => ['contact_info', 'map_embed', 'text_card'],
             'allowed_widths' => ['half', 'full'],
-            'supports_layout_builder' => false,
+            'supports_layout_builder' => true,
         ],
         'thematic_areas' => [
             'label' => 'Areas tematicas',
             'path' => 'implement.php',
             'allowed_types' => ['thematic_intro', 'thematic_topic', 'thematic_cta'],
             'allowed_widths' => ['half', 'full'],
-            'supports_layout_builder' => false,
+            'supports_layout_builder' => true,
         ],
         'about' => [
             'label' => 'Sobre',
@@ -98,6 +98,26 @@ class ContentBlockManager
     ];
 
     private const DEFAULT_LAYOUTS = [
+        'contact' => [
+            'page_key' => 'contact',
+            'grid_style' => 'standard',
+            'columns' => 2,
+            'mobile_columns' => 1,
+            'gap' => 24,
+            'container_width' => 1180,
+            'block_padding' => 28,
+            'block_min_height' => 210,
+        ],
+        'thematic_areas' => [
+            'page_key' => 'thematic_areas',
+            'grid_style' => 'standard',
+            'columns' => 2,
+            'mobile_columns' => 1,
+            'gap' => 22,
+            'container_width' => 1180,
+            'block_padding' => 28,
+            'block_min_height' => 200,
+        ],
         'about' => [
             'page_key' => 'about',
             'grid_style' => 'dense',

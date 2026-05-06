@@ -6,27 +6,7 @@ require_once 'models/ContentBlock.php';
 
 $contentManager = new ContentBlockManager();
 $thematicBlocks = array_values($contentManager->getPageBlocks('thematic_areas'));
-$introBlocks = [];
-$topicBlocks = [];
-$ctaBlocks = [];
-
-foreach ($thematicBlocks as $block) {
-    $blockType = (string) ($block['type'] ?? 'thematic_topic');
-
-    if ($blockType === 'thematic_intro') {
-        $introBlocks[] = $block;
-        continue;
-    }
-
-    if ($blockType === 'thematic_cta') {
-        $ctaBlocks[] = $block;
-        continue;
-    }
-
-    if ($blockType === 'thematic_topic') {
-        $topicBlocks[] = $block;
-    }
-}
+$thematicLayout = $contentManager->getPageLayout('thematic_areas');
 
 function thematic_render_body(string $text): string
 {
@@ -51,8 +31,12 @@ function thematic_render_body(string $text): string
     return implode(PHP_EOL, $markup);
 }
 
-function thematic_next_heading_tag(bool &$pageHeadingUsed): string
+function thematic_next_heading_tag(array $block, bool &$pageHeadingUsed): ?string
 {
+    if (trim((string) ($block['title'] ?? '')) === '') {
+        return null;
+    }
+
     if (!$pageHeadingUsed) {
         $pageHeadingUsed = true;
         return 'h1';
@@ -95,19 +79,67 @@ function thematic_render_contact_items(array $items): void
     <?php
 }
 
-function thematic_render_intro_block(array $block, string $headingTag): void
+function thematic_block_classes(array $block): string
 {
+    $type = (string) ($block['type'] ?? 'thematic_topic');
+    $height = (string) ($block['height'] ?? 'regular');
+    $classes = ['panel-card', 'content-block', 'thematic-block', 'content-block--height-' . $height];
+
+    switch ($type) {
+        case 'thematic_intro':
+            $classes[] = 'public-copy-card';
+            $classes[] = 'public-copy-card--featured';
+            $classes[] = 'thematic-block--intro';
+            break;
+        case 'thematic_cta':
+            $classes[] = !empty($block['items']) ? 'public-copy-card' : 'public-simple-card';
+            $classes[] = 'thematic-block--cta';
+            break;
+        case 'thematic_topic':
+        default:
+            $classes[] = 'public-topic-card';
+            $classes[] = 'thematic-block--topic';
+            break;
+    }
+
+    return implode(' ', $classes);
+}
+
+function thematic_block_style(array $block, ContentBlockManager $contentManager, array $layout): string
+{
+    $columns = max(1, (int) ($layout['columns'] ?? 2));
+    $span = $contentManager->getWidthSpan((string) ($block['width'] ?? 'half'), $columns);
+
+    return 'grid-column: span ' . $span . ' / span ' . $span . ';';
+}
+
+function thematic_render_block(array $block, ?string $headingTag, ContentBlockManager $contentManager, array $layout): void
+{
+    $type = (string) ($block['type'] ?? 'thematic_topic');
     ?>
-    <section class="panel-card public-copy-card public-copy-card--featured thematic-block thematic-block--intro">
+    <article
+        class="<?php echo htmlspecialchars(thematic_block_classes($block), ENT_QUOTES, 'UTF-8'); ?>"
+        style="<?php echo htmlspecialchars(thematic_block_style($block, $contentManager, $layout), ENT_QUOTES, 'UTF-8'); ?>"
+    >
         <?php if (($block['eyebrow'] ?? '') !== ''): ?>
-            <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></p>
+            <?php if ($type === 'thematic_topic'): ?>
+                <span class="public-topic-tag"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></span>
+            <?php else: ?>
+                <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></p>
+            <?php endif; ?>
         <?php endif; ?>
 
-        <<?php echo $headingTag; ?>>
-            <?php echo htmlspecialchars((string) ($block['title'] ?? 'Areas tematicas'), ENT_QUOTES, 'UTF-8'); ?>
-        </<?php echo $headingTag; ?>>
+        <?php if ($headingTag !== null): ?>
+            <<?php echo $headingTag; ?>>
+                <?php echo htmlspecialchars((string) ($block['title'] ?? 'Bloco tematico'), ENT_QUOTES, 'UTF-8'); ?>
+            </<?php echo $headingTag; ?>>
+        <?php endif; ?>
 
         <?php echo thematic_render_body((string) ($block['body'] ?? '')); ?>
+
+        <?php if ($type === 'thematic_cta' && !empty($block['items'])): ?>
+            <?php thematic_render_contact_items($block['items']); ?>
+        <?php endif; ?>
 
         <?php if ((string) ($block['cta_label'] ?? '') !== '' && (string) ($block['cta_url'] ?? '') !== ''): ?>
             <div class="hero-actions">
@@ -116,50 +148,22 @@ function thematic_render_intro_block(array $block, string $headingTag): void
                 </a>
             </div>
         <?php endif; ?>
-    </section>
-    <?php
-}
-
-function thematic_render_topic_block(array $block): void
-{
-    $width = (string) ($block['width'] ?? 'half');
-    ?>
-    <article class="panel-card public-topic-card thematic-block thematic-block--topic content-block content-block--<?php echo htmlspecialchars($width, ENT_QUOTES, 'UTF-8'); ?>">
-        <?php if (($block['eyebrow'] ?? '') !== ''): ?>
-            <span class="public-topic-tag"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></span>
-        <?php endif; ?>
-
-        <h3><?php echo htmlspecialchars((string) ($block['title'] ?? 'Area tematica'), ENT_QUOTES, 'UTF-8'); ?></h3>
-        <?php echo thematic_render_body((string) ($block['body'] ?? '')); ?>
     </article>
     <?php
 }
 
-function thematic_render_cta_block(array $block): void
-{
-    $width = (string) ($block['width'] ?? 'half');
-    $baseClass = !empty($block['items']) ? 'public-copy-card' : 'public-simple-card';
-    ?>
-    <article class="panel-card <?php echo htmlspecialchars($baseClass, ENT_QUOTES, 'UTF-8'); ?> thematic-block thematic-block--cta content-block content-block--<?php echo htmlspecialchars($width, ENT_QUOTES, 'UTF-8'); ?>">
-        <?php if (($block['eyebrow'] ?? '') !== ''): ?>
-            <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></p>
-        <?php endif; ?>
-
-        <h2><?php echo htmlspecialchars((string) ($block['title'] ?? 'Bloco complementar'), ENT_QUOTES, 'UTF-8'); ?></h2>
-
-        <?php echo thematic_render_body((string) ($block['body'] ?? '')); ?>
-        <?php thematic_render_contact_items($block['items'] ?? []); ?>
-
-        <?php if ((string) ($block['cta_label'] ?? '') !== '' && (string) ($block['cta_url'] ?? '') !== ''): ?>
-            <div class="hero-actions">
-                <a class="dashboard-btn" href="<?php echo htmlspecialchars((string) $block['cta_url'], ENT_QUOTES, 'UTF-8'); ?>">
-                    <?php echo htmlspecialchars((string) $block['cta_label'], ENT_QUOTES, 'UTF-8'); ?>
-                </a>
-            </div>
-        <?php endif; ?>
-    </article>
-    <?php
-}
+$gridStyleClass = (string) ($thematicLayout['grid_style'] ?? 'standard') === 'dense'
+    ? 'content-layout-grid content-layout-grid--dense'
+    : 'content-layout-grid';
+$layoutStyle = sprintf(
+    '--content-layout-columns:%d; --content-layout-mobile-columns:%d; --content-layout-gap:%dpx; --content-layout-width:%dpx; --content-layout-padding:%dpx; --content-layout-min-height:%dpx;',
+    (int) ($thematicLayout['columns'] ?? 2),
+    (int) ($thematicLayout['mobile_columns'] ?? 1),
+    (int) ($thematicLayout['gap'] ?? 22),
+    (int) ($thematicLayout['container_width'] ?? 1180),
+    (int) ($thematicLayout['block_padding'] ?? 28),
+    (int) ($thematicLayout['block_min_height'] ?? 200)
+);
 
 include_once 'includes/header.php';
 ?>
@@ -167,39 +171,21 @@ include_once 'includes/header.php';
 <div class="ball"></div>
 
 <main class="page-shell public-shell">
-    <?php if (empty($introBlocks)): ?>
-        <section class="panel-card public-copy-card public-copy-card--featured thematic-block thematic-block--intro">
-            <h1>Areas tematicas</h1>
-            <p>Os blocos de abertura desta pagina ainda nao foram publicados no painel mestre.</p>
-        </section>
-    <?php else: ?>
-        <?php $pageHeadingUsed = false; ?>
-        <?php foreach ($introBlocks as $block): ?>
-            <?php thematic_render_intro_block($block, thematic_next_heading_tag($pageHeadingUsed)); ?>
-        <?php endforeach; ?>
-    <?php endif; ?>
-
-    <section id="areas" class="public-topic-grid public-topic-grid--wide public-topic-grid--blocks">
-        <?php if (empty($topicBlocks)): ?>
-            <article class="panel-card public-topic-card thematic-block thematic-block--topic content-block content-block--full">
-                <span class="public-topic-tag">Em atualizacao</span>
-                <h3>Nenhuma area tematica publicada</h3>
-                <p>Use o painel mestre para criar ou reorganizar os cards desta secao.</p>
-            </article>
-        <?php else: ?>
-            <?php foreach ($topicBlocks as $block): ?>
-                <?php thematic_render_topic_block($block); ?>
-            <?php endforeach; ?>
-        <?php endif; ?>
+    <section id="areas" class="content-layout-shell" style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES, 'UTF-8'); ?>">
+        <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES, 'UTF-8'); ?>">
+            <?php if (empty($thematicBlocks)): ?>
+                <article class="panel-card public-copy-card public-copy-card--featured thematic-block content-block content-block--height-regular" style="grid-column: 1 / -1;">
+                    <h1>Areas tematicas em atualizacao</h1>
+                    <p>Os blocos desta pagina ainda nao foram publicados no painel mestre.</p>
+                </article>
+            <?php else: ?>
+                <?php $pageHeadingUsed = false; ?>
+                <?php foreach ($thematicBlocks as $block): ?>
+                    <?php thematic_render_block($block, thematic_next_heading_tag($block, $pageHeadingUsed), $contentManager, $thematicLayout); ?>
+                <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
     </section>
-
-    <?php if (!empty($ctaBlocks)): ?>
-        <section class="public-cta-grid public-cta-grid--blocks">
-            <?php foreach ($ctaBlocks as $block): ?>
-                <?php thematic_render_cta_block($block); ?>
-            <?php endforeach; ?>
-        </section>
-    <?php endif; ?>
 </main>
 
 <?php include_once 'includes/footer.php'; ?>

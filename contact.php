@@ -9,6 +9,7 @@ require_once 'models/ContentBlock.php';
 
 $contentManager = new ContentBlockManager();
 $contactBlocks = array_values($contentManager->getPageBlocks('contact'));
+$contactLayout = $contentManager->getPageLayout('contact');
 $initialVisibleContactBlocks = array_slice($contactBlocks, 0, 7);
 $overflowContactBlocks = array_slice($contactBlocks, 7);
 $hasOverflowContactBlocks = !empty($overflowContactBlocks);
@@ -48,7 +49,12 @@ function contact_render_body(string $text): string
 
 function contact_block_classes(array $block): string
 {
-    $classes = ['panel-card', 'content-block', 'content-block--' . (string) ($block['width'] ?? 'half')];
+    $classes = [
+        'panel-card',
+        'content-block',
+        'content-block--' . (string) ($block['width'] ?? 'half'),
+        'content-block--height-' . (string) ($block['height'] ?? 'regular'),
+    ];
     $type = (string) ($block['type'] ?? 'text_card');
 
     if ($type === 'contact_info') {
@@ -66,11 +72,22 @@ function contact_block_classes(array $block): string
     return implode(' ', $classes);
 }
 
-function contact_render_block(array $block, string $headingTag, bool $hasContext, string $projectInterest, string $categoryInterest): void
+function contact_block_style(array $block, ContentBlockManager $contentManager, array $layout): string
+{
+    $columns = max(1, (int) ($layout['columns'] ?? 2));
+    $span = $contentManager->getWidthSpan((string) ($block['width'] ?? 'half'), $columns);
+
+    return 'grid-column: span ' . $span . ' / span ' . $span . ';';
+}
+
+function contact_render_block(array $block, string $headingTag, bool $hasContext, string $projectInterest, string $categoryInterest, ContentBlockManager $contentManager, array $layout): void
 {
     $blockType = (string) ($block['type'] ?? 'text_card');
     ?>
-    <article class="<?php echo htmlspecialchars(contact_block_classes($block), ENT_QUOTES, 'UTF-8'); ?>">
+    <article
+        class="<?php echo htmlspecialchars(contact_block_classes($block), ENT_QUOTES, 'UTF-8'); ?>"
+        style="<?php echo htmlspecialchars(contact_block_style($block, $contentManager, $layout), ENT_QUOTES, 'UTF-8'); ?>"
+    >
         <?php if (($block['eyebrow'] ?? '') !== ''): ?>
             <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></p>
         <?php endif; ?>
@@ -143,53 +160,70 @@ function contact_render_block(array $block, string $headingTag, bool $hasContext
     <?php
 }
 
+$gridStyleClass = (string) ($contactLayout['grid_style'] ?? 'standard') === 'dense'
+    ? 'content-layout-grid content-layout-grid--dense'
+    : 'content-layout-grid';
+$layoutStyle = sprintf(
+    '--content-layout-columns:%d; --content-layout-mobile-columns:%d; --content-layout-gap:%dpx; --content-layout-width:%dpx; --content-layout-padding:%dpx; --content-layout-min-height:%dpx;',
+    (int) ($contactLayout['columns'] ?? 2),
+    (int) ($contactLayout['mobile_columns'] ?? 1),
+    (int) ($contactLayout['gap'] ?? 24),
+    (int) ($contactLayout['container_width'] ?? 1180),
+    (int) ($contactLayout['block_padding'] ?? 28),
+    (int) ($contactLayout['block_min_height'] ?? 210)
+);
+$toggleSpan = $contentManager->getWidthSpan('half', (int) ($contactLayout['columns'] ?? 2));
+
 include_once 'includes/header.php';
 ?>
 
 <div class="ball"></div>
 
 <main class="page-shell public-shell">
-    <div class="content-block-reveal-root" data-content-block-reveal-root>
-        <section id="contato" class="public-contact-grid public-contact-grid--page public-contact-grid--blocks">
-            <?php if (empty($contactBlocks)): ?>
-                <article class="panel-card public-copy-card public-copy-card--featured content-block content-block--full">
-                    <h1>Contato em atualizacao</h1>
-                    <p>Os blocos desta pagina ainda nao foram publicados no painel mestre.</p>
-                </article>
-            <?php else: ?>
-                <?php $pageHeadingUsed = false; ?>
-                <?php foreach ($initialVisibleContactBlocks as $block): ?>
-                    <?php contact_render_block($block, contact_next_heading_tag($pageHeadingUsed), $hasContext, $projectInterest, $categoryInterest); ?>
-                <?php endforeach; ?>
+    <section id="contato" class="content-layout-shell" style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES, 'UTF-8'); ?>">
+        <div class="content-block-reveal-root" data-content-block-reveal-root>
+            <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES, 'UTF-8'); ?>">
+                <?php if (empty($contactBlocks)): ?>
+                    <article class="panel-card public-copy-card public-copy-card--featured content-block content-block--height-regular" style="grid-column: 1 / -1;">
+                        <h1>Contato em atualizacao</h1>
+                        <p>Os blocos desta pagina ainda nao foram publicados no painel mestre.</p>
+                    </article>
+                <?php else: ?>
+                    <?php $pageHeadingUsed = false; ?>
+                    <?php foreach ($initialVisibleContactBlocks as $block): ?>
+                        <?php contact_render_block($block, contact_next_heading_tag($pageHeadingUsed), $hasContext, $projectInterest, $categoryInterest, $contentManager, $contactLayout); ?>
+                    <?php endforeach; ?>
 
-                <?php if ($hasOverflowContactBlocks): ?>
-                    <button
-                        type="button"
-                        class="panel-card content-block content-block--half content-block--toggle"
-                        data-content-block-toggle
-                        aria-expanded="false"
-                        aria-controls="contactOverflowBlocks"
-                    >
-                        <span class="content-block-toggle__icon" aria-hidden="true">+</span>
-                        <span class="content-block-toggle__label">Ver mais blocos</span>
-                        <span class="content-block-toggle__count"><?php echo count($overflowContactBlocks); ?> bloco(s) extra(s)</span>
-                    </button>
+                    <?php if ($hasOverflowContactBlocks): ?>
+                        <button
+                            type="button"
+                            class="panel-card content-block content-block--half content-block--height-regular content-block--toggle"
+                            data-content-block-toggle
+                            aria-expanded="false"
+                            aria-controls="contactOverflowBlocks"
+                            style="grid-column: span <?php echo (int) $toggleSpan; ?> / span <?php echo (int) $toggleSpan; ?>;"
+                        >
+                            <span class="content-block-toggle__icon" aria-hidden="true">+</span>
+                            <span class="content-block-toggle__label">Ver mais blocos</span>
+                            <span class="content-block-toggle__count"><?php echo count($overflowContactBlocks); ?> bloco(s) extra(s)</span>
+                        </button>
+                    <?php endif; ?>
                 <?php endif; ?>
-            <?php endif; ?>
-        </section>
+            </div>
 
-        <?php if ($hasOverflowContactBlocks): ?>
-            <div class="content-block-reveal" id="contactOverflowBlocks" data-content-block-reveal>
-                <div class="content-block-reveal__inner" data-content-block-reveal-inner>
-                    <div class="public-contact-grid public-contact-grid--page public-contact-grid--blocks public-contact-grid--overflow">
-                        <?php foreach ($overflowContactBlocks as $block): ?>
-                            <?php contact_render_block($block, contact_next_heading_tag($pageHeadingUsed), $hasContext, $projectInterest, $categoryInterest); ?>
-                        <?php endforeach; ?>
+            <?php if ($hasOverflowContactBlocks): ?>
+                <div class="content-block-reveal" id="contactOverflowBlocks" data-content-block-reveal>
+                    <div class="content-block-reveal__inner" data-content-block-reveal-inner>
+                        <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES, 'UTF-8'); ?>">
+                            <?php foreach ($overflowContactBlocks as $block): ?>
+                                <?php contact_render_block($block, contact_next_heading_tag($pageHeadingUsed), $hasContext, $projectInterest, $categoryInterest, $contentManager, $contactLayout); ?>
+                            <?php endforeach; ?>
+                        </div>
                     </div>
                 </div>
-            </div>
-        <?php endif; ?>
-    </div>
+            <?php endif; ?>
+        </div>
+    </section>
 </main>
 
 <?php include_once 'includes/footer.php'; ?>

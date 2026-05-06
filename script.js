@@ -1134,8 +1134,9 @@ function initAdminBlockForm() {
     const groups = Array.from(document.querySelectorAll('[data-block-field-group]'));
     const typeOptions = typeSelect ? Array.from(typeSelect.options) : [];
     const widthOptions = widthSelect ? Array.from(widthSelect.options) : [];
-    const layoutBuilder = document.querySelector('[data-layout-builder]');
-    const layoutBuilderUsesInlineControls = layoutBuilder?.dataset.layoutInlineControls === '1';
+    const layoutBuilders = Array.from(document.querySelectorAll('[data-layout-builder]'));
+    const layoutBuilder = layoutBuilders[0] || null;
+    const layoutBuilderUsesInlineControls = layoutBuilders.some((builder) => builder.dataset.layoutInlineControls === '1');
     const layoutBuilderForm = layoutBuilder?.querySelector('[data-layout-builder-form]') || null;
     const layoutPreview = layoutBuilder?.querySelector('[data-layout-preview]') || null;
     const layoutInputs = layoutBuilder ? Array.from(layoutBuilder.querySelectorAll('[data-layout-input]')) : [];
@@ -1800,14 +1801,21 @@ function initAdminBlockForm() {
     }
 
     function syncLayoutBuilderVisibility() {
-        if (!layoutBuilder || !pageSelect) {
+        if (!layoutBuilders.length || !pageSelect) {
             return;
         }
 
-        layoutBuilder.hidden = pageSelect.value !== layoutBuilder.dataset.layoutBuilderPage;
+        layoutBuilders.forEach((builder) => {
+            builder.hidden = pageSelect.value !== builder.dataset.layoutBuilderPage;
+        });
     }
 
     function syncLayoutPreview() {
+        if (layoutBuilderUsesInlineControls) {
+            syncLayoutBuilderVisibility();
+            return;
+        }
+
         if (!layoutBuilder || !layoutPreview || !pageSelect) {
             return;
         }

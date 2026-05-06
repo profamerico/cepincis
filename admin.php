@@ -195,6 +195,274 @@ function admin_icon(string $name): string
     }
 }
 
+function admin_layout_builder_columns_max(string $pageKey): int
+{
+    return $pageKey === 'about' ? 4 : 2;
+}
+
+function admin_render_layout_builder(
+    string $pageKey,
+    array $pageDefinition,
+    array $layoutForm,
+    array $blocks,
+    array $widthOptions,
+    array $heightOptions,
+    array $gridStyleOptions,
+    array $errors,
+    bool $isVisible,
+    string $csrfToken,
+    ContentBlockManager $contentManager
+): void {
+    $pageLabel = (string) ($pageDefinition['label'] ?? $contentManager->getPageLabel($pageKey));
+    $columnsMax = admin_layout_builder_columns_max($pageKey);
+    $gridStyle = (string) ($layoutForm['grid_style'] ?? 'standard');
+    $layoutStyle = sprintf(
+        '--admin-layout-columns:%d; --admin-layout-gap:%dpx; --admin-layout-width:%dpx; --admin-layout-padding:%dpx; --admin-layout-min-height:%dpx; --admin-layout-flow:%s;',
+        (int) ($layoutForm['columns'] ?? ($pageKey === 'about' ? 4 : 2)),
+        (int) ($layoutForm['gap'] ?? 24),
+        (int) ($layoutForm['container_width'] ?? 1220),
+        (int) ($layoutForm['block_padding'] ?? 32),
+        (int) ($layoutForm['block_min_height'] ?? 210),
+        $gridStyle === 'dense' ? 'row dense' : 'row'
+    );
+    ?>
+    <article
+        class="panel-card admin-layout-builder"
+        data-layout-builder
+        data-layout-builder-page="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>"
+        data-layout-inline-controls="1"
+        <?php echo $isVisible ? '' : 'hidden'; ?>
+    >
+        <div class="panel-card-header">
+            <div>
+                <p class="eyebrow">Esqueleto da pagina</p>
+                <h2>Layout visual de <?php echo htmlspecialchars($pageLabel, ENT_QUOTES, 'UTF-8'); ?></h2>
+                <p class="admin-subtitle">Ajuste o grid desta pagina e refine cada bloco diretamente no canvas com olho, lapis e controles contextuais.</p>
+            </div>
+        </div>
+
+        <?php foreach ($errors as $error): ?>
+            <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
+        <?php endforeach; ?>
+
+        <form method="POST" class="stack-form admin-layout-builder__form" data-layout-builder-form>
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+            <input type="hidden" name="action" value="save_content_layout">
+            <input type="hidden" name="layout_page_key" value="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>">
+            <input type="hidden" name="layout_blocks_json" value="" data-layout-blocks-input>
+
+            <div class="admin-layout-builder__controls">
+                <div class="admin-layout-control admin-layout-control--select">
+                    <div class="admin-layout-control__top">
+                        <label for="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_grid_style">Formato do grid</label>
+                        <span class="admin-layout-control__value" data-layout-value-output="grid_style"></span>
+                    </div>
+                    <select id="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_grid_style" name="grid_style" data-layout-input="grid_style" class="admin-layout-control__select">
+                        <?php foreach ($gridStyleOptions as $gridStyleKey => $gridStyleLabel): ?>
+                            <option value="<?php echo htmlspecialchars($gridStyleKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo $gridStyle === (string) $gridStyleKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($gridStyleLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="admin-layout-control__note">Defina se a grade deve respirar mais ou encaixar os cards de forma mais densa.</p>
+                </div>
+
+                <div class="admin-layout-control">
+                    <div class="admin-layout-control__top">
+                        <label for="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_columns">Colunas no desktop</label>
+                        <span class="admin-layout-control__value" data-layout-value-output="columns"></span>
+                    </div>
+                    <input type="range" id="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_columns" name="columns" value="<?php echo htmlspecialchars((string) ($layoutForm['columns'] ?? '2'), ENT_QUOTES, 'UTF-8'); ?>" min="1" max="<?php echo $columnsMax; ?>" step="1" data-layout-input="columns" class="admin-layout-control__range">
+                    <div class="admin-layout-control__scale">
+                        <span>Mais focado</span>
+                        <span>Mais aberto</span>
+                    </div>
+                </div>
+
+                <div class="admin-layout-control">
+                    <div class="admin-layout-control__top">
+                        <label for="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_mobile_columns">Colunas no mobile</label>
+                        <span class="admin-layout-control__value" data-layout-value-output="mobile_columns"></span>
+                    </div>
+                    <input type="range" id="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_mobile_columns" name="mobile_columns" value="<?php echo htmlspecialchars((string) ($layoutForm['mobile_columns'] ?? '1'), ENT_QUOTES, 'UTF-8'); ?>" min="1" max="2" step="1" data-layout-input="mobile_columns" class="admin-layout-control__range">
+                    <div class="admin-layout-control__scale">
+                        <span>Empilhado</span>
+                        <span>Duplo</span>
+                    </div>
+                </div>
+
+                <div class="admin-layout-control">
+                    <div class="admin-layout-control__top">
+                        <label for="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_gap">Distancia entre blocos</label>
+                        <span class="admin-layout-control__value" data-layout-value-output="gap"></span>
+                    </div>
+                    <input type="range" id="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_gap" name="gap" value="<?php echo htmlspecialchars((string) ($layoutForm['gap'] ?? '24'), ENT_QUOTES, 'UTF-8'); ?>" min="12" max="56" step="1" data-layout-input="gap" class="admin-layout-control__range">
+                    <div class="admin-layout-control__scale">
+                        <span>Mais justo</span>
+                        <span>Mais arejado</span>
+                    </div>
+                </div>
+
+                <div class="admin-layout-control">
+                    <div class="admin-layout-control__top">
+                        <label for="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_container_width">Largura da composicao</label>
+                        <span class="admin-layout-control__value" data-layout-value-output="container_width"></span>
+                    </div>
+                    <input type="range" id="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_container_width" name="container_width" value="<?php echo htmlspecialchars((string) ($layoutForm['container_width'] ?? '1220'), ENT_QUOTES, 'UTF-8'); ?>" min="880" max="1480" step="10" data-layout-input="container_width" class="admin-layout-control__range">
+                    <div class="admin-layout-control__scale">
+                        <span>Contida</span>
+                        <span>Cenografica</span>
+                    </div>
+                </div>
+
+                <div class="admin-layout-control">
+                    <div class="admin-layout-control__top">
+                        <label for="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_block_padding">Respiro interno</label>
+                        <span class="admin-layout-control__value" data-layout-value-output="block_padding"></span>
+                    </div>
+                    <input type="range" id="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_block_padding" name="block_padding" value="<?php echo htmlspecialchars((string) ($layoutForm['block_padding'] ?? '32'), ENT_QUOTES, 'UTF-8'); ?>" min="18" max="56" step="1" data-layout-input="block_padding" class="admin-layout-control__range">
+                    <div class="admin-layout-control__scale">
+                        <span>Enxuto</span>
+                        <span>Respirado</span>
+                    </div>
+                </div>
+
+                <div class="admin-layout-control">
+                    <div class="admin-layout-control__top">
+                        <label for="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_block_min_height">Presenca vertical</label>
+                        <span class="admin-layout-control__value" data-layout-value-output="block_min_height"></span>
+                    </div>
+                    <input type="range" id="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_block_min_height" name="block_min_height" value="<?php echo htmlspecialchars((string) ($layoutForm['block_min_height'] ?? '210'), ENT_QUOTES, 'UTF-8'); ?>" min="140" max="420" step="5" data-layout-input="block_min_height" class="admin-layout-control__range">
+                    <div class="admin-layout-control__scale">
+                        <span>Baixa</span>
+                        <span>Monumental</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-layout-builder__footer">
+                <p class="admin-layout-builder__hint">Ajuste o ambiente geral acima e refine cada bloco diretamente no canvas abaixo com os icones de olho e lapis.</p>
+                <button type="submit" class="dashboard-btn">Salvar composicao de <?php echo htmlspecialchars($pageLabel, ENT_QUOTES, 'UTF-8'); ?></button>
+            </div>
+        </form>
+
+        <div class="admin-layout-preview-shell">
+            <div class="admin-layout-preview-copy">
+                <strong>Canvas interativo</strong>
+                <span>Clique em qualquer card para abrir a edicao. O olho volta para visualizacao, o lapis entra no modo de ajuste e as mudancas de largura, altura, ordem e visibilidade ficam prontas para salvar em lote.</span>
+            </div>
+
+            <div class="admin-layout-canvas" data-layout-preview style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES, 'UTF-8'); ?>">
+                <?php foreach ($blocks as $block): ?>
+                    <?php
+                    $previewSpan = $contentManager->getWidthSpan((string) ($block['width'] ?? 'half'), (int) ($layoutForm['columns'] ?? 2));
+                    $previewHeightFactor = $contentManager->getHeightFactor((string) ($block['height'] ?? 'regular'));
+                    $previewType = (string) ($block['type'] ?? 'text_card');
+                    $previewWidth = (string) ($block['width'] ?? 'half');
+                    $previewHeight = (string) ($block['height'] ?? 'regular');
+                    $previewStatus = (string) ($block['status'] ?? 'published');
+                    $previewTitle = admin_preview_block_title($block);
+                    $previewCopy = admin_preview_block_copy($block);
+                    $previewTypeLabel = $contentManager->getTypeLabel($previewType);
+                    $previewWidthLabel = $contentManager->getWidthLabel($previewWidth);
+                    $previewHeightLabel = $contentManager->getHeightLabel($previewHeight);
+                    $previewStatusLabel = $contentManager->getStatusLabel($previewStatus);
+                    $previewBlockSlug = preg_replace('/[^a-z0-9_-]+/', '-', strtolower($previewType));
+                    ?>
+                    <article
+                        class="admin-layout-preview-block admin-layout-preview-block--<?php echo htmlspecialchars((string) $previewBlockSlug, ENT_QUOTES, 'UTF-8'); ?> <?php echo $previewStatus === 'hidden' ? 'admin-layout-preview-block--hidden' : ''; ?>"
+                        data-layout-block-id="<?php echo htmlspecialchars((string) ($block['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                        data-layout-block-title="<?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-layout-selectable="1"
+                        tabindex="0"
+                        data-preview-width="<?php echo htmlspecialchars($previewWidth, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-preview-height="<?php echo htmlspecialchars($previewHeight, ENT_QUOTES, 'UTF-8'); ?>"
+                        data-preview-status="<?php echo htmlspecialchars($previewStatus, ENT_QUOTES, 'UTF-8'); ?>"
+                        style="grid-column: span <?php echo $previewSpan; ?> / span <?php echo $previewSpan; ?>; --admin-block-height-factor: <?php echo htmlspecialchars((string) $previewHeightFactor, ENT_QUOTES, 'UTF-8'); ?>;"
+                    >
+                        <div class="admin-layout-preview-block__rail">
+                            <button type="button" class="admin-layout-preview-icon is-active" data-layout-mode="preview" aria-label="Visualizar <?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>" title="Visualizar bloco">
+                                <?php echo admin_icon('eye'); ?>
+                            </button>
+                            <button type="button" class="admin-layout-preview-icon" data-layout-mode="edit" aria-label="Editar layout de <?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>" title="Editar layout do bloco">
+                                <?php echo admin_icon('edit'); ?>
+                            </button>
+                        </div>
+
+                        <div class="admin-layout-preview-block__shell">
+                            <span class="admin-layout-preview-block__type"><?php echo htmlspecialchars($previewTypeLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                            <strong class="admin-layout-preview-block__title"><?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?></strong>
+                            <span class="admin-layout-preview-block__meta" data-layout-block-meta>
+                                Ordem visual <?php echo (int) ($block['position'] ?? 0); ?> | <?php echo htmlspecialchars($previewWidthLabel, ENT_QUOTES, 'UTF-8'); ?> | <?php echo htmlspecialchars($previewHeightLabel, ENT_QUOTES, 'UTF-8'); ?> | <?php echo htmlspecialchars($previewStatusLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            </span>
+                            <p class="admin-layout-preview-block__body"><?php echo htmlspecialchars($previewCopy, ENT_QUOTES, 'UTF-8'); ?></p>
+                            <div class="admin-layout-preview-block__mockup" aria-hidden="true">
+                                <span class="admin-layout-preview-block__line admin-layout-preview-block__line--strong"></span>
+                                <span class="admin-layout-preview-block__line"></span>
+                                <span class="admin-layout-preview-block__line admin-layout-preview-block__line--short"></span>
+                            </div>
+                        </div>
+
+                        <div class="admin-layout-preview-panel" data-layout-block-panel hidden>
+                            <div class="admin-layout-preview-panel__section">
+                                <span class="admin-layout-preview-panel__label">Largura</span>
+                                <div class="admin-layout-preview-choices" role="group" aria-label="Largura de <?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <?php foreach ($widthOptions as $widthKey => $widthLabel): ?>
+                                        <button
+                                            type="button"
+                                            class="admin-layout-choice <?php echo $previewWidth === (string) $widthKey ? 'is-selected' : ''; ?>"
+                                            data-layout-choice="width"
+                                            data-choice-value="<?php echo htmlspecialchars((string) $widthKey, ENT_QUOTES, 'UTF-8'); ?>"
+                                            title="<?php echo htmlspecialchars((string) $widthLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                                        >
+                                            <?php echo htmlspecialchars(admin_visual_width_short_label((string) $widthKey), ENT_QUOTES, 'UTF-8'); ?>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+
+                            <div class="admin-layout-preview-panel__section">
+                                <span class="admin-layout-preview-panel__label">Altura</span>
+                                <div class="admin-layout-preview-choices" role="group" aria-label="Altura de <?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <?php foreach ($heightOptions as $heightKey => $heightLabel): ?>
+                                        <button
+                                            type="button"
+                                            class="admin-layout-choice admin-layout-choice--text <?php echo $previewHeight === (string) $heightKey ? 'is-selected' : ''; ?>"
+                                            data-layout-choice="height"
+                                            data-choice-value="<?php echo htmlspecialchars((string) $heightKey, ENT_QUOTES, 'UTF-8'); ?>"
+                                        >
+                                            <?php echo htmlspecialchars((string) $heightLabel, ENT_QUOTES, 'UTF-8'); ?>
+                                        </button>
+                                    <?php endforeach; ?>
+                                </div>
+                            </div>
+
+                            <div class="admin-layout-preview-panel__actions">
+                                <button type="button" class="admin-layout-preview-action admin-layout-preview-action--ghost" data-layout-visibility-toggle>
+                                    <span data-layout-visibility-label><?php echo $previewStatus === 'hidden' ? 'Publicar bloco' : 'Ocultar bloco'; ?></span>
+                                </button>
+
+                                <button type="button" class="admin-layout-preview-action" data-layout-move="-1">
+                                    <?php echo admin_icon('up'); ?>
+                                    <span>Subir</span>
+                                </button>
+
+                                <button type="button" class="admin-layout-preview-action" data-layout-move="1">
+                                    <?php echo admin_icon('down'); ?>
+                                    <span>Descer</span>
+                                </button>
+
+                                <button type="button" class="admin-layout-preview-link" data-layout-edit-content>Editar conteudo</button>
+                            </div>
+                        </div>
+                    </article>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </article>
+    <?php
+}
+
 if (empty($_SESSION['admin_csrf'])) {
     $_SESSION['admin_csrf'] = bin2hex(random_bytes(16));
 }
@@ -384,7 +652,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $decodedLayoutBlocks = json_decode($layoutBlocksJson, true);
 
                     if (!is_array($decodedLayoutBlocks)) {
-                        $contentLayoutErrors = ['O editor visual da pagina Sobre enviou um estado invalido. Recarregue a pagina e tente novamente.'];
+                        $pageLabel = $contentManager->getPageLabel($layoutPageKey);
+                        $contentLayoutErrors = ['O editor visual da pagina ' . $pageLabel . ' enviou um estado invalido. Recarregue a pagina e tente novamente.'];
                         $contentLayoutOverrides = $submittedLayout;
                         break;
                     }
@@ -395,7 +664,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $result = $contentManager->adminSaveLayoutBuilder($layoutPageKey, $submittedLayout, $submittedBlockStates);
 
                 if ($result['success']) {
-                    admin_set_flash('sucesso', 'Composicao visual da pagina Sobre salva com sucesso.');
+                    admin_set_flash('sucesso', 'Composicao visual da pagina ' . $contentManager->getPageLabel($layoutPageKey) . ' salva com sucesso.');
                     admin_redirect('content');
                 }
 
@@ -408,10 +677,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $users = $auth->listUsers();
 $contentBlocks = $contentManager->listBlocks(null, false);
-$contactContentBlocks = $contentManager->getPageBlocks('contact', false);
-$thematicContentBlocks = $contentManager->getPageBlocks('thematic_areas', false);
-$aboutContentBlocks = $contentManager->getPageBlocks('about', false);
-$aboutLayout = $contentManager->getPageLayout('about');
+$layoutBuilderPageKeys = [];
+
+foreach ($contentPageOptions as $pageKey => $pageDefinition) {
+    if (!empty($pageDefinition['supports_layout_builder'])) {
+        $layoutBuilderPageKeys[] = (string) $pageKey;
+    }
+}
+
+$pageBlocksByKey = [];
+$pageLayoutsByKey = [];
+
+foreach ($layoutBuilderPageKeys as $pageKey) {
+    $pageBlocksByKey[$pageKey] = $contentManager->getPageBlocks($pageKey, false);
+    $pageLayoutsByKey[$pageKey] = $contentManager->getPageLayout($pageKey);
+}
+
+$contactContentBlocks = $pageBlocksByKey['contact'] ?? [];
+$thematicContentBlocks = $pageBlocksByKey['thematic_areas'] ?? [];
+$aboutContentBlocks = $pageBlocksByKey['about'] ?? [];
 $projects = $projectManager->getAllProjects();
 $projectStats = $projectManager->getProjectStats();
 $contentStats = [
@@ -534,31 +818,38 @@ if (!$contentManager->isWidthAllowedForPage((string) $contentForm['page_key'], (
     $contentForm['width'] = $contentManager->getDefaultWidthForPage((string) $contentForm['page_key']);
 }
 
-$aboutLayoutForm = [
-    'page_key' => 'about',
-    'grid_style' => $aboutLayout['grid_style'] ?? 'dense',
-    'columns' => isset($aboutLayout['columns']) ? (string) $aboutLayout['columns'] : '4',
-    'mobile_columns' => isset($aboutLayout['mobile_columns']) ? (string) $aboutLayout['mobile_columns'] : '1',
-    'gap' => isset($aboutLayout['gap']) ? (string) $aboutLayout['gap'] : '24',
-    'container_width' => isset($aboutLayout['container_width']) ? (string) $aboutLayout['container_width'] : '1220',
-    'block_padding' => isset($aboutLayout['block_padding']) ? (string) $aboutLayout['block_padding'] : '32',
-    'block_min_height' => isset($aboutLayout['block_min_height']) ? (string) $aboutLayout['block_min_height'] : '210',
-];
+$layoutFormsByPage = [];
+$layoutWidthOptionsByPage = [];
 
-if ($contentLayoutOverrides !== null && (string) ($contentLayoutOverrides['page_key'] ?? '') === 'about') {
-    $contentForm['page_key'] = 'about';
+foreach ($layoutBuilderPageKeys as $pageKey) {
+    $pageLayout = $pageLayoutsByKey[$pageKey] ?? [];
+    $layoutFormsByPage[$pageKey] = [
+        'page_key' => $pageKey,
+        'grid_style' => $pageLayout['grid_style'] ?? 'standard',
+        'columns' => isset($pageLayout['columns']) ? (string) $pageLayout['columns'] : (string) admin_layout_builder_columns_max($pageKey),
+        'mobile_columns' => isset($pageLayout['mobile_columns']) ? (string) $pageLayout['mobile_columns'] : '1',
+        'gap' => isset($pageLayout['gap']) ? (string) $pageLayout['gap'] : '24',
+        'container_width' => isset($pageLayout['container_width']) ? (string) $pageLayout['container_width'] : '1220',
+        'block_padding' => isset($pageLayout['block_padding']) ? (string) $pageLayout['block_padding'] : '32',
+        'block_min_height' => isset($pageLayout['block_min_height']) ? (string) $pageLayout['block_min_height'] : '210',
+    ];
+    $layoutWidthOptionsByPage[$pageKey] = $contentManager->getAllowedWidthDefinitionsForPage($pageKey);
+}
+
+$layoutOverridePageKey = (string) ($contentLayoutOverrides['page_key'] ?? '');
+if ($contentLayoutOverrides !== null && $contentManager->pageSupportsLayoutBuilder($layoutOverridePageKey)) {
+    $contentForm['page_key'] = $layoutOverridePageKey;
     if (!$contentManager->isTypeAllowedForPage((string) $contentForm['page_key'], (string) $contentForm['type'])) {
         $contentForm['type'] = $contentManager->getDefaultTypeForPage((string) $contentForm['page_key']);
     }
     if (!$contentManager->isWidthAllowedForPage((string) $contentForm['page_key'], (string) $contentForm['width'])) {
         $contentForm['width'] = $contentManager->getDefaultWidthForPage((string) $contentForm['page_key']);
     }
-    $aboutLayoutForm = array_merge($aboutLayoutForm, $contentLayoutOverrides);
+    $layoutFormsByPage[$layoutOverridePageKey] = array_merge($layoutFormsByPage[$layoutOverridePageKey] ?? [], $contentLayoutOverrides);
 }
 
 $currentRoleLabel = $auth->getRoleLabel($currentUser);
-$aboutVisualWidthOptions = $contentManager->getAllowedWidthDefinitionsForPage('about');
-$aboutVisualHeightOptions = $contentManager->getHeightDefinitions();
+$layoutHeightOptions = $contentManager->getHeightDefinitions();
 ?>
 
 <?php include_once 'includes/header.php'; ?>
@@ -1097,6 +1388,26 @@ $aboutVisualHeightOptions = $contentManager->getHeightDefinitions();
             </form>
         </article>
 
+        <?php foreach ($layoutBuilderPageKeys as $layoutPageKey): ?>
+            <?php
+            $layoutErrorsForPage = $layoutOverridePageKey === $layoutPageKey ? $contentLayoutErrors : [];
+            admin_render_layout_builder(
+                $layoutPageKey,
+                $contentPageOptions[$layoutPageKey] ?? [],
+                $layoutFormsByPage[$layoutPageKey] ?? ['page_key' => $layoutPageKey],
+                $pageBlocksByKey[$layoutPageKey] ?? [],
+                $layoutWidthOptionsByPage[$layoutPageKey] ?? [],
+                $layoutHeightOptions,
+                $contentGridStyleOptions,
+                $layoutErrorsForPage,
+                (string) $contentForm['page_key'] === $layoutPageKey,
+                $csrfToken,
+                $contentManager
+            );
+            ?>
+        <?php endforeach; ?>
+
+        <?php if (false): ?>
         <article
             class="panel-card admin-layout-builder"
             data-layout-builder
@@ -1356,6 +1667,7 @@ $aboutVisualHeightOptions = $contentManager->getHeightDefinitions();
                 </div>
             </div>
         </article>
+        <?php endif; ?>
 
         <article class="panel-card">
             <div class="panel-card-header">
@@ -1492,6 +1804,104 @@ foreach ($contentBlocks as $block) {
             hidden: 'Oculto',
         };
 
+        function clampNumber(value, min, max, fallback) {
+            const parsed = Number.parseInt(value, 10);
+
+            if (Number.isNaN(parsed)) {
+                return fallback;
+            }
+
+            return Math.min(max, Math.max(min, parsed));
+        }
+
+        function resolveSpan(width, columns) {
+            switch (width) {
+                case 'full':
+                    return columns;
+                case 'span_4':
+                    return Math.min(4, columns);
+                case 'span_3':
+                    return Math.min(3, columns);
+                case 'span_2':
+                    return Math.min(2, columns);
+                case 'span_1':
+                case 'half':
+                default:
+                    return 1;
+            }
+        }
+
+        function resolveHeightFactor(height) {
+            switch (height) {
+                case 'compact':
+                    return 0.82;
+                case 'tall':
+                    return 1.34;
+                case 'regular':
+                default:
+                    return 1;
+            }
+        }
+
+        function describeLayoutValue(key, value) {
+            const numericValue = Number.parseInt(value, 10);
+
+            switch (key) {
+                case 'grid_style':
+                    return value === 'dense' ? 'Mosaico denso' : 'Fluxo regular';
+                case 'columns':
+                    return numericValue === 1 ? '1 coluna' : String(numericValue) + ' colunas';
+                case 'mobile_columns':
+                    return numericValue === 1 ? 'Empilhado' : '2 colunas';
+                case 'gap':
+                    if (numericValue <= 18) {
+                        return 'Compacto';
+                    }
+                    if (numericValue <= 30) {
+                        return 'Equilibrado';
+                    }
+                    if (numericValue <= 42) {
+                        return 'Respirado';
+                    }
+                    return 'Aereo';
+                case 'container_width':
+                    if (numericValue <= 980) {
+                        return 'Contida';
+                    }
+                    if (numericValue <= 1180) {
+                        return 'Equilibrada';
+                    }
+                    if (numericValue <= 1340) {
+                        return 'Ampla';
+                    }
+                    return 'Cenografica';
+                case 'block_padding':
+                    if (numericValue <= 24) {
+                        return 'Enxuto';
+                    }
+                    if (numericValue <= 36) {
+                        return 'Confortavel';
+                    }
+                    if (numericValue <= 46) {
+                        return 'Respirado';
+                    }
+                    return 'Luxuoso';
+                case 'block_min_height':
+                    if (numericValue <= 180) {
+                        return 'Baixa';
+                    }
+                    if (numericValue <= 250) {
+                        return 'Media';
+                    }
+                    if (numericValue <= 320) {
+                        return 'Alta';
+                    }
+                    return 'Monumental';
+                default:
+                    return String(value || '');
+            }
+        }
+
         function getEventElementTarget(event) {
             if (event.target instanceof Element) {
                 return event.target;
@@ -1504,22 +1914,18 @@ foreach ($contentBlocks as $block) {
             return null;
         }
 
-        function initAdminInlineBuilder() {
-            const builder = document.querySelector('[data-layout-builder][data-layout-inline-controls="1"]');
-            const preview = builder?.querySelector('[data-layout-preview]') || null;
-            const layoutForm = builder?.querySelector('[data-layout-builder-form]') || null;
-            const blocksInput = layoutForm?.querySelector('[data-layout-blocks-input]') || null;
+        function initAdminInlineBuilders() {
+            const builders = Array.from(document.querySelectorAll('[data-layout-builder][data-layout-inline-controls="1"]'));
             const contentForm = document.querySelector('[data-content-form]');
+            const pageField = document.querySelector('[data-block-page-select]');
             const contentHeading = document.querySelector('[data-content-form-heading]');
             const contentSubmit = document.querySelector('[data-content-form-submit]');
             const contentReset = document.querySelector('[data-content-form-reset]');
             const payloadNode = document.getElementById('content-block-payloads');
 
-            if (!builder || !preview || !layoutForm || !blocksInput || !contentForm || builder.dataset.inlineControlsBound === '1') {
+            if (!builders.length || !contentForm) {
                 return;
             }
-
-            builder.dataset.inlineControlsBound = '1';
 
             const fieldMap = {};
             Array.from(contentForm.querySelectorAll('[data-content-field]')).forEach((field) => {
@@ -1536,10 +1942,6 @@ foreach ($contentBlocks as $block) {
                 } catch (error) {
                     payloads = {};
                 }
-            }
-
-            function getBlocks() {
-                return Array.from(preview.querySelectorAll('[data-layout-block-id]'));
             }
 
             function getCurrentContentId() {
@@ -1580,6 +1982,20 @@ foreach ($contentBlocks as $block) {
                 }
             }
 
+            function focusContentForm() {
+                contentForm.scrollIntoView({
+                    block: 'start',
+                    behavior: 'smooth',
+                });
+
+                const nameField = fieldMap.name;
+                if (nameField instanceof HTMLElement && typeof nameField.focus === 'function') {
+                    window.setTimeout(() => {
+                        nameField.focus();
+                    }, 120);
+                }
+            }
+
             function emitFieldSignals(fieldName) {
                 const field = fieldMap[fieldName];
 
@@ -1591,294 +2007,25 @@ foreach ($contentBlocks as $block) {
                 field.dispatchEvent(new Event('change', { bubbles: true }));
             }
 
-            function serializeBlocks() {
-                blocksInput.value = JSON.stringify(
-                    getBlocks().map((block, index) => ({
-                        id: block.dataset.layoutBlockId || '',
-                        width: block.dataset.previewWidth || 'span_1',
-                        height: block.dataset.previewHeight || 'regular',
-                        status: block.dataset.previewStatus || 'published',
-                        position: (index + 1) * 10,
-                    }))
-                );
-            }
+            const builderStates = window.__adminInlineBuilderStates || new Map();
+            window.__adminInlineBuilderStates = builderStates;
 
-            function bindControl(control, handler) {
-                if (!(control instanceof HTMLElement) || control.dataset.layoutInlineControlBound === '1') {
+            function syncVisibleBuilders() {
+                if (!(pageField instanceof HTMLSelectElement)) {
                     return;
                 }
 
-                control.dataset.layoutInlineControlBound = '1';
-                control.dataset.layoutInlineControl = '1';
-                control.addEventListener('click', function (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    if (typeof event.stopImmediatePropagation === 'function') {
-                        event.stopImmediatePropagation();
-                    }
-
-                    handler();
+                builders.forEach((builder) => {
+                    builder.hidden = builder.dataset.layoutBuilderPage !== pageField.value;
                 });
             }
 
-            function getCurrentColumns() {
-                const columnsInput = layoutForm.querySelector('[data-layout-input="columns"]');
-                const parsed = Number.parseInt(columnsInput?.value || preview.style.getPropertyValue('--admin-layout-columns') || '4', 10);
-
-                if (Number.isNaN(parsed)) {
-                    return 4;
-                }
-
-                return Math.min(4, Math.max(1, parsed));
-            }
-
-            function resolveSpan(width, columns) {
-                switch (width) {
-                    case 'full':
-                        return columns;
-                    case 'span_4':
-                        return Math.min(4, columns);
-                    case 'span_3':
-                        return Math.min(3, columns);
-                    case 'span_2':
-                        return Math.min(2, columns);
-                    case 'span_1':
-                    case 'half':
-                    default:
-                        return 1;
-                }
-            }
-
-            function resolveHeightFactor(height) {
-                switch (height) {
-                    case 'compact':
-                        return 0.82;
-                    case 'tall':
-                        return 1.34;
-                    case 'regular':
-                    default:
-                        return 1;
-                }
-            }
-
-            function applyBlockFrame(block) {
-                if (!(block instanceof HTMLElement)) {
-                    return;
-                }
-
-                const previewWidth = block.dataset.previewWidth || 'span_1';
-                const previewHeight = block.dataset.previewHeight || 'regular';
-                const span = resolveSpan(previewWidth, getCurrentColumns());
-
-                block.style.gridColumn = 'span ' + String(span) + ' / span ' + String(span);
-                block.style.setProperty('--admin-block-height-factor', String(resolveHeightFactor(previewHeight)));
-            }
-
-            function revealBlockPanel(block) {
-                if (!(block instanceof HTMLElement)) {
-                    return;
-                }
-
-                const panel = block.querySelector('[data-layout-block-panel]');
-                if (!(panel instanceof HTMLElement)) {
-                    return;
-                }
-
-                window.requestAnimationFrame(() => {
-                    panel.scrollIntoView({
-                        block: 'nearest',
-                        behavior: 'smooth',
-                    });
-                });
-            }
-
-            function setBlockMode(targetBlock, mode, revealPanel) {
-                getBlocks().forEach((block) => {
-                    const isEditing = block === targetBlock && mode === 'edit';
-                    const panel = block.querySelector('[data-layout-block-panel]');
-                    const previewButton = block.querySelector('[data-layout-mode="preview"]');
-                    const editButton = block.querySelector('[data-layout-mode="edit"]');
-
-                    block.classList.toggle('is-editing', isEditing);
-
-                    if (previewButton) {
-                        previewButton.classList.toggle('is-active', !isEditing);
-                    }
-
-                    if (editButton) {
-                        editButton.classList.toggle('is-active', isEditing);
-                    }
-
-                    if (panel instanceof HTMLElement) {
-                        panel.hidden = !isEditing;
+            function syncAllBuilders() {
+                builderStates.forEach((builderState) => {
+                    if (builderState && typeof builderState.sync === 'function') {
+                        builderState.sync();
                     }
                 });
-
-                if (mode === 'edit' && revealPanel) {
-                    revealBlockPanel(targetBlock);
-                }
-            }
-
-            function bindBlockControls(block) {
-                if (!(block instanceof HTMLElement) || block.dataset.layoutInlineBlockBound === '1') {
-                    return;
-                }
-
-                block.dataset.layoutInlineBlockBound = '1';
-
-                bindControl(block.querySelector('[data-layout-mode="preview"]'), function () {
-                    setBlockMode(block, 'preview', false);
-                    syncBuilderState();
-                });
-
-                bindControl(block.querySelector('[data-layout-mode="edit"]'), function () {
-                    setBlockMode(block, 'edit', true);
-                    syncBuilderState();
-                });
-
-                block.querySelectorAll('[data-layout-choice="width"]').forEach(function (button) {
-                    bindControl(button, function () {
-                        block.dataset.previewWidth = button.dataset.choiceValue || 'span_1';
-                        setBlockMode(block, 'edit', false);
-                        syncBuilderState();
-                    });
-                });
-
-                block.querySelectorAll('[data-layout-choice="height"]').forEach(function (button) {
-                    bindControl(button, function () {
-                        block.dataset.previewHeight = button.dataset.choiceValue || 'regular';
-                        setBlockMode(block, 'edit', false);
-                        syncBuilderState();
-                    });
-                });
-
-                bindControl(block.querySelector('[data-layout-visibility-toggle]'), function () {
-                    block.dataset.previewStatus = block.dataset.previewStatus === 'hidden' ? 'published' : 'hidden';
-                    setBlockMode(block, 'edit', false);
-                    syncBuilderState();
-                });
-
-                bindControl(block.querySelector('[data-layout-move="-1"]'), function () {
-                    moveBlock(block, -1);
-                    setBlockMode(block, 'edit', true);
-                    syncBuilderState();
-                });
-
-                bindControl(block.querySelector('[data-layout-move="1"]'), function () {
-                    moveBlock(block, 1);
-                    setBlockMode(block, 'edit', true);
-                    syncBuilderState();
-                });
-
-                bindControl(block.querySelector('[data-layout-edit-content]'), function () {
-                    openContentBlock(block.dataset.layoutBlockId || '');
-                });
-
-                block.addEventListener('click', function (event) {
-                    const eventElement = getEventElementTarget(event);
-
-                    if (eventElement?.closest('[data-layout-inline-control="1"]')) {
-                        return;
-                    }
-
-                    setBlockMode(block, 'edit', true);
-                    syncBuilderState();
-                });
-
-                block.addEventListener('keydown', function (event) {
-                    const eventElement = getEventElementTarget(event);
-
-                    if (eventElement?.closest('[data-layout-inline-control="1"]')) {
-                        return;
-                    }
-
-                    if (event.key !== 'Enter' && event.key !== ' ') {
-                        return;
-                    }
-
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    if (typeof event.stopImmediatePropagation === 'function') {
-                        event.stopImmediatePropagation();
-                    }
-
-                    setBlockMode(block, 'edit', true);
-                    syncBuilderState();
-                });
-            }
-
-            function updateBlock(block, index, totalBlocks) {
-                const previewWidth = block.dataset.previewWidth || 'span_1';
-                const previewHeight = block.dataset.previewHeight || 'regular';
-                const previewStatus = block.dataset.previewStatus || 'published';
-                const meta = block.querySelector('[data-layout-block-meta]');
-                const visibilityLabel = block.querySelector('[data-layout-visibility-label]');
-                const moveUpButton = block.querySelector('[data-layout-move="-1"]');
-                const moveDownButton = block.querySelector('[data-layout-move="1"]');
-                const editContentButton = block.querySelector('[data-layout-edit-content]');
-                const isContentTarget = getCurrentContentId() !== '' && block.dataset.layoutBlockId === getCurrentContentId();
-
-                block.classList.toggle('admin-layout-preview-block--hidden', previewStatus === 'hidden');
-                block.classList.toggle('is-content-target', isContentTarget);
-
-                if (meta) {
-                    meta.textContent = 'Ordem visual ' + String(index + 1) + ' | ' + (widthLabels[previewWidth] || 'Largura') + ' | ' + (heightLabels[previewHeight] || 'Regular') + ' | ' + (statusLabels[previewStatus] || 'Publicado');
-                }
-
-                if (visibilityLabel) {
-                    visibilityLabel.textContent = previewStatus === 'hidden' ? 'Publicar bloco' : 'Ocultar bloco';
-                }
-
-                block.querySelectorAll('[data-layout-choice="width"]').forEach((button) => {
-                    button.classList.toggle('is-selected', button.dataset.choiceValue === previewWidth);
-                });
-
-                block.querySelectorAll('[data-layout-choice="height"]').forEach((button) => {
-                    button.classList.toggle('is-selected', button.dataset.choiceValue === previewHeight);
-                });
-
-                if (moveUpButton instanceof HTMLButtonElement) {
-                    moveUpButton.disabled = index === 0;
-                }
-
-                if (moveDownButton instanceof HTMLButtonElement) {
-                    moveDownButton.disabled = index === totalBlocks - 1;
-                }
-
-                if (editContentButton instanceof HTMLElement) {
-                    editContentButton.classList.toggle('is-active-target', isContentTarget);
-                    editContentButton.textContent = isContentTarget ? 'Conteudo em edicao' : 'Editar conteudo';
-                }
-            }
-
-            function syncBuilderState() {
-                const blocks = getBlocks();
-                blocks.forEach(function (block, index) {
-                    bindBlockControls(block);
-                    applyBlockFrame(block);
-                    updateBlock(block, index, blocks.length);
-                });
-                serializeBlocks();
-            }
-
-            function moveBlock(block, direction) {
-                const blocks = getBlocks();
-                const currentIndex = blocks.indexOf(block);
-                const targetIndex = currentIndex + direction;
-
-                if (currentIndex === -1 || targetIndex < 0 || targetIndex >= blocks.length) {
-                    return;
-                }
-
-                const targetBlock = blocks[targetIndex];
-
-                if (direction < 0) {
-                    preview.insertBefore(block, targetBlock);
-                } else {
-                    preview.insertBefore(targetBlock, block);
-                }
             }
 
             function openContentBlock(blockId) {
@@ -1914,43 +2061,378 @@ foreach ($contentBlocks as $block) {
 
                 ['page_key', 'type', 'name', 'width', 'height', 'status', 'show_context_note'].forEach(emitFieldSignals);
                 setContentFormMode(payload.id || '');
-                syncBuilderState();
+                syncVisibleBuilders();
+                syncAllBuilders();
 
-                const targetBlock = getBlocks().find((block) => block.dataset.layoutBlockId === String(payload.id || '')) || null;
-                if (targetBlock) {
-                    setBlockMode(targetBlock, 'edit', false);
+                const targetPageKey = String(payload.page_key || '');
+                const targetState = builderStates.get(targetPageKey);
+                if (targetState && typeof targetState.openBlock === 'function') {
+                    targetState.openBlock(String(payload.id || ''));
                 }
 
-                contentForm.scrollIntoView({
-                    block: 'start',
-                    behavior: 'smooth',
+                focusContentForm();
+            }
+
+            function initBuilder(builder) {
+                const preview = builder.querySelector('[data-layout-preview]');
+                const layoutForm = builder.querySelector('[data-layout-builder-form]');
+                const blocksInput = layoutForm?.querySelector('[data-layout-blocks-input]') || null;
+                const layoutInputs = layoutForm ? Array.from(layoutForm.querySelectorAll('[data-layout-input]')) : [];
+                const layoutValueOutputs = builder ? Array.from(builder.querySelectorAll('[data-layout-value-output]')) : [];
+                const pageKey = builder.dataset.layoutBuilderPage || '';
+
+                if (!(preview instanceof HTMLElement) || !(layoutForm instanceof HTMLFormElement) || !(blocksInput instanceof HTMLInputElement)) {
+                    return;
+                }
+
+                if (builder.dataset.inlineControlsBound === '1') {
+                    return;
+                }
+
+                builder.dataset.inlineControlsBound = '1';
+
+                function getBlocks() {
+                    return Array.from(preview.querySelectorAll('[data-layout-block-id]'));
+                }
+
+                function bindControl(control, handler) {
+                    if (!(control instanceof HTMLElement) || control.dataset.layoutInlineControlBound === '1') {
+                        return;
+                    }
+
+                    control.dataset.layoutInlineControlBound = '1';
+                    control.dataset.layoutInlineControl = '1';
+                    control.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        if (typeof event.stopImmediatePropagation === 'function') {
+                            event.stopImmediatePropagation();
+                        }
+
+                        handler();
+                    });
+                }
+
+                function getCurrentColumns() {
+                    const columnsInput = layoutForm.querySelector('[data-layout-input="columns"]');
+                    const columnsMax = Number.parseInt(columnsInput?.max || '4', 10);
+                    return clampNumber(columnsInput?.value || '4', 1, Number.isNaN(columnsMax) ? 4 : columnsMax, 4);
+                }
+
+                function serializeBlocks() {
+                    blocksInput.value = JSON.stringify(
+                        getBlocks().map((block, index) => ({
+                            id: block.dataset.layoutBlockId || '',
+                            width: block.dataset.previewWidth || 'half',
+                            height: block.dataset.previewHeight || 'regular',
+                            status: block.dataset.previewStatus || 'published',
+                            position: (index + 1) * 10,
+                        }))
+                    );
+                }
+
+                function applyLayoutVariables() {
+                    const columnsInput = layoutForm.querySelector('[data-layout-input="columns"]');
+                    const columnsMax = Number.parseInt(columnsInput?.max || '4', 10);
+                    const columns = clampNumber(columnsInput?.value || '4', 1, Number.isNaN(columnsMax) ? 4 : columnsMax, 4);
+                    const mobileColumns = clampNumber(layoutForm.querySelector('[data-layout-input="mobile_columns"]')?.value || '1', 1, 2, 1);
+                    const gap = clampNumber(layoutForm.querySelector('[data-layout-input="gap"]')?.value || '24', 12, 56, 24);
+                    const containerWidth = clampNumber(layoutForm.querySelector('[data-layout-input="container_width"]')?.value || '1220', 880, 1480, 1220);
+                    const blockPadding = clampNumber(layoutForm.querySelector('[data-layout-input="block_padding"]')?.value || '32', 18, 56, 32);
+                    const blockMinHeight = clampNumber(layoutForm.querySelector('[data-layout-input="block_min_height"]')?.value || '210', 140, 420, 210);
+                    const gridStyle = layoutForm.querySelector('[data-layout-input="grid_style"]')?.value === 'dense' ? 'row dense' : 'row';
+
+                    preview.style.setProperty('--admin-layout-columns', String(columns));
+                    preview.style.setProperty('--admin-layout-mobile-columns', String(mobileColumns));
+                    preview.style.setProperty('--admin-layout-gap', String(gap) + 'px');
+                    preview.style.setProperty('--admin-layout-width', String(containerWidth) + 'px');
+                    preview.style.setProperty('--admin-layout-padding', String(blockPadding) + 'px');
+                    preview.style.setProperty('--admin-layout-min-height', String(blockMinHeight) + 'px');
+                    preview.style.setProperty('--admin-layout-flow', gridStyle);
+
+                    layoutValueOutputs.forEach((output) => {
+                        const key = output.dataset.layoutValueOutput || '';
+                        const input = layoutForm.querySelector('[data-layout-input="' + key + '"]');
+
+                        if (input instanceof HTMLInputElement || input instanceof HTMLSelectElement) {
+                            output.textContent = describeLayoutValue(key, input.value);
+                        }
+                    });
+                }
+
+                function applyBlockFrame(block) {
+                    if (!(block instanceof HTMLElement)) {
+                        return;
+                    }
+
+                    const previewWidth = block.dataset.previewWidth || 'half';
+                    const previewHeight = block.dataset.previewHeight || 'regular';
+                    const span = resolveSpan(previewWidth, getCurrentColumns());
+
+                    block.style.gridColumn = 'span ' + String(span) + ' / span ' + String(span);
+                    block.style.setProperty('--admin-block-height-factor', String(resolveHeightFactor(previewHeight)));
+                }
+
+                function revealBlockPanel(block) {
+                    const panel = block?.querySelector('[data-layout-block-panel]');
+                    if (!(panel instanceof HTMLElement)) {
+                        return;
+                    }
+
+                    window.requestAnimationFrame(() => {
+                        panel.scrollIntoView({
+                            block: 'nearest',
+                            behavior: 'smooth',
+                        });
+                    });
+                }
+
+                function setBlockMode(targetBlock, mode, revealPanel) {
+                    getBlocks().forEach((block) => {
+                        const isEditing = block === targetBlock && mode === 'edit';
+                        const panel = block.querySelector('[data-layout-block-panel]');
+                        const previewButton = block.querySelector('[data-layout-mode="preview"]');
+                        const editButton = block.querySelector('[data-layout-mode="edit"]');
+
+                        block.classList.toggle('is-editing', isEditing);
+                        previewButton?.classList.toggle('is-active', !isEditing);
+                        editButton?.classList.toggle('is-active', isEditing);
+
+                        if (panel instanceof HTMLElement) {
+                            panel.hidden = !isEditing;
+                        }
+                    });
+
+                    if (mode === 'edit' && revealPanel) {
+                        revealBlockPanel(targetBlock);
+                    }
+                }
+
+                function moveBlock(block, direction) {
+                    const blocks = getBlocks();
+                    const currentIndex = blocks.indexOf(block);
+                    const targetIndex = currentIndex + direction;
+
+                    if (currentIndex === -1 || targetIndex < 0 || targetIndex >= blocks.length) {
+                        return;
+                    }
+
+                    const targetBlock = blocks[targetIndex];
+
+                    if (direction < 0) {
+                        preview.insertBefore(block, targetBlock);
+                    } else {
+                        preview.insertBefore(targetBlock, block);
+                    }
+                }
+
+                function updateBlock(block, index, totalBlocks) {
+                    const previewWidth = block.dataset.previewWidth || 'half';
+                    const previewHeight = block.dataset.previewHeight || 'regular';
+                    const previewStatus = block.dataset.previewStatus || 'published';
+                    const meta = block.querySelector('[data-layout-block-meta]');
+                    const visibilityLabel = block.querySelector('[data-layout-visibility-label]');
+                    const moveUpButton = block.querySelector('[data-layout-move="-1"]');
+                    const moveDownButton = block.querySelector('[data-layout-move="1"]');
+                    const editContentButton = block.querySelector('[data-layout-edit-content]');
+                    const isContentTarget = getCurrentContentId() !== '' && block.dataset.layoutBlockId === getCurrentContentId();
+
+                    block.classList.toggle('admin-layout-preview-block--hidden', previewStatus === 'hidden');
+                    block.classList.toggle('is-content-target', isContentTarget);
+
+                    if (meta) {
+                        meta.textContent = 'Ordem visual ' + String(index + 1) + ' | ' + (widthLabels[previewWidth] || 'Largura') + ' | ' + (heightLabels[previewHeight] || 'Regular') + ' | ' + (statusLabels[previewStatus] || 'Publicado');
+                    }
+
+                    if (visibilityLabel) {
+                        visibilityLabel.textContent = previewStatus === 'hidden' ? 'Publicar bloco' : 'Ocultar bloco';
+                    }
+
+                    block.querySelectorAll('[data-layout-choice="width"]').forEach((button) => {
+                        button.classList.toggle('is-selected', button.dataset.choiceValue === previewWidth);
+                    });
+
+                    block.querySelectorAll('[data-layout-choice="height"]').forEach((button) => {
+                        button.classList.toggle('is-selected', button.dataset.choiceValue === previewHeight);
+                    });
+
+                    if (moveUpButton instanceof HTMLButtonElement) {
+                        moveUpButton.disabled = index === 0;
+                    }
+
+                    if (moveDownButton instanceof HTMLButtonElement) {
+                        moveDownButton.disabled = index === totalBlocks - 1;
+                    }
+
+                    if (editContentButton instanceof HTMLElement) {
+                        editContentButton.classList.toggle('is-active-target', isContentTarget);
+                        editContentButton.textContent = isContentTarget ? 'Conteudo em edicao' : 'Editar conteudo';
+                    }
+                }
+
+                function bindBlockControls(block) {
+                    if (!(block instanceof HTMLElement) || block.dataset.layoutInlineBlockBound === '1') {
+                        return;
+                    }
+
+                    block.dataset.layoutInlineBlockBound = '1';
+
+                    bindControl(block.querySelector('[data-layout-mode="preview"]'), function () {
+                        setBlockMode(block, 'preview', false);
+                        syncBuilderState();
+                    });
+
+                    bindControl(block.querySelector('[data-layout-mode="edit"]'), function () {
+                        setBlockMode(block, 'edit', true);
+                        syncBuilderState();
+                    });
+
+                    block.querySelectorAll('[data-layout-choice="width"]').forEach(function (button) {
+                        bindControl(button, function () {
+                            block.dataset.previewWidth = button.dataset.choiceValue || 'half';
+                            setBlockMode(block, 'edit', false);
+                            syncBuilderState();
+                        });
+                    });
+
+                    block.querySelectorAll('[data-layout-choice="height"]').forEach(function (button) {
+                        bindControl(button, function () {
+                            block.dataset.previewHeight = button.dataset.choiceValue || 'regular';
+                            setBlockMode(block, 'edit', false);
+                            syncBuilderState();
+                        });
+                    });
+
+                    bindControl(block.querySelector('[data-layout-visibility-toggle]'), function () {
+                        block.dataset.previewStatus = block.dataset.previewStatus === 'hidden' ? 'published' : 'hidden';
+                        setBlockMode(block, 'edit', false);
+                        syncBuilderState();
+                    });
+
+                    bindControl(block.querySelector('[data-layout-move="-1"]'), function () {
+                        moveBlock(block, -1);
+                        setBlockMode(block, 'edit', true);
+                        syncBuilderState();
+                    });
+
+                    bindControl(block.querySelector('[data-layout-move="1"]'), function () {
+                        moveBlock(block, 1);
+                        setBlockMode(block, 'edit', true);
+                        syncBuilderState();
+                    });
+
+                    bindControl(block.querySelector('[data-layout-edit-content]'), function () {
+                        openContentBlock(block.dataset.layoutBlockId || '');
+                    });
+
+                    block.addEventListener('click', function (event) {
+                        const eventElement = getEventElementTarget(event);
+
+                        if (eventElement?.closest('[data-layout-inline-control="1"]')) {
+                            return;
+                        }
+
+                        setBlockMode(block, 'edit', true);
+                        syncBuilderState();
+                    });
+
+                    block.addEventListener('keydown', function (event) {
+                        const eventElement = getEventElementTarget(event);
+
+                        if (eventElement?.closest('[data-layout-inline-control="1"]')) {
+                            return;
+                        }
+
+                        if (event.key !== 'Enter' && event.key !== ' ') {
+                            return;
+                        }
+
+                        event.preventDefault();
+                        setBlockMode(block, 'edit', true);
+                        syncBuilderState();
+                    });
+                }
+
+                function ensureEditingBlock() {
+                    const currentContentId = getCurrentContentId();
+                    const preferredBlock = currentContentId !== ''
+                        ? getBlocks().find((block) => block.dataset.layoutBlockId === currentContentId) || null
+                        : null;
+                    const activeBlock = getBlocks().find((block) => block.classList.contains('is-editing')) || null;
+                    const firstBlock = preferredBlock || activeBlock || getBlocks()[0] || null;
+
+                    if (firstBlock) {
+                        setBlockMode(firstBlock, 'edit', false);
+                    }
+                }
+
+                function syncBuilderState() {
+                    applyLayoutVariables();
+
+                    const blocks = getBlocks();
+                    blocks.forEach(function (block, index) {
+                        bindBlockControls(block);
+                        applyBlockFrame(block);
+                        updateBlock(block, index, blocks.length);
+                    });
+
+                    serializeBlocks();
+
+                    if (!builder.hidden) {
+                        ensureEditingBlock();
+                    }
+                }
+
+                function openBlockInBuilder(blockId) {
+                    const targetBlock = getBlocks().find((block) => block.dataset.layoutBlockId === String(blockId || '')) || null;
+                    if (!targetBlock) {
+                        return;
+                    }
+
+                    setBlockMode(targetBlock, 'edit', true);
+                    syncBuilderState();
+                }
+
+                layoutInputs.forEach((input) => {
+                    input.addEventListener('input', syncBuilderState);
+                    input.addEventListener('change', syncBuilderState);
                 });
 
-                const nameField = fieldMap.name;
-                if (nameField instanceof HTMLElement && typeof nameField.focus === 'function') {
-                    window.setTimeout(() => {
-                        nameField.focus();
-                    }, 120);
-                }
+                layoutForm.addEventListener('submit', serializeBlocks);
+
+                builderStates.set(pageKey, {
+                    sync: syncBuilderState,
+                    openBlock: openBlockInBuilder,
+                });
+
+                syncBuilderState();
             }
 
-            layoutForm.addEventListener('submit', serializeBlocks);
-
-            syncBuilderState();
+            builders.forEach(initBuilder);
             setContentFormMode(getCurrentContentId());
 
-            const preferredBlock = getBlocks().find((block) => block.dataset.layoutBlockId === getCurrentContentId()) || getBlocks()[0] || null;
-            if (preferredBlock) {
-                setBlockMode(preferredBlock, 'edit', false);
+            if (document.body.dataset.adminInlineBuildersGlobalBound !== '1') {
+                if (pageField instanceof HTMLSelectElement) {
+                    pageField.addEventListener('change', function () {
+                        syncVisibleBuilders();
+                        syncAllBuilders();
+                    });
+                }
+
+                document.body.dataset.adminInlineBuildersGlobalBound = '1';
             }
+
+            syncVisibleBuilders();
+            syncAllBuilders();
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            window.setTimeout(initAdminInlineBuilder, 0);
+            window.setTimeout(initAdminInlineBuilders, 0);
         });
 
         window.addEventListener('load', function () {
-            window.setTimeout(initAdminInlineBuilder, 0);
+            window.setTimeout(initAdminInlineBuilders, 0);
         }, { once: true });
     }());
 </script>
