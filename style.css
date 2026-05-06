@@ -4189,6 +4189,16 @@ body.auth-page header {
     align-items: start;
 }
 
+.admin-layout-builder-stack {
+    display: grid;
+    gap: 24px;
+    align-content: start;
+}
+
+.admin-workspace__full {
+    grid-column: 1 / -1;
+}
+
 .admin-table-wrap {
     overflow: auto;
 }

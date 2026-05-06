@@ -685,6 +685,26 @@ foreach ($contentPageOptions as $pageKey => $pageDefinition) {
     }
 }
 
+$preferredLayoutBuilderOrder = ['contact', 'about', 'thematic_areas'];
+usort($layoutBuilderPageKeys, static function (string $left, string $right) use ($preferredLayoutBuilderOrder): int {
+    $leftIndex = array_search($left, $preferredLayoutBuilderOrder, true);
+    $rightIndex = array_search($right, $preferredLayoutBuilderOrder, true);
+
+    if ($leftIndex === false && $rightIndex === false) {
+        return strcmp($left, $right);
+    }
+
+    if ($leftIndex === false) {
+        return 1;
+    }
+
+    if ($rightIndex === false) {
+        return -1;
+    }
+
+    return $leftIndex <=> $rightIndex;
+});
+
 $pageBlocksByKey = [];
 $pageLayoutsByKey = [];
 
@@ -1388,24 +1408,26 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             </form>
         </article>
 
-        <?php foreach ($layoutBuilderPageKeys as $layoutPageKey): ?>
-            <?php
-            $layoutErrorsForPage = $layoutOverridePageKey === $layoutPageKey ? $contentLayoutErrors : [];
-            admin_render_layout_builder(
-                $layoutPageKey,
-                $contentPageOptions[$layoutPageKey] ?? [],
-                $layoutFormsByPage[$layoutPageKey] ?? ['page_key' => $layoutPageKey],
-                $pageBlocksByKey[$layoutPageKey] ?? [],
-                $layoutWidthOptionsByPage[$layoutPageKey] ?? [],
-                $layoutHeightOptions,
-                $contentGridStyleOptions,
-                $layoutErrorsForPage,
-                (string) $contentForm['page_key'] === $layoutPageKey,
-                $csrfToken,
-                $contentManager
-            );
-            ?>
-        <?php endforeach; ?>
+        <div class="admin-layout-builder-stack">
+            <?php foreach ($layoutBuilderPageKeys as $layoutPageKey): ?>
+                <?php
+                $layoutErrorsForPage = $layoutOverridePageKey === $layoutPageKey ? $contentLayoutErrors : [];
+                admin_render_layout_builder(
+                    $layoutPageKey,
+                    $contentPageOptions[$layoutPageKey] ?? [],
+                    $layoutFormsByPage[$layoutPageKey] ?? ['page_key' => $layoutPageKey],
+                    $pageBlocksByKey[$layoutPageKey] ?? [],
+                    $layoutWidthOptionsByPage[$layoutPageKey] ?? [],
+                    $layoutHeightOptions,
+                    $contentGridStyleOptions,
+                    $layoutErrorsForPage,
+                    (string) $contentForm['page_key'] === $layoutPageKey,
+                    $csrfToken,
+                    $contentManager
+                );
+                ?>
+            <?php endforeach; ?>
+        </div>
 
         <?php if (false): ?>
         <article
@@ -1669,7 +1691,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         </article>
         <?php endif; ?>
 
-        <article class="panel-card">
+        <article class="panel-card admin-workspace__full">
             <div class="panel-card-header">
                 <div>
                     <p class="eyebrow">Builder</p>
