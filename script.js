@@ -1121,6 +1121,11 @@ function initSettingsTabs() {
 
 function initAdminBlockForm() {
     const form = document.querySelector('[data-block-form-root]');
+    const contentForm = document.querySelector('[data-content-form]');
+    const contentFormHeading = document.querySelector('[data-content-form-heading]');
+    const contentFormReset = document.querySelector('[data-content-form-reset]');
+    const contentFormSubmit = document.querySelector('[data-content-form-submit]');
+    const contentPayloadScript = document.getElementById('content-block-payloads');
     const pageSelect = document.querySelector('[data-block-page-select]');
     const typeSelect = document.querySelector('[data-block-type-select]');
     const widthSelect = document.querySelector('[data-block-width-select]');
@@ -1130,17 +1135,64 @@ function initAdminBlockForm() {
     const typeOptions = typeSelect ? Array.from(typeSelect.options) : [];
     const widthOptions = widthSelect ? Array.from(widthSelect.options) : [];
     const layoutBuilder = document.querySelector('[data-layout-builder]');
+    const layoutBuilderForm = layoutBuilder?.querySelector('[data-layout-builder-form]') || null;
     const layoutPreview = layoutBuilder?.querySelector('[data-layout-preview]') || null;
     const layoutInputs = layoutBuilder ? Array.from(layoutBuilder.querySelectorAll('[data-layout-input]')) : [];
+    const layoutValueOutputs = layoutBuilder ? Array.from(layoutBuilder.querySelectorAll('[data-layout-value-output]')) : [];
     const previewBlocks = layoutBuilder ? Array.from(layoutBuilder.querySelectorAll('[data-preview-width]')) : [];
+    const layoutBlocksInput = layoutBuilderForm?.querySelector('[data-layout-blocks-input]') || null;
     const draftCard = layoutBuilder?.querySelector('[data-layout-preview-draft]') || null;
     const draftTitle = layoutBuilder?.querySelector('[data-layout-draft-title]') || null;
     const draftMeta = layoutBuilder?.querySelector('[data-layout-draft-meta]') || null;
     const nameInput = document.getElementById('content_name');
     const statusSelect = document.getElementById('content_status');
+    const contentFieldMap = contentForm
+        ? Array.from(contentForm.querySelectorAll('[data-content-field]')).reduce((accumulator, field) => {
+            accumulator[field.dataset.contentField || ''] = field;
+            return accumulator;
+        }, {})
+        : {};
+    const contentNameField = contentFieldMap.name instanceof HTMLElement ? contentFieldMap.name : null;
+    const widthLabels = {
+        half: 'Coluna simples',
+        full: 'Largura total',
+        span_1: '1 coluna',
+        span_2: '2 colunas',
+        span_3: '3 colunas',
+        span_4: '4 colunas',
+    };
+    const heightLabels = {
+        compact: 'Compacto',
+        regular: 'Regular',
+        tall: 'Alto',
+    };
+    const statusLabels = {
+        published: 'Publicado',
+        hidden: 'Oculto',
+    };
+    let hasInitializedEditorSelection = false;
+    let contentBlockPayloads = {};
 
     if (!form || !typeSelect || !groups.length) {
         return;
+    }
+
+    if (form.dataset.adminBlockFormBound === '1') {
+        return;
+    }
+
+    form.dataset.adminBlockFormBound = '1';
+
+    if (contentPayloadScript && contentPayloadScript.textContent.trim() !== '') {
+        try {
+            const parsedPayloads = JSON.parse(contentPayloadScript.textContent);
+
+            if (parsedPayloads && typeof parsedPayloads === 'object') {
+                contentBlockPayloads = parsedPayloads;
+            }
+        } catch (error) {
+            contentBlockPayloads = {};
+        }
     }
 
     function clampNumber(value, min, max, fallback) {
@@ -1188,6 +1240,479 @@ function initAdminBlockForm() {
         }
 
         return select.selectedOptions[0].textContent.trim() || fallback;
+    }
+
+    function getBuilderBlocks() {
+        if (!layoutPreview) {
+            return [];
+        }
+
+        return Array.from(layoutPreview.querySelectorAll('[data-layout-block-id]'));
+    }
+
+    function getCurrentContentBlockId() {
+        const idField = contentFieldMap.id;
+        return idField instanceof HTMLInputElement ? idField.value.trim() : '';
+    }
+
+    function setContentFieldValue(fieldName, value) {
+        const field = contentFieldMap[fieldName];
+        if (!(field instanceof HTMLElement)) {
+            return;
+        }
+
+        if (field instanceof HTMLInputElement && field.type === 'checkbox') {
+            field.checked = Boolean(value);
+            return;
+        }
+
+        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+            field.value = value == null ? '' : String(value);
+        }
+    }
+
+    function setContentFormEditingState(blockId = '') {
+        const isEditingExistingBlock = blockId !== '';
+
+        if (contentFormHeading) {
+            contentFormHeading.textContent = isEditingExistingBlock ? 'Editar bloco' : 'Novo bloco';
+        }
+
+        if (contentFormSubmit instanceof HTMLButtonElement) {
+            contentFormSubmit.textContent = isEditingExistingBlock ? 'Salvar bloco' : 'Criar bloco';
+        }
+
+        if (contentFormReset instanceof HTMLElement) {
+            contentFormReset.hidden = !isEditingExistingBlock;
+        }
+    }
+
+    function syncActiveContentTarget() {
+        const currentContentBlockId = getCurrentContentBlockId();
+
+        getBuilderBlocks().forEach((block) => {
+            const isActiveContentTarget = currentContentBlockId !== '' && block.dataset.layoutBlockId === currentContentBlockId;
+            const editContentButton = block.querySelector('[data-layout-edit-content]');
+
+            block.classList.toggle('is-content-target', isActiveContentTarget);
+
+            if (editContentButton instanceof HTMLElement) {
+                editContentButton.classList.toggle('is-active-target', isActiveContentTarget);
+                editContentButton.textContent = isActiveContentTarget ? 'Conteudo em edicao' : 'Editar conteudo';
+            }
+        });
+    }
+
+    function focusContentForm() {
+        if (!(contentForm instanceof HTMLElement)) {
+            return;
+        }
+
+        contentForm.scrollIntoView({
+            block: 'start',
+            behavior: prefersReducedMotion() ? 'auto' : 'smooth'
+        });
+
+        window.setTimeout(() => {
+            if (contentNameField instanceof HTMLElement && typeof contentNameField.focus === 'function') {
+                contentNameField.focus();
+            }
+        }, prefersReducedMotion() ? 0 : 120);
+    }
+
+    function openContentBlockInForm(blockId) {
+        const normalizedBlockId = String(blockId || '').trim();
+        if (normalizedBlockId === '') {
+            return;
+        }
+
+        const payload = contentBlockPayloads[normalizedBlockId];
+        if (!payload || typeof payload !== 'object') {
+            return;
+        }
+
+        setContentFieldValue('id', payload.id || '');
+        setContentFieldValue('page_key', payload.page_key || 'contact');
+        syncTypeOptions();
+        syncWidthOptions();
+        syncLayoutBuilderVisibility();
+
+        [
+            'type',
+            'name',
+            'eyebrow',
+            'title',
+            'body',
+            'items_text',
+            'cta_label',
+            'cta_url',
+            'embed_url',
+            'media_url',
+            'media_dark_url',
+            'media_alt',
+            'width',
+            'height',
+            'position',
+            'status',
+            'show_context_note'
+        ].forEach((fieldName) => {
+            setContentFieldValue(fieldName, payload[fieldName]);
+        });
+
+        syncTypeOptions();
+        syncWidthOptions();
+        syncFieldGroups();
+        syncLayoutBuilderVisibility();
+        syncLayoutPreview();
+        setContentFormEditingState(normalizedBlockId);
+        syncActiveContentTarget();
+
+        const targetBlock = getBuilderBlocks().find((block) => block.dataset.layoutBlockId === normalizedBlockId) || null;
+        if (targetBlock) {
+            setBlockMode(targetBlock, 'edit');
+            hasInitializedEditorSelection = true;
+        }
+
+        focusContentForm();
+    }
+
+    function describeLayoutValue(key, value) {
+        const numericValue = Number.parseInt(value, 10);
+
+        switch (key) {
+            case 'grid_style':
+                return value === 'dense' ? 'Mosaico denso' : 'Fluxo regular';
+            case 'columns':
+                return numericValue === 1 ? '1 coluna' : String(numericValue) + ' colunas';
+            case 'mobile_columns':
+                return numericValue === 1 ? 'Empilhado' : '2 colunas';
+            case 'gap':
+                if (numericValue <= 18) {
+                    return 'Compacto';
+                }
+                if (numericValue <= 30) {
+                    return 'Equilibrado';
+                }
+                if (numericValue <= 42) {
+                    return 'Respirado';
+                }
+                return 'Aereo';
+            case 'container_width':
+                if (numericValue <= 980) {
+                    return 'Contida';
+                }
+                if (numericValue <= 1180) {
+                    return 'Equilibrada';
+                }
+                if (numericValue <= 1340) {
+                    return 'Ampla';
+                }
+                return 'Cenografica';
+            case 'block_padding':
+                if (numericValue <= 24) {
+                    return 'Enxuto';
+                }
+                if (numericValue <= 36) {
+                    return 'Confortavel';
+                }
+                if (numericValue <= 46) {
+                    return 'Respirado';
+                }
+                return 'Luxuoso';
+            case 'block_min_height':
+                if (numericValue <= 180) {
+                    return 'Baixa';
+                }
+                if (numericValue <= 250) {
+                    return 'Media';
+                }
+                if (numericValue <= 320) {
+                    return 'Alta';
+                }
+                return 'Monumental';
+            default:
+                return String(value || '');
+        }
+    }
+
+    function syncLayoutValueOutputs() {
+        layoutValueOutputs.forEach((output) => {
+            const key = output.dataset.layoutValueOutput || '';
+            const input = layoutBuilder?.querySelector('[data-layout-input="' + key + '"]');
+
+            if (!input) {
+                return;
+            }
+
+            output.textContent = describeLayoutValue(key, input.value);
+        });
+    }
+
+    function revealBlockPanel(block) {
+        if (!(block instanceof HTMLElement)) {
+            return;
+        }
+
+        const panel = block.querySelector('[data-layout-block-panel]');
+        if (!(panel instanceof HTMLElement)) {
+            return;
+        }
+
+        const canvas = layoutPreview instanceof HTMLElement ? layoutPreview : null;
+        if (!canvas) {
+            return;
+        }
+
+        window.requestAnimationFrame(() => {
+            const panelRect = panel.getBoundingClientRect();
+            const canvasRect = canvas.getBoundingClientRect();
+            const topOffset = panelRect.top - canvasRect.top;
+            const bottomOffset = panelRect.bottom - canvasRect.bottom;
+
+            if (topOffset < 20) {
+                canvas.scrollBy({
+                    top: topOffset - 20,
+                    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                });
+                return;
+            }
+
+            if (bottomOffset > -20) {
+                canvas.scrollBy({
+                    top: bottomOffset + 20,
+                    behavior: prefersReducedMotion() ? 'auto' : 'smooth',
+                });
+            }
+        });
+    }
+
+    function setBlockMode(targetBlock, mode, options = {}) {
+        const shouldRevealPanel = Boolean(options.revealPanel);
+
+        getBuilderBlocks().forEach((block) => {
+            const isEditing = block === targetBlock && mode === 'edit';
+            const previewButton = block.querySelector('[data-layout-mode="preview"]');
+            const editButton = block.querySelector('[data-layout-mode="edit"]');
+            const panel = block.querySelector('[data-layout-block-panel]');
+
+            block.classList.toggle('is-editing', isEditing);
+            previewButton?.classList.toggle('is-active', !isEditing);
+            editButton?.classList.toggle('is-active', isEditing);
+
+            if (panel) {
+                panel.hidden = !isEditing;
+            }
+        });
+
+        if (targetBlock instanceof HTMLElement && mode === 'edit' && shouldRevealPanel) {
+            revealBlockPanel(targetBlock);
+        }
+    }
+
+    function ensureEditingBlock() {
+        if (hasInitializedEditorSelection) {
+            return;
+        }
+
+        const currentContentBlockId = getCurrentContentBlockId();
+        const preferredBlock = currentContentBlockId !== ''
+            ? getBuilderBlocks().find((block) => block.dataset.layoutBlockId === currentContentBlockId) || null
+            : null;
+        const firstBlock = preferredBlock || getBuilderBlocks()[0] || null;
+
+        if (!firstBlock) {
+            return;
+        }
+
+        setBlockMode(firstBlock, 'edit');
+        hasInitializedEditorSelection = true;
+    }
+
+    function serializeLayoutBlocks() {
+        if (!layoutBlocksInput) {
+            return;
+        }
+
+        layoutBlocksInput.value = JSON.stringify(
+            getBuilderBlocks().map((block, index) => ({
+                id: block.dataset.layoutBlockId || '',
+                width: block.dataset.previewWidth || 'span_1',
+                height: block.dataset.previewHeight || 'regular',
+                status: block.dataset.previewStatus || 'published',
+                position: (index + 1) * 10,
+            }))
+        );
+    }
+
+    function updateBlockControls(block, index, totalBlocks) {
+        const previewWidth = block.dataset.previewWidth || 'span_1';
+        const previewHeight = block.dataset.previewHeight || 'regular';
+        const previewStatus = block.dataset.previewStatus || 'published';
+        const meta = block.querySelector('[data-layout-block-meta]');
+        const visibilityLabel = block.querySelector('[data-layout-visibility-label]');
+        const moveUpButton = block.querySelector('[data-layout-move="-1"]');
+        const moveDownButton = block.querySelector('[data-layout-move="1"]');
+        const editContentButton = block.querySelector('[data-layout-edit-content]');
+
+        block.classList.toggle('admin-layout-preview-block--hidden', previewStatus === 'hidden');
+
+        if (meta) {
+            meta.textContent = 'Ordem visual ' + String(index + 1) + ' | ' + (widthLabels[previewWidth] || 'Largura') + ' | ' + (heightLabels[previewHeight] || 'Regular') + ' | ' + (statusLabels[previewStatus] || 'Publicado');
+        }
+
+        if (visibilityLabel) {
+            visibilityLabel.textContent = previewStatus === 'hidden' ? 'Publicar bloco' : 'Ocultar bloco';
+        }
+
+        block.querySelectorAll('[data-layout-choice="width"]').forEach((button) => {
+            button.classList.toggle('is-selected', button.dataset.choiceValue === previewWidth);
+        });
+
+        block.querySelectorAll('[data-layout-choice="height"]').forEach((button) => {
+            button.classList.toggle('is-selected', button.dataset.choiceValue === previewHeight);
+        });
+
+        if (moveUpButton) {
+            moveUpButton.disabled = index === 0;
+        }
+
+        if (moveDownButton) {
+            moveDownButton.disabled = index === totalBlocks - 1;
+        }
+
+        if (editContentButton instanceof HTMLElement) {
+            const isActiveContentTarget = getCurrentContentBlockId() !== '' && block.dataset.layoutBlockId === getCurrentContentBlockId();
+            editContentButton.classList.toggle('is-active-target', isActiveContentTarget);
+            editContentButton.textContent = isActiveContentTarget ? 'Conteudo em edicao' : 'Editar conteudo';
+        }
+    }
+
+    function getEventElementTarget(event) {
+        const target = event.target;
+
+        if (target instanceof Element) {
+            return target;
+        }
+
+        if (target && target.parentElement instanceof Element) {
+            return target.parentElement;
+        }
+
+        return null;
+    }
+
+    function moveBlock(block, direction) {
+        if (!layoutPreview) {
+            return;
+        }
+
+        const blocks = getBuilderBlocks();
+        const currentIndex = blocks.indexOf(block);
+        const targetIndex = currentIndex + direction;
+
+        if (currentIndex === -1 || targetIndex < 0 || targetIndex >= blocks.length) {
+            return;
+        }
+
+        const targetBlock = blocks[targetIndex];
+
+        if (direction < 0) {
+            layoutPreview.insertBefore(block, targetBlock);
+        } else {
+            layoutPreview.insertBefore(targetBlock, block);
+        }
+    }
+
+    function bindLayoutBlockInteractions(block) {
+        if (!(block instanceof HTMLElement) || block.dataset.layoutInteractiveBound === '1') {
+            return;
+        }
+
+        block.dataset.layoutInteractiveBound = '1';
+
+        function bindControl(control, handler) {
+            if (!(control instanceof HTMLElement)) {
+                return;
+            }
+
+            control.dataset.layoutInteractiveControl = '1';
+            control.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                handler();
+            });
+        }
+
+        bindControl(block.querySelector('[data-layout-mode="preview"]'), () => {
+            setBlockMode(block, 'preview');
+        });
+
+        bindControl(block.querySelector('[data-layout-mode="edit"]'), () => {
+            setBlockMode(block, 'edit', { revealPanel: true });
+        });
+
+        block.querySelectorAll('[data-layout-choice="width"]').forEach((button) => {
+            bindControl(button, () => {
+                block.dataset.previewWidth = button.dataset.choiceValue || 'span_1';
+                setBlockMode(block, 'edit', { revealPanel: true });
+                syncLayoutPreview();
+            });
+        });
+
+        block.querySelectorAll('[data-layout-choice="height"]').forEach((button) => {
+            bindControl(button, () => {
+                block.dataset.previewHeight = button.dataset.choiceValue || 'regular';
+                setBlockMode(block, 'edit', { revealPanel: true });
+                syncLayoutPreview();
+            });
+        });
+
+        bindControl(block.querySelector('[data-layout-visibility-toggle]'), () => {
+            block.dataset.previewStatus = block.dataset.previewStatus === 'hidden' ? 'published' : 'hidden';
+            setBlockMode(block, 'edit', { revealPanel: true });
+            syncLayoutPreview();
+        });
+
+        bindControl(block.querySelector('[data-layout-move="-1"]'), () => {
+            moveBlock(block, -1);
+            setBlockMode(block, 'edit', { revealPanel: true });
+            syncLayoutPreview();
+        });
+
+        bindControl(block.querySelector('[data-layout-move="1"]'), () => {
+            moveBlock(block, 1);
+            setBlockMode(block, 'edit', { revealPanel: true });
+            syncLayoutPreview();
+        });
+
+        bindControl(block.querySelector('[data-layout-edit-content]'), () => {
+            openContentBlockInForm(block.dataset.layoutBlockId || '');
+        });
+
+        block.addEventListener('click', (event) => {
+            const eventElement = getEventElementTarget(event);
+            if (eventElement?.closest('[data-layout-interactive-control="1"]')) {
+                return;
+            }
+
+            if (block.dataset.layoutSelectable === '1') {
+                setBlockMode(block, 'edit', { revealPanel: true });
+            }
+        });
+
+        block.addEventListener('keydown', (event) => {
+            const eventElement = getEventElementTarget(event);
+            if (eventElement?.closest('[data-layout-interactive-control="1"]')) {
+                return;
+            }
+
+            if (event.key !== 'Enter' && event.key !== ' ') {
+                return;
+            }
+
+            event.preventDefault();
+            setBlockMode(block, 'edit', { revealPanel: true });
+        });
     }
 
     function syncTypeOptions() {
@@ -1287,22 +1812,27 @@ function initAdminBlockForm() {
         }
 
         const isLayoutPage = pageSelect.value === layoutBuilder.dataset.layoutBuilderPage;
+        const columns = clampNumber(layoutBuilder.querySelector('[data-layout-input="columns"]')?.value, 1, 4, 4);
+        const mobileColumns = clampNumber(layoutBuilder.querySelector('[data-layout-input="mobile_columns"]')?.value, 1, 2, 1);
+        const gap = clampNumber(layoutBuilder.querySelector('[data-layout-input="gap"]')?.value, 12, 56, 24);
+        const containerWidth = clampNumber(layoutBuilder.querySelector('[data-layout-input="container_width"]')?.value, 880, 1480, 1220);
+        const blockPadding = clampNumber(layoutBuilder.querySelector('[data-layout-input="block_padding"]')?.value, 18, 56, 24);
+        const blockMinHeight = clampNumber(layoutBuilder.querySelector('[data-layout-input="block_min_height"]')?.value, 140, 420, 210);
+        const gridStyle = layoutBuilder.querySelector('[data-layout-input="grid_style"]')?.value === 'dense' ? 'row dense' : 'row';
+        const blocks = getBuilderBlocks();
+
         layoutBuilder.hidden = !isLayoutPage;
 
         if (!isLayoutPage) {
             return;
         }
 
-        const columns = clampNumber(layoutBuilder.querySelector('[data-layout-input="columns"]')?.value, 1, 4, 4);
-        const gap = clampNumber(layoutBuilder.querySelector('[data-layout-input="gap"]')?.value, 12, 56, 24);
-        const containerWidth = clampNumber(layoutBuilder.querySelector('[data-layout-input="container_width"]')?.value, 880, 1480, 1220);
-        const blockMinHeight = clampNumber(layoutBuilder.querySelector('[data-layout-input="block_min_height"]')?.value, 140, 420, 210);
-        const gridStyle = layoutBuilder.querySelector('[data-layout-input="grid_style"]')?.value === 'dense' ? 'row dense' : 'row';
-
         layoutPreview.style.setProperty('--admin-layout-columns', String(columns));
-        layoutPreview.style.setProperty('--admin-layout-gap', `${gap}px`);
-        layoutPreview.style.setProperty('--admin-layout-width', `${containerWidth}px`);
-        layoutPreview.style.setProperty('--admin-layout-min-height', `${blockMinHeight}px`);
+        layoutPreview.style.setProperty('--admin-layout-mobile-columns', String(mobileColumns));
+        layoutPreview.style.setProperty('--admin-layout-gap', String(gap) + 'px');
+        layoutPreview.style.setProperty('--admin-layout-width', String(containerWidth) + 'px');
+        layoutPreview.style.setProperty('--admin-layout-padding', String(blockPadding) + 'px');
+        layoutPreview.style.setProperty('--admin-layout-min-height', String(blockMinHeight) + 'px');
         layoutPreview.style.setProperty('--admin-layout-flow', gridStyle);
 
         previewBlocks.forEach((block) => {
@@ -1310,7 +1840,7 @@ function initAdminBlockForm() {
             const previewHeight = block.dataset.previewHeight || 'regular';
             const previewSpan = resolveSpan(previewWidth, columns);
 
-            block.style.gridColumn = `span ${previewSpan} / span ${previewSpan}`;
+            block.style.gridColumn = 'span ' + String(previewSpan) + ' / span ' + String(previewSpan);
             block.style.setProperty('--admin-block-height-factor', String(resolveHeightFactor(previewHeight)));
         });
 
@@ -1321,7 +1851,7 @@ function initAdminBlockForm() {
 
             draftCard.dataset.previewWidth = draftWidth;
             draftCard.dataset.previewHeight = draftHeight;
-            draftCard.style.gridColumn = `span ${draftSpan} / span ${draftSpan}`;
+            draftCard.style.gridColumn = 'span ' + String(draftSpan) + ' / span ' + String(draftSpan);
             draftCard.style.setProperty('--admin-block-height-factor', String(resolveHeightFactor(draftHeight)));
             draftCard.classList.toggle('admin-layout-preview-block--hidden', statusSelect?.value === 'hidden');
 
@@ -1330,13 +1860,30 @@ function initAdminBlockForm() {
             }
 
             if (draftMeta) {
-                draftMeta.textContent = `${getSelectedOptionLabel(widthSelect, 'Largura')} · ${getSelectedOptionLabel(heightSelect, 'Regular')}`;
+                draftMeta.textContent = getSelectedOptionLabel(widthSelect, 'Largura') + ' | ' + getSelectedOptionLabel(heightSelect, 'Regular');
             }
         }
+
+        blocks.forEach((block, index) => {
+            const previewWidth = block.dataset.previewWidth || 'span_1';
+            const previewHeight = block.dataset.previewHeight || 'regular';
+            const previewSpan = resolveSpan(previewWidth, columns);
+
+            block.style.gridColumn = 'span ' + String(previewSpan) + ' / span ' + String(previewSpan);
+            block.style.setProperty('--admin-block-height-factor', String(resolveHeightFactor(previewHeight)));
+            updateBlockControls(block, index, blocks.length);
+            bindLayoutBlockInteractions(block);
+        });
+
+        syncLayoutValueOutputs();
+        serializeLayoutBlocks();
+        syncActiveContentTarget();
+        ensureEditingBlock();
     }
 
     if (pageSelect) {
         pageSelect.addEventListener('change', () => {
+            hasInitializedEditorSelection = false;
             syncTypeOptions();
             syncWidthOptions();
             syncFieldGroups();
@@ -1350,6 +1897,8 @@ function initAdminBlockForm() {
     heightSelect?.addEventListener('change', syncLayoutPreview);
     nameInput?.addEventListener('input', syncLayoutPreview);
     statusSelect?.addEventListener('change', syncLayoutPreview);
+    layoutBuilderForm?.addEventListener('submit', serializeLayoutBlocks);
+
     layoutInputs.forEach((input) => {
         input.addEventListener('input', syncLayoutPreview);
         input.addEventListener('change', syncLayoutPreview);
@@ -1358,6 +1907,7 @@ function initAdminBlockForm() {
     syncTypeOptions();
     syncWidthOptions();
     syncFieldGroups();
+    setContentFormEditingState(getCurrentContentBlockId());
     syncLayoutBuilderVisibility();
     syncLayoutPreview();
 }
@@ -1777,21 +2327,36 @@ function initGsapPageMotion() {
     }
 }
 
+function runInitializer(initializer) {
+    if (typeof initializer !== 'function') {
+        return;
+    }
+
+    try {
+        initializer();
+    } catch (error) {
+        console.error('Initializer failed:', initializer.name || 'anonymous', error);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-    initPageLoader();
-    initThemeToggle();
-    initCursorOrb();
-    initExpandableText();
-    initProjectsShowcase();
-    initSmoothScroll();
-    initGlobalSmoothScroll();
-    initMobileNavigation();
-    initMobileCollapseCards();
-    initContentBlockReveal();
-    initTeamCarousel();
-    initFloatingButtonObserver();
-    initInnovationCards();
-    initSettingsTabs();
-    initAdminBlockForm();
-    initGsapPageMotion();
+    [
+        initAdminBlockForm,
+        initPageLoader,
+        initThemeToggle,
+        initCursorOrb,
+        initExpandableText,
+        initProjectsShowcase,
+        initSmoothScroll,
+        initGlobalSmoothScroll,
+        initMobileNavigation,
+        initMobileCollapseCards,
+        initContentBlockReveal,
+        initTeamCarousel,
+        initFloatingButtonObserver,
+        initInnovationCards,
+        initSettingsTabs,
+        initGsapPageMotion
+    ].forEach(runInitializer);
 });
+

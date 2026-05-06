@@ -403,6 +403,11 @@ class ContentBlockManager
 
     public function adminSaveLayout(string $pageKey, array $data): array
     {
+        return $this->adminSaveLayoutBuilder($pageKey, $data, []);
+    }
+
+    public function adminSaveLayoutBuilder(string $pageKey, array $data, array $blockStates = []): array
+    {
         $pageKey = $this->normalizePageKey($pageKey);
 
         if (!$this->pageSupportsLayoutBuilder($pageKey)) {
@@ -431,9 +436,26 @@ class ContentBlockManager
             return ['success' => false, 'errors' => $errors];
         }
 
+        $blocks = $this->loadBlocks();
+
+        if (!empty($blockStates)) {
+            $blocks = $this->applyVisualBlockStates($blocks, $pageKey, $blockStates, $errors);
+
+            if ($errors) {
+                return ['success' => false, 'errors' => $errors];
+            }
+        }
+
         $layouts = $this->loadLayouts();
         $layouts[$pageKey] = $normalizedLayout;
-        $this->saveLayouts($layouts);
+
+        if (!$this->saveLayouts($layouts)) {
+            return ['success' => false, 'errors' => ['Nao foi possivel salvar a estrutura visual da pagina.']];
+        }
+
+        if (!empty($blockStates) && !$this->saveBlocks($blocks)) {
+            return ['success' => false, 'errors' => ['Nao foi possivel salvar o arranjo visual dos blocos.']];
+        }
 
         return ['success' => true, 'layout' => $normalizedLayout];
     }
@@ -583,6 +605,97 @@ class ContentBlockManager
         }
 
         return $this->saveBlocks($updatedBlocks);
+    }
+
+    private function applyVisualBlockStates(array $blocks, string $pageKey, array $blockStates, array &$errors): array
+    {
+        $pageKey = $this->normalizePageKey($pageKey);
+        $pageBlockIds = [];
+
+        foreach ($blocks as $block) {
+            if (($block['page_key'] ?? '') === $pageKey) {
+                $pageBlockIds[] = (string) ($block['id'] ?? '');
+            }
+        }
+
+        $expectedCount = count($pageBlockIds);
+        if ($expectedCount !== count($blockStates)) {
+            $errors[] = 'O editor visual da pagina Sobre recebeu uma quantidade inesperada de blocos. Recarregue a pagina e tente novamente.';
+            return $blocks;
+        }
+
+        $pageBlockLookup = array_fill_keys($pageBlockIds, true);
+        $updatesById = [];
+        $seenIds = [];
+
+        foreach (array_values($blockStates) as $index => $state) {
+            if (!is_array($state)) {
+                $errors[] = 'Um dos blocos enviados pelo editor visual esta em formato invalido.';
+                continue;
+            }
+
+            $blockId = trim((string) ($state['id'] ?? ''));
+            if ($blockId === '') {
+                $errors[] = 'O editor visual enviou um bloco sem identificador.';
+                continue;
+            }
+
+            if (!isset($pageBlockLookup[$blockId])) {
+                $errors[] = 'Um bloco da pagina Sobre nao foi encontrado durante a atualizacao visual.';
+                continue;
+            }
+
+            if (isset($seenIds[$blockId])) {
+                $errors[] = 'O editor visual duplicou um bloco da pagina Sobre.';
+                continue;
+            }
+
+            $width = $this->normalizeWidth((string) ($state['width'] ?? $this->getDefaultWidthForPage($pageKey)));
+            $height = $this->normalizeHeight((string) ($state['height'] ?? $this->getDefaultHeightForPage($pageKey)));
+            $status = $this->normalizeStatus((string) ($state['status'] ?? 'published'));
+
+            if (!$this->isWidthAllowedForPage($pageKey, $width)) {
+                $errors[] = 'Um bloco recebeu uma largura que nao e valida para a pagina Sobre.';
+                continue;
+            }
+
+            $seenIds[$blockId] = true;
+            $updatesById[$blockId] = [
+                'width' => $width,
+                'height' => $height,
+                'status' => $status,
+                'position' => ($index + 1) * 10,
+            ];
+        }
+
+        if (count($seenIds) !== $expectedCount) {
+            $errors[] = 'Nem todos os blocos da pagina Sobre foram enviados pelo editor visual.';
+            return $blocks;
+        }
+
+        if ($errors) {
+            return $blocks;
+        }
+
+        foreach ($blocks as $index => $block) {
+            if (($block['page_key'] ?? '') !== $pageKey) {
+                continue;
+            }
+
+            $blockId = (string) ($block['id'] ?? '');
+            if (!isset($updatesById[$blockId])) {
+                continue;
+            }
+
+            $update = $updatesById[$blockId];
+            $blocks[$index]['width'] = $update['width'];
+            $blocks[$index]['height'] = $update['height'];
+            $blocks[$index]['status'] = $update['status'];
+            $blocks[$index]['position'] = $update['position'];
+            $blocks[$index]['updated_at'] = $this->now();
+        }
+
+        return $blocks;
     }
 
     private function ensureFileExists(): void

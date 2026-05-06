@@ -143,6 +143,58 @@ function admin_preview_block_title(array $block): string
     return 'Bloco';
 }
 
+function admin_preview_block_copy(array $block): string
+{
+    $type = trim((string) ($block['type'] ?? ''));
+    $itemsPreview = admin_format_block_items($block['items'] ?? []);
+
+    if ($type === 'about_media') {
+        $mediaAlt = trim((string) ($block['media_alt'] ?? ''));
+        return $mediaAlt !== '' ? $mediaAlt : 'Bloco visual institucional.';
+    }
+
+    if ($itemsPreview !== 'Sem itens estruturados.') {
+        return $itemsPreview;
+    }
+
+    return admin_content_excerpt((string) ($block['body'] ?? ''), 116);
+}
+
+function admin_visual_width_short_label(string $width): string
+{
+    switch ($width) {
+        case 'span_1':
+            return '1C';
+        case 'span_2':
+            return '2C';
+        case 'span_3':
+            return '3C';
+        case 'span_4':
+            return '4C';
+        case 'full':
+            return 'FULL';
+        case 'half':
+        default:
+            return 'HALF';
+    }
+}
+
+function admin_icon(string $name): string
+{
+    switch ($name) {
+        case 'eye':
+            return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M1.5 12s3.75-6.75 10.5-6.75S22.5 12 22.5 12s-3.75 6.75-10.5 6.75S1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/><circle cx="12" cy="12" r="3.25" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>';
+        case 'edit':
+            return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4.5 19.5h3l9.75-9.75-3-3L4.5 16.5v3Z" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="1.8"/><path d="m12.75 7.5 3 3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/><path d="M13.5 4.5 16.5 1.5 22.5 7.5 19.5 10.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>';
+        case 'up':
+            return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5.25v13.5" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/><path d="m6.75 10.5 5.25-5.25 5.25 5.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>';
+        case 'down':
+            return '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 18.75V5.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8"/><path d="m17.25 13.5-5.25 5.25-5.25-5.25" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/></svg>';
+        default:
+            return '';
+    }
+}
+
 if (empty($_SESSION['admin_csrf'])) {
     $_SESSION['admin_csrf'] = bin2hex(random_bytes(16));
 }
@@ -325,11 +377,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'block_padding' => trim((string) ($_POST['block_padding'] ?? '32')),
                     'block_min_height' => trim((string) ($_POST['block_min_height'] ?? '210')),
                 ];
+                $submittedBlockStates = [];
+                $layoutBlocksJson = trim((string) ($_POST['layout_blocks_json'] ?? ''));
 
-                $result = $contentManager->adminSaveLayout($layoutPageKey, $submittedLayout);
+                if ($layoutBlocksJson !== '') {
+                    $decodedLayoutBlocks = json_decode($layoutBlocksJson, true);
+
+                    if (!is_array($decodedLayoutBlocks)) {
+                        $contentLayoutErrors = ['O editor visual da pagina Sobre enviou um estado invalido. Recarregue a pagina e tente novamente.'];
+                        $contentLayoutOverrides = $submittedLayout;
+                        break;
+                    }
+
+                    $submittedBlockStates = $decodedLayoutBlocks;
+                }
+
+                $result = $contentManager->adminSaveLayoutBuilder($layoutPageKey, $submittedLayout, $submittedBlockStates);
 
                 if ($result['success']) {
-                    admin_set_flash('sucesso', 'Estrutura da pagina salva com sucesso.');
+                    admin_set_flash('sucesso', 'Composicao visual da pagina Sobre salva com sucesso.');
                     admin_redirect('content');
                 }
 
@@ -491,6 +557,8 @@ if ($contentLayoutOverrides !== null && (string) ($contentLayoutOverrides['page_
 }
 
 $currentRoleLabel = $auth->getRoleLabel($currentUser);
+$aboutVisualWidthOptions = $contentManager->getAllowedWidthDefinitionsForPage('about');
+$aboutVisualHeightOptions = $contentManager->getHeightDefinitions();
 ?>
 
 <?php include_once 'includes/header.php'; ?>
@@ -838,27 +906,31 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
             <div class="panel-card-header">
                 <div>
                     <p class="eyebrow">Conteudo global</p>
-                    <h2><?php echo $contentForm['id'] !== '' ? 'Editar bloco' : 'Novo bloco'; ?></h2>
+                    <h2 data-content-form-heading><?php echo $contentForm['id'] !== '' ? 'Editar bloco' : 'Novo bloco'; ?></h2>
                     <p class="admin-subtitle">CMS interno por blocos. Hoje ele abastece Contato, Areas Tematicas e a pagina Sobre, incluindo estrutura de grid, espacamentos e tamanho dos cards.</p>
                 </div>
-
-                <?php if ($contentForm['id'] !== ''): ?>
-                    <a class="dashboard-btn dashboard-btn--ghost" href="admin.php#content">Limpar formulario</a>
-                <?php endif; ?>
+                <a
+                    class="dashboard-btn dashboard-btn--ghost"
+                    href="admin.php#content"
+                    data-content-form-reset
+                    <?php echo $contentForm['id'] !== '' ? '' : 'hidden'; ?>
+                >
+                    Limpar formulario
+                </a>
             </div>
 
             <?php foreach ($contentFormErrors as $error): ?>
                 <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
             <?php endforeach; ?>
 
-            <form method="POST" class="stack-form" data-block-form-root>
+            <form method="POST" class="stack-form" data-block-form-root data-content-form>
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="save_content_block">
-                <input type="hidden" name="block_id" value="<?php echo htmlspecialchars((string) $contentForm['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="block_id" value="<?php echo htmlspecialchars((string) $contentForm['id'], ENT_QUOTES, 'UTF-8'); ?>" data-content-field="id">
 
                 <div class="form-group">
                     <label for="content_page_key">Pagina</label>
-                    <select id="content_page_key" name="page_key" data-block-page-select>
+                    <select id="content_page_key" name="page_key" data-block-page-select data-content-field="page_key">
                         <?php foreach ($contentPageOptions as $pageKey => $pageMeta): ?>
                             <option
                                 value="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>"
@@ -873,7 +945,7 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
 
                 <div class="form-group">
                     <label for="content_type">Tipo de bloco</label>
-                    <select id="content_type" name="type" data-block-type-select>
+                    <select id="content_type" name="type" data-block-type-select data-content-field="type">
                         <?php foreach ($contentTypeOptions as $typeKey => $typeMeta): ?>
                             <?php
                             $allowedPages = [];
@@ -902,66 +974,66 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
 
                 <div class="form-group">
                     <label for="content_name">Nome interno</label>
-                    <input type="text" id="content_name" name="name" value="<?php echo htmlspecialchars((string) $contentForm['name'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                    <input type="text" id="content_name" name="name" value="<?php echo htmlspecialchars((string) $contentForm['name'], ENT_QUOTES, 'UTF-8'); ?>" required data-content-field="name">
                     <p class="form-help">Esse nome aparece no painel para identificar o bloco com rapidez.</p>
                 </div>
 
                 <div class="form-group">
                     <label for="content_eyebrow">Eyebrow / tag</label>
-                    <input type="text" id="content_eyebrow" name="eyebrow" value="<?php echo htmlspecialchars((string) $contentForm['eyebrow'], ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="text" id="content_eyebrow" name="eyebrow" value="<?php echo htmlspecialchars((string) $contentForm['eyebrow'], ENT_QUOTES, 'UTF-8'); ?>" data-content-field="eyebrow">
                     <p class="form-help">Use esse campo como selo curto do bloco, como "Canal oficial", "CEPIN-CIS" ou "EduCIS".</p>
                 </div>
 
                 <div class="form-group">
                     <label for="content_title">Titulo</label>
-                    <input type="text" id="content_title" name="title" value="<?php echo htmlspecialchars((string) $contentForm['title'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                    <input type="text" id="content_title" name="title" value="<?php echo htmlspecialchars((string) $contentForm['title'], ENT_QUOTES, 'UTF-8'); ?>" required data-content-field="title">
                 </div>
 
                 <div class="form-group">
                     <label for="content_body">Texto principal</label>
-                    <textarea id="content_body" name="body" rows="6"><?php echo htmlspecialchars((string) $contentForm['body'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <textarea id="content_body" name="body" rows="6" data-content-field="body"><?php echo htmlspecialchars((string) $contentForm['body'], ENT_QUOTES, 'UTF-8'); ?></textarea>
                 </div>
 
                 <div class="form-group" data-block-field-group="contact_info,text_card,thematic_cta,about_list,about_cta">
                     <label for="content_items_text">Itens estruturados</label>
-                    <textarea id="content_items_text" name="items_text" rows="6"><?php echo htmlspecialchars((string) $contentForm['items_text'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <textarea id="content_items_text" name="items_text" rows="6" data-content-field="items_text"><?php echo htmlspecialchars((string) $contentForm['items_text'], ENT_QUOTES, 'UTF-8'); ?></textarea>
                     <p class="form-help">Uma linha por item no formato: Rotulo | valor | link opcional. Ex.: Email | cepin@dominio.com | mailto:cepin@dominio.com</p>
                 </div>
 
                 <div class="form-group" data-block-field-group="contact_info,text_card,thematic_intro,thematic_cta,about_text,about_cta">
                     <label for="content_cta_label">Rotulo do botao</label>
-                    <input type="text" id="content_cta_label" name="cta_label" value="<?php echo htmlspecialchars((string) $contentForm['cta_label'], ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="text" id="content_cta_label" name="cta_label" value="<?php echo htmlspecialchars((string) $contentForm['cta_label'], ENT_QUOTES, 'UTF-8'); ?>" data-content-field="cta_label">
                 </div>
 
                 <div class="form-group" data-block-field-group="contact_info,text_card,thematic_intro,thematic_cta,about_text,about_cta">
                     <label for="content_cta_url">URL do botao</label>
-                    <input type="text" id="content_cta_url" name="cta_url" value="<?php echo htmlspecialchars((string) $contentForm['cta_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="mailto:, https:// ou /rota-interna">
+                    <input type="text" id="content_cta_url" name="cta_url" value="<?php echo htmlspecialchars((string) $contentForm['cta_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="mailto:, https:// ou /rota-interna" data-content-field="cta_url">
                 </div>
 
                 <div class="form-group" data-block-field-group="map_embed">
                     <label for="content_embed_url">URL do embed</label>
-                    <textarea id="content_embed_url" name="embed_url" rows="4"><?php echo htmlspecialchars((string) $contentForm['embed_url'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <textarea id="content_embed_url" name="embed_url" rows="4" data-content-field="embed_url"><?php echo htmlspecialchars((string) $contentForm['embed_url'], ENT_QUOTES, 'UTF-8'); ?></textarea>
                     <p class="form-help">Cole apenas o valor de `src` do iframe incorporado.</p>
                 </div>
 
                 <div class="form-group" data-block-field-group="about_media,about_list">
                     <label for="content_media_url">Imagem principal</label>
-                    <input type="text" id="content_media_url" name="media_url" value="<?php echo htmlspecialchars((string) $contentForm['media_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="./img/banner.png ou https://...">
+                    <input type="text" id="content_media_url" name="media_url" value="<?php echo htmlspecialchars((string) $contentForm['media_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="./img/banner.png ou https://..." data-content-field="media_url">
                 </div>
 
                 <div class="form-group" data-block-field-group="about_media">
                     <label for="content_media_dark_url">Imagem tema escuro</label>
-                    <input type="text" id="content_media_dark_url" name="media_dark_url" value="<?php echo htmlspecialchars((string) $contentForm['media_dark_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="./img/bannerescuro.png">
+                    <input type="text" id="content_media_dark_url" name="media_dark_url" value="<?php echo htmlspecialchars((string) $contentForm['media_dark_url'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="./img/bannerescuro.png" data-content-field="media_dark_url">
                 </div>
 
                 <div class="form-group" data-block-field-group="about_media,about_list">
                     <label for="content_media_alt">Texto alternativo da imagem</label>
-                    <input type="text" id="content_media_alt" name="media_alt" value="<?php echo htmlspecialchars((string) $contentForm['media_alt'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Descricao objetiva da imagem">
+                    <input type="text" id="content_media_alt" name="media_alt" value="<?php echo htmlspecialchars((string) $contentForm['media_alt'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Descricao objetiva da imagem" data-content-field="media_alt">
                 </div>
 
                 <div class="form-group">
                     <label for="content_width">Largura do bloco</label>
-                    <select id="content_width" name="width" data-block-width-select>
+                    <select id="content_width" name="width" data-block-width-select data-content-field="width">
                         <?php foreach ($contentWidthOptions as $widthKey => $widthLabel): ?>
                             <?php
                             $allowedWidthPages = [];
@@ -987,7 +1059,7 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
 
                 <div class="form-group" data-block-field-group="about_text,about_media,about_list,about_cta">
                     <label for="content_height">Altura visual do bloco</label>
-                    <select id="content_height" name="height" data-block-height-select>
+                    <select id="content_height" name="height" data-block-height-select data-content-field="height">
                         <?php foreach ($contentHeightOptions as $heightKey => $heightLabel): ?>
                             <option value="<?php echo htmlspecialchars($heightKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $contentForm['height'] === (string) $heightKey ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($heightLabel, ENT_QUOTES, 'UTF-8'); ?>
@@ -999,13 +1071,13 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
 
                 <div class="form-group">
                     <label for="content_position">Posicao</label>
-                    <input type="number" id="content_position" name="position" value="<?php echo htmlspecialchars((string) $contentForm['position'], ENT_QUOTES, 'UTF-8'); ?>" min="1" step="1">
+                    <input type="number" id="content_position" name="position" value="<?php echo htmlspecialchars((string) $contentForm['position'], ENT_QUOTES, 'UTF-8'); ?>" min="1" step="1" data-content-field="position">
                     <p class="form-help">Quanto menor o numero, mais acima o bloco aparece na pagina.</p>
                 </div>
 
                 <div class="form-group">
                     <label for="content_status">Visibilidade</label>
-                    <select id="content_status" name="status">
+                    <select id="content_status" name="status" data-content-field="status">
                         <?php foreach ($contentStatusOptions as $statusKey => $statusLabel): ?>
                             <option value="<?php echo htmlspecialchars($statusKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $contentForm['status'] === (string) $statusKey ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>
@@ -1016,12 +1088,12 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
 
                 <div class="form-group" data-block-field-group="contact_info,text_card">
                     <label class="checkbox-row" for="content_context_note">
-                        <input type="checkbox" id="content_context_note" name="show_context_note" value="1" <?php echo !empty($contentForm['show_context_note']) ? 'checked' : ''; ?>>
+                        <input type="checkbox" id="content_context_note" name="show_context_note" value="1" <?php echo !empty($contentForm['show_context_note']) ? 'checked' : ''; ?> data-content-field="show_context_note">
                         Exibir contexto de projeto/categoria quando o usuario vier da home
                     </label>
                 </div>
 
-                <button type="submit" class="dashboard-btn"><?php echo $contentForm['id'] !== '' ? 'Salvar bloco' : 'Criar bloco'; ?></button>
+                <button type="submit" class="dashboard-btn" data-content-form-submit><?php echo $contentForm['id'] !== '' ? 'Salvar bloco' : 'Criar bloco'; ?></button>
             </form>
         </article>
 
@@ -1035,7 +1107,7 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                 <div>
                     <p class="eyebrow">Esqueleto da pagina</p>
                     <h2>Layout da aba Sobre</h2>
-                    <p class="admin-subtitle">Use este painel para definir colunas, espacamentos, largura da area util e a altura base dos cards. O preview responde em tempo real para facilitar os ajustes.</p>
+                    <p class="admin-subtitle">Ajuste a composicao da Sobre como se estivesse montando uma vitrine: primeiro defina o ritmo geral e depois clique em qualquer card para editar o bloco direto no canvas.</p>
                 </div>
             </div>
 
@@ -1043,61 +1115,111 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                 <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
             <?php endforeach; ?>
 
-            <form method="POST" class="stack-form admin-layout-builder__form">
+            <form method="POST" class="stack-form admin-layout-builder__form" data-layout-builder-form>
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="save_content_layout">
                 <input type="hidden" name="layout_page_key" value="about">
+                <input type="hidden" name="layout_blocks_json" value="" data-layout-blocks-input>
 
                 <div class="admin-layout-builder__controls">
-                    <div class="form-group">
-                        <label for="about_grid_style">Formato do grid</label>
-                        <select id="about_grid_style" name="grid_style" data-layout-input="grid_style">
+                    <div class="admin-layout-control admin-layout-control--select">
+                        <div class="admin-layout-control__top">
+                            <label for="about_grid_style">Formato do grid</label>
+                            <span class="admin-layout-control__value" data-layout-value-output="grid_style"></span>
+                        </div>
+                        <select id="about_grid_style" name="grid_style" data-layout-input="grid_style" class="admin-layout-control__select">
                             <?php foreach ($contentGridStyleOptions as $gridStyleKey => $gridStyleLabel): ?>
                                 <option value="<?php echo htmlspecialchars($gridStyleKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $aboutLayoutForm['grid_style'] === (string) $gridStyleKey ? 'selected' : ''; ?>>
                                     <?php echo htmlspecialchars($gridStyleLabel, ENT_QUOTES, 'UTF-8'); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
+                        <p class="admin-layout-control__note">Defina se a grade deve respirar mais ou encaixar os cards de forma mais densa.</p>
                     </div>
 
-                    <div class="form-group">
-                        <label for="about_columns">Colunas no desktop</label>
-                        <input type="number" id="about_columns" name="columns" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['columns'], ENT_QUOTES, 'UTF-8'); ?>" min="1" max="4" step="1" data-layout-input="columns">
+                    <div class="admin-layout-control">
+                        <div class="admin-layout-control__top">
+                            <label for="about_columns">Colunas no desktop</label>
+                            <span class="admin-layout-control__value" data-layout-value-output="columns"></span>
+                        </div>
+                        <input type="range" id="about_columns" name="columns" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['columns'], ENT_QUOTES, 'UTF-8'); ?>" min="1" max="4" step="1" data-layout-input="columns" class="admin-layout-control__range">
+                        <div class="admin-layout-control__scale">
+                            <span>Mais focado</span>
+                            <span>Mais aberto</span>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="about_mobile_columns">Colunas no mobile</label>
-                        <input type="number" id="about_mobile_columns" name="mobile_columns" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['mobile_columns'], ENT_QUOTES, 'UTF-8'); ?>" min="1" max="2" step="1" data-layout-input="mobile_columns">
+                    <div class="admin-layout-control">
+                        <div class="admin-layout-control__top">
+                            <label for="about_mobile_columns">Colunas no mobile</label>
+                            <span class="admin-layout-control__value" data-layout-value-output="mobile_columns"></span>
+                        </div>
+                        <input type="range" id="about_mobile_columns" name="mobile_columns" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['mobile_columns'], ENT_QUOTES, 'UTF-8'); ?>" min="1" max="2" step="1" data-layout-input="mobile_columns" class="admin-layout-control__range">
+                        <div class="admin-layout-control__scale">
+                            <span>Empilhado</span>
+                            <span>Duplo</span>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="about_gap">Distancia entre blocos</label>
-                        <input type="number" id="about_gap" name="gap" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['gap'], ENT_QUOTES, 'UTF-8'); ?>" min="12" max="56" step="1" data-layout-input="gap">
+                    <div class="admin-layout-control">
+                        <div class="admin-layout-control__top">
+                            <label for="about_gap">Distancia entre blocos</label>
+                            <span class="admin-layout-control__value" data-layout-value-output="gap"></span>
+                        </div>
+                        <input type="range" id="about_gap" name="gap" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['gap'], ENT_QUOTES, 'UTF-8'); ?>" min="12" max="56" step="1" data-layout-input="gap" class="admin-layout-control__range">
+                        <div class="admin-layout-control__scale">
+                            <span>Mais justo</span>
+                            <span>Mais arejado</span>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="about_container_width">Largura maxima da area</label>
-                        <input type="number" id="about_container_width" name="container_width" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['container_width'], ENT_QUOTES, 'UTF-8'); ?>" min="880" max="1480" step="10" data-layout-input="container_width">
+                    <div class="admin-layout-control">
+                        <div class="admin-layout-control__top">
+                            <label for="about_container_width">Largura da composicao</label>
+                            <span class="admin-layout-control__value" data-layout-value-output="container_width"></span>
+                        </div>
+                        <input type="range" id="about_container_width" name="container_width" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['container_width'], ENT_QUOTES, 'UTF-8'); ?>" min="880" max="1480" step="10" data-layout-input="container_width" class="admin-layout-control__range">
+                        <div class="admin-layout-control__scale">
+                            <span>Contida</span>
+                            <span>Cenografica</span>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="about_block_padding">Padding interno dos cards</label>
-                        <input type="number" id="about_block_padding" name="block_padding" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['block_padding'], ENT_QUOTES, 'UTF-8'); ?>" min="18" max="56" step="1" data-layout-input="block_padding">
+                    <div class="admin-layout-control">
+                        <div class="admin-layout-control__top">
+                            <label for="about_block_padding">Respiro interno</label>
+                            <span class="admin-layout-control__value" data-layout-value-output="block_padding"></span>
+                        </div>
+                        <input type="range" id="about_block_padding" name="block_padding" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['block_padding'], ENT_QUOTES, 'UTF-8'); ?>" min="18" max="56" step="1" data-layout-input="block_padding" class="admin-layout-control__range">
+                        <div class="admin-layout-control__scale">
+                            <span>Enxuto</span>
+                            <span>Respirado</span>
+                        </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="about_block_min_height">Altura base dos cards</label>
-                        <input type="number" id="about_block_min_height" name="block_min_height" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['block_min_height'], ENT_QUOTES, 'UTF-8'); ?>" min="140" max="420" step="5" data-layout-input="block_min_height">
+                    <div class="admin-layout-control">
+                        <div class="admin-layout-control__top">
+                            <label for="about_block_min_height">Presenca vertical</label>
+                            <span class="admin-layout-control__value" data-layout-value-output="block_min_height"></span>
+                        </div>
+                        <input type="range" id="about_block_min_height" name="block_min_height" value="<?php echo htmlspecialchars((string) $aboutLayoutForm['block_min_height'], ENT_QUOTES, 'UTF-8'); ?>" min="140" max="420" step="5" data-layout-input="block_min_height" class="admin-layout-control__range">
+                        <div class="admin-layout-control__scale">
+                            <span>Baixa</span>
+                            <span>Monumental</span>
+                        </div>
                     </div>
                 </div>
 
-                <button type="submit" class="dashboard-btn">Salvar estrutura da Sobre</button>
+                <div class="admin-layout-builder__footer">
+                    <p class="admin-layout-builder__hint">Ajuste o ambiente geral acima e refine cada bloco diretamente no canvas abaixo com os icones de olho e lapis.</p>
+                    <button type="submit" class="dashboard-btn">Salvar composicao da Sobre</button>
+                </div>
             </form>
 
             <div class="admin-layout-preview-shell">
                 <div class="admin-layout-preview-copy">
-                    <strong>Preview estrutural</strong>
-                    <span>Os blocos publicados aparecem abaixo como um esqueleto para voce ajustar encaixe, ritmo e hierarquia visual.</span>
+                    <strong>Canvas interativo</strong>
+                    <span>Clique em qualquer card para abrir a edicao. O olho volta para visualizacao, o lapis entra no modo de ajuste e as mudancas de largura, altura, ordem e visibilidade ficam prontas para salvar em lote.</span>
                 </div>
 
                 <div
@@ -1109,18 +1231,104 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                         <?php
                         $previewSpan = $contentManager->getWidthSpan((string) ($block['width'] ?? 'span_1'), (int) $aboutLayoutForm['columns']);
                         $previewHeightFactor = $contentManager->getHeightFactor((string) ($block['height'] ?? 'regular'));
+                        $previewType = (string) ($block['type'] ?? 'about_text');
+                        $previewWidth = (string) ($block['width'] ?? 'span_1');
+                        $previewHeight = (string) ($block['height'] ?? 'regular');
+                        $previewStatus = (string) ($block['status'] ?? 'published');
+                        $previewTitle = admin_preview_block_title($block);
+                        $previewCopy = admin_preview_block_copy($block);
+                        $previewTypeLabel = $contentManager->getTypeLabel($previewType);
+                        $previewWidthLabel = $contentManager->getWidthLabel($previewWidth);
+                        $previewHeightLabel = $contentManager->getHeightLabel($previewHeight);
+                        $previewStatusLabel = $contentManager->getStatusLabel($previewStatus);
+                        $previewBlockSlug = preg_replace('/[^a-z0-9_-]+/', '-', strtolower($previewType));
                         ?>
                         <article
-                            class="admin-layout-preview-block <?php echo (string) ($block['status'] ?? 'published') === 'hidden' ? 'admin-layout-preview-block--hidden' : ''; ?>"
-                            data-preview-width="<?php echo htmlspecialchars((string) ($block['width'] ?? 'span_1'), ENT_QUOTES, 'UTF-8'); ?>"
-                            data-preview-height="<?php echo htmlspecialchars((string) ($block['height'] ?? 'regular'), ENT_QUOTES, 'UTF-8'); ?>"
+                            class="admin-layout-preview-block admin-layout-preview-block--<?php echo htmlspecialchars((string) $previewBlockSlug, ENT_QUOTES, 'UTF-8'); ?> <?php echo $previewStatus === 'hidden' ? 'admin-layout-preview-block--hidden' : ''; ?>"
+                            data-layout-block-id="<?php echo htmlspecialchars((string) ($block['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                            data-layout-block-title="<?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>"
+                            data-layout-selectable="1"
+                            tabindex="0"
+                            data-preview-width="<?php echo htmlspecialchars($previewWidth, ENT_QUOTES, 'UTF-8'); ?>"
+                            data-preview-height="<?php echo htmlspecialchars($previewHeight, ENT_QUOTES, 'UTF-8'); ?>"
+                            data-preview-status="<?php echo htmlspecialchars($previewStatus, ENT_QUOTES, 'UTF-8'); ?>"
                             style="grid-column: span <?php echo $previewSpan; ?> / span <?php echo $previewSpan; ?>; --admin-block-height-factor: <?php echo htmlspecialchars((string) $previewHeightFactor, ENT_QUOTES, 'UTF-8'); ?>;"
                         >
-                            <span class="admin-layout-preview-block__type"><?php echo htmlspecialchars($contentManager->getTypeLabel((string) ($block['type'] ?? 'about_text')), ENT_QUOTES, 'UTF-8'); ?></span>
-                            <strong class="admin-layout-preview-block__title"><?php echo htmlspecialchars(admin_preview_block_title($block), ENT_QUOTES, 'UTF-8'); ?></strong>
-                            <span class="admin-layout-preview-block__meta">
-                                Posicao <?php echo (int) ($block['position'] ?? 0); ?> · <?php echo htmlspecialchars($contentManager->getWidthLabel((string) ($block['width'] ?? 'span_1')), ENT_QUOTES, 'UTF-8'); ?> · <?php echo htmlspecialchars($contentManager->getHeightLabel((string) ($block['height'] ?? 'regular')), ENT_QUOTES, 'UTF-8'); ?>
+                            <div class="admin-layout-preview-block__rail">
+                                <button type="button" class="admin-layout-preview-icon is-active" data-layout-mode="preview" aria-label="Visualizar <?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>" title="Visualizar bloco">
+                                    <?php echo admin_icon('eye'); ?>
+                                </button>
+                                <button type="button" class="admin-layout-preview-icon" data-layout-mode="edit" aria-label="Editar layout de <?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>" title="Editar layout do bloco">
+                                    <?php echo admin_icon('edit'); ?>
+                                </button>
+                            </div>
+
+                            <div class="admin-layout-preview-block__shell">
+                                <span class="admin-layout-preview-block__type"><?php echo htmlspecialchars($previewTypeLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                                <strong class="admin-layout-preview-block__title"><?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?></strong>
+                                <span class="admin-layout-preview-block__meta" data-layout-block-meta>
+                                    Ordem visual <?php echo (int) ($block['position'] ?? 0); ?> | <?php echo htmlspecialchars($previewWidthLabel, ENT_QUOTES, 'UTF-8'); ?> | <?php echo htmlspecialchars($previewHeightLabel, ENT_QUOTES, 'UTF-8'); ?> | <?php echo htmlspecialchars($previewStatusLabel, ENT_QUOTES, 'UTF-8'); ?>
                             </span>
+                                <p class="admin-layout-preview-block__body"><?php echo htmlspecialchars($previewCopy, ENT_QUOTES, 'UTF-8'); ?></p>
+                                <div class="admin-layout-preview-block__mockup" aria-hidden="true">
+                                    <span class="admin-layout-preview-block__line admin-layout-preview-block__line--strong"></span>
+                                    <span class="admin-layout-preview-block__line"></span>
+                                    <span class="admin-layout-preview-block__line admin-layout-preview-block__line--short"></span>
+                                </div>
+                            </div>
+
+                            <div class="admin-layout-preview-panel" data-layout-block-panel hidden>
+                                <div class="admin-layout-preview-panel__section">
+                                    <span class="admin-layout-preview-panel__label">Largura</span>
+                                    <div class="admin-layout-preview-choices" role="group" aria-label="Largura de <?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?php foreach ($aboutVisualWidthOptions as $widthKey => $widthLabel): ?>
+                                            <button
+                                                type="button"
+                                                class="admin-layout-choice <?php echo $previewWidth === (string) $widthKey ? 'is-selected' : ''; ?>"
+                                                data-layout-choice="width"
+                                                data-choice-value="<?php echo htmlspecialchars((string) $widthKey, ENT_QUOTES, 'UTF-8'); ?>"
+                                                title="<?php echo htmlspecialchars((string) $widthLabel, ENT_QUOTES, 'UTF-8'); ?>"
+                                            >
+                                                <?php echo htmlspecialchars(admin_visual_width_short_label((string) $widthKey), ENT_QUOTES, 'UTF-8'); ?>
+                                            </button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+
+                                <div class="admin-layout-preview-panel__section">
+                                    <span class="admin-layout-preview-panel__label">Altura</span>
+                                    <div class="admin-layout-preview-choices" role="group" aria-label="Altura de <?php echo htmlspecialchars($previewTitle, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <?php foreach ($aboutVisualHeightOptions as $heightKey => $heightLabel): ?>
+                                            <button
+                                                type="button"
+                                                class="admin-layout-choice admin-layout-choice--text <?php echo $previewHeight === (string) $heightKey ? 'is-selected' : ''; ?>"
+                                                data-layout-choice="height"
+                                                data-choice-value="<?php echo htmlspecialchars((string) $heightKey, ENT_QUOTES, 'UTF-8'); ?>"
+                                            >
+                                                <?php echo htmlspecialchars((string) $heightLabel, ENT_QUOTES, 'UTF-8'); ?>
+                                            </button>
+                                        <?php endforeach; ?>
+                                    </div>
+                                </div>
+
+                                <div class="admin-layout-preview-panel__actions">
+                                    <button type="button" class="admin-layout-preview-action admin-layout-preview-action--ghost" data-layout-visibility-toggle>
+                                        <span data-layout-visibility-label><?php echo $previewStatus === 'hidden' ? 'Publicar bloco' : 'Ocultar bloco'; ?></span>
+                                    </button>
+
+                                    <button type="button" class="admin-layout-preview-action" data-layout-move="-1">
+                                        <?php echo admin_icon('up'); ?>
+                                        <span>Subir</span>
+                                    </button>
+
+                                    <button type="button" class="admin-layout-preview-action" data-layout-move="1">
+                                        <?php echo admin_icon('down'); ?>
+                                        <span>Descer</span>
+                                    </button>
+
+                                    <button type="button" class="admin-layout-preview-link" data-layout-edit-content>Editar conteudo</button>
+                                </div>
+                            </div>
                         </article>
                     <?php endforeach; ?>
 
@@ -1130,11 +1338,19 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
                         data-preview-width="<?php echo htmlspecialchars((string) $contentForm['width'], ENT_QUOTES, 'UTF-8'); ?>"
                         data-preview-height="<?php echo htmlspecialchars((string) $contentForm['height'], ENT_QUOTES, 'UTF-8'); ?>"
                     >
-                        <span class="admin-layout-preview-block__type">Rascunho atual</span>
-                        <strong class="admin-layout-preview-block__title" data-layout-draft-title><?php echo htmlspecialchars((string) ($contentForm['name'] !== '' ? $contentForm['name'] : 'Bloco em edicao'), ENT_QUOTES, 'UTF-8'); ?></strong>
-                        <span class="admin-layout-preview-block__meta" data-layout-draft-meta>
-                            <?php echo htmlspecialchars($contentManager->getWidthLabel((string) $contentForm['width']), ENT_QUOTES, 'UTF-8'); ?> · <?php echo htmlspecialchars($contentManager->getHeightLabel((string) $contentForm['height']), ENT_QUOTES, 'UTF-8'); ?>
+                        <div class="admin-layout-preview-block__shell">
+                            <span class="admin-layout-preview-block__type">Rascunho atual</span>
+                            <strong class="admin-layout-preview-block__title" data-layout-draft-title><?php echo htmlspecialchars((string) ($contentForm['name'] !== '' ? $contentForm['name'] : 'Bloco em edicao'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                            <span class="admin-layout-preview-block__meta" data-layout-draft-meta>
+                            <?php echo htmlspecialchars($contentManager->getWidthLabel((string) $contentForm['width']), ENT_QUOTES, 'UTF-8'); ?> Â· <?php echo htmlspecialchars($contentManager->getHeightLabel((string) $contentForm['height']), ENT_QUOTES, 'UTF-8'); ?>
                         </span>
+                            <p class="admin-layout-preview-block__body">Este card responde ao formulario acima e mostra como o bloco atual vai entrar na composicao quando for salvo.</p>
+                            <div class="admin-layout-preview-block__mockup" aria-hidden="true">
+                                <span class="admin-layout-preview-block__line admin-layout-preview-block__line--strong"></span>
+                                <span class="admin-layout-preview-block__line"></span>
+                                <span class="admin-layout-preview-block__line admin-layout-preview-block__line--short"></span>
+                            </div>
+                        </div>
                     </article>
                 </div>
             </div>
@@ -1223,4 +1439,61 @@ $currentRoleLabel = $auth->getRoleLabel($currentUser);
     </section>
 </main>
 
+<?php
+$contentBlockPayloads = [];
+foreach ($contentBlocks as $block) {
+    $blockId = (string) ($block['id'] ?? '');
+    if ($blockId === '') {
+        continue;
+    }
+
+    $contentBlockPayloads[$blockId] = [
+        'id' => $blockId,
+        'page_key' => (string) ($block['page_key'] ?? 'contact'),
+        'type' => (string) ($block['type'] ?? ''),
+        'name' => (string) ($block['name'] ?? ''),
+        'eyebrow' => (string) ($block['eyebrow'] ?? ''),
+        'title' => (string) ($block['title'] ?? ''),
+        'body' => (string) ($block['body'] ?? ''),
+        'items_text' => $contentManager->formatItemsForTextarea($block['items'] ?? []),
+        'cta_label' => (string) ($block['cta_label'] ?? ''),
+        'cta_url' => (string) ($block['cta_url'] ?? ''),
+        'embed_url' => (string) ($block['embed_url'] ?? ''),
+        'media_url' => (string) ($block['media_url'] ?? ''),
+        'media_dark_url' => (string) ($block['media_dark_url'] ?? ''),
+        'media_alt' => (string) ($block['media_alt'] ?? ''),
+        'width' => (string) ($block['width'] ?? ''),
+        'height' => (string) ($block['height'] ?? ''),
+        'position' => (string) ($block['position'] ?? ''),
+        'status' => (string) ($block['status'] ?? 'published'),
+        'show_context_note' => !empty($block['show_context_note']),
+    ];
+}
+?>
+<script>
+    (function () {
+        function bootAdminBuilder() {
+            if (typeof initAdminBlockForm !== 'function') {
+                return;
+            }
+
+            try {
+                initAdminBlockForm();
+            } catch (error) {
+                console.error('Falha ao iniciar o editor visual do admin:', error);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            window.setTimeout(bootAdminBuilder, 0);
+        });
+
+        window.addEventListener('load', function () {
+            window.setTimeout(bootAdminBuilder, 0);
+        }, { once: true });
+    }());
+</script>
+<script id="content-block-payloads" type="application/json"><?php echo json_encode($contentBlockPayloads, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?></script>
+
 <?php include_once 'includes/footer.php'; ?>
+

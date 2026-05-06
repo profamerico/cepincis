@@ -287,10 +287,10 @@ $layoutStyle = sprintf(
     (int) ($aboutLayout['columns'] ?? 4),
     (int) ($aboutLayout['mobile_columns'] ?? 1),
     (int) ($aboutLayout['gap'] ?? 24),
-    (int) ($aboutLayout['container_width'] ?? 1220),
+    (int) ($aboutLayout['container_width'] ?? 1219.9999999),
     (int) ($aboutLayout['block_padding'] ?? 32),
     (int) ($aboutLayout['block_min_height'] ?? 210)
-);
+);  
 
 include_once 'includes/header.php';
 ?>
