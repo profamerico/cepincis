@@ -1101,6 +1101,7 @@ $aboutVisualHeightOptions = $contentManager->getHeightDefinitions();
             class="panel-card admin-layout-builder"
             data-layout-builder
             data-layout-builder-page="about"
+            data-layout-inline-controls="1"
             <?php echo (string) $contentForm['page_key'] === 'about' ? '' : 'hidden'; ?>
         >
             <div class="panel-card-header">
@@ -1470,30 +1471,489 @@ foreach ($contentBlocks as $block) {
     ];
 }
 ?>
+<script id="content-block-payloads" type="application/json"><?php echo json_encode($contentBlockPayloads, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?></script>
 <script>
     (function () {
-        function bootAdminBuilder() {
-            if (typeof initAdminBlockForm !== 'function') {
+        const widthLabels = {
+            half: 'Coluna simples',
+            full: 'Largura total',
+            span_1: '1 coluna',
+            span_2: '2 colunas',
+            span_3: '3 colunas',
+            span_4: '4 colunas',
+        };
+        const heightLabels = {
+            compact: 'Compacto',
+            regular: 'Regular',
+            tall: 'Alto',
+        };
+        const statusLabels = {
+            published: 'Publicado',
+            hidden: 'Oculto',
+        };
+
+        function getEventElementTarget(event) {
+            if (event.target instanceof Element) {
+                return event.target;
+            }
+
+            if (event.target && event.target.parentElement instanceof Element) {
+                return event.target.parentElement;
+            }
+
+            return null;
+        }
+
+        function initAdminInlineBuilder() {
+            const builder = document.querySelector('[data-layout-builder][data-layout-inline-controls="1"]');
+            const preview = builder?.querySelector('[data-layout-preview]') || null;
+            const layoutForm = builder?.querySelector('[data-layout-builder-form]') || null;
+            const blocksInput = layoutForm?.querySelector('[data-layout-blocks-input]') || null;
+            const contentForm = document.querySelector('[data-content-form]');
+            const contentHeading = document.querySelector('[data-content-form-heading]');
+            const contentSubmit = document.querySelector('[data-content-form-submit]');
+            const contentReset = document.querySelector('[data-content-form-reset]');
+            const payloadNode = document.getElementById('content-block-payloads');
+
+            if (!builder || !preview || !layoutForm || !blocksInput || !contentForm || builder.dataset.inlineControlsBound === '1') {
                 return;
             }
 
-            try {
-                initAdminBlockForm();
-            } catch (error) {
-                console.error('Falha ao iniciar o editor visual do admin:', error);
+            builder.dataset.inlineControlsBound = '1';
+
+            const fieldMap = {};
+            Array.from(contentForm.querySelectorAll('[data-content-field]')).forEach((field) => {
+                fieldMap[field.dataset.contentField || ''] = field;
+            });
+
+            let payloads = {};
+            if (payloadNode && payloadNode.textContent.trim() !== '') {
+                try {
+                    const parsed = JSON.parse(payloadNode.textContent);
+                    if (parsed && typeof parsed === 'object') {
+                        payloads = parsed;
+                    }
+                } catch (error) {
+                    payloads = {};
+                }
+            }
+
+            function getBlocks() {
+                return Array.from(preview.querySelectorAll('[data-layout-block-id]'));
+            }
+
+            function getCurrentContentId() {
+                const idField = fieldMap.id;
+                return idField instanceof HTMLInputElement ? idField.value.trim() : '';
+            }
+
+            function setContentFormMode(blockId) {
+                const isEditingExistingBlock = String(blockId || '').trim() !== '';
+
+                if (contentHeading) {
+                    contentHeading.textContent = isEditingExistingBlock ? 'Editar bloco' : 'Novo bloco';
+                }
+
+                if (contentSubmit instanceof HTMLButtonElement) {
+                    contentSubmit.textContent = isEditingExistingBlock ? 'Salvar bloco' : 'Criar bloco';
+                }
+
+                if (contentReset instanceof HTMLElement) {
+                    contentReset.hidden = !isEditingExistingBlock;
+                }
+            }
+
+            function setFieldValue(fieldName, value) {
+                const field = fieldMap[fieldName];
+
+                if (!(field instanceof HTMLElement)) {
+                    return;
+                }
+
+                if (field instanceof HTMLInputElement && field.type === 'checkbox') {
+                    field.checked = Boolean(value);
+                    return;
+                }
+
+                if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || field instanceof HTMLSelectElement) {
+                    field.value = value == null ? '' : String(value);
+                }
+            }
+
+            function emitFieldSignals(fieldName) {
+                const field = fieldMap[fieldName];
+
+                if (!(field instanceof HTMLElement)) {
+                    return;
+                }
+
+                field.dispatchEvent(new Event('input', { bubbles: true }));
+                field.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+
+            function serializeBlocks() {
+                blocksInput.value = JSON.stringify(
+                    getBlocks().map((block, index) => ({
+                        id: block.dataset.layoutBlockId || '',
+                        width: block.dataset.previewWidth || 'span_1',
+                        height: block.dataset.previewHeight || 'regular',
+                        status: block.dataset.previewStatus || 'published',
+                        position: (index + 1) * 10,
+                    }))
+                );
+            }
+
+            function bindControl(control, handler) {
+                if (!(control instanceof HTMLElement) || control.dataset.layoutInlineControlBound === '1') {
+                    return;
+                }
+
+                control.dataset.layoutInlineControlBound = '1';
+                control.dataset.layoutInlineControl = '1';
+                control.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+
+                    handler();
+                });
+            }
+
+            function getCurrentColumns() {
+                const columnsInput = layoutForm.querySelector('[data-layout-input="columns"]');
+                const parsed = Number.parseInt(columnsInput?.value || preview.style.getPropertyValue('--admin-layout-columns') || '4', 10);
+
+                if (Number.isNaN(parsed)) {
+                    return 4;
+                }
+
+                return Math.min(4, Math.max(1, parsed));
+            }
+
+            function resolveSpan(width, columns) {
+                switch (width) {
+                    case 'full':
+                        return columns;
+                    case 'span_4':
+                        return Math.min(4, columns);
+                    case 'span_3':
+                        return Math.min(3, columns);
+                    case 'span_2':
+                        return Math.min(2, columns);
+                    case 'span_1':
+                    case 'half':
+                    default:
+                        return 1;
+                }
+            }
+
+            function resolveHeightFactor(height) {
+                switch (height) {
+                    case 'compact':
+                        return 0.82;
+                    case 'tall':
+                        return 1.34;
+                    case 'regular':
+                    default:
+                        return 1;
+                }
+            }
+
+            function applyBlockFrame(block) {
+                if (!(block instanceof HTMLElement)) {
+                    return;
+                }
+
+                const previewWidth = block.dataset.previewWidth || 'span_1';
+                const previewHeight = block.dataset.previewHeight || 'regular';
+                const span = resolveSpan(previewWidth, getCurrentColumns());
+
+                block.style.gridColumn = 'span ' + String(span) + ' / span ' + String(span);
+                block.style.setProperty('--admin-block-height-factor', String(resolveHeightFactor(previewHeight)));
+            }
+
+            function revealBlockPanel(block) {
+                if (!(block instanceof HTMLElement)) {
+                    return;
+                }
+
+                const panel = block.querySelector('[data-layout-block-panel]');
+                if (!(panel instanceof HTMLElement)) {
+                    return;
+                }
+
+                window.requestAnimationFrame(() => {
+                    panel.scrollIntoView({
+                        block: 'nearest',
+                        behavior: 'smooth',
+                    });
+                });
+            }
+
+            function setBlockMode(targetBlock, mode, revealPanel) {
+                getBlocks().forEach((block) => {
+                    const isEditing = block === targetBlock && mode === 'edit';
+                    const panel = block.querySelector('[data-layout-block-panel]');
+                    const previewButton = block.querySelector('[data-layout-mode="preview"]');
+                    const editButton = block.querySelector('[data-layout-mode="edit"]');
+
+                    block.classList.toggle('is-editing', isEditing);
+
+                    if (previewButton) {
+                        previewButton.classList.toggle('is-active', !isEditing);
+                    }
+
+                    if (editButton) {
+                        editButton.classList.toggle('is-active', isEditing);
+                    }
+
+                    if (panel instanceof HTMLElement) {
+                        panel.hidden = !isEditing;
+                    }
+                });
+
+                if (mode === 'edit' && revealPanel) {
+                    revealBlockPanel(targetBlock);
+                }
+            }
+
+            function bindBlockControls(block) {
+                if (!(block instanceof HTMLElement) || block.dataset.layoutInlineBlockBound === '1') {
+                    return;
+                }
+
+                block.dataset.layoutInlineBlockBound = '1';
+
+                bindControl(block.querySelector('[data-layout-mode="preview"]'), function () {
+                    setBlockMode(block, 'preview', false);
+                    syncBuilderState();
+                });
+
+                bindControl(block.querySelector('[data-layout-mode="edit"]'), function () {
+                    setBlockMode(block, 'edit', true);
+                    syncBuilderState();
+                });
+
+                block.querySelectorAll('[data-layout-choice="width"]').forEach(function (button) {
+                    bindControl(button, function () {
+                        block.dataset.previewWidth = button.dataset.choiceValue || 'span_1';
+                        setBlockMode(block, 'edit', false);
+                        syncBuilderState();
+                    });
+                });
+
+                block.querySelectorAll('[data-layout-choice="height"]').forEach(function (button) {
+                    bindControl(button, function () {
+                        block.dataset.previewHeight = button.dataset.choiceValue || 'regular';
+                        setBlockMode(block, 'edit', false);
+                        syncBuilderState();
+                    });
+                });
+
+                bindControl(block.querySelector('[data-layout-visibility-toggle]'), function () {
+                    block.dataset.previewStatus = block.dataset.previewStatus === 'hidden' ? 'published' : 'hidden';
+                    setBlockMode(block, 'edit', false);
+                    syncBuilderState();
+                });
+
+                bindControl(block.querySelector('[data-layout-move="-1"]'), function () {
+                    moveBlock(block, -1);
+                    setBlockMode(block, 'edit', true);
+                    syncBuilderState();
+                });
+
+                bindControl(block.querySelector('[data-layout-move="1"]'), function () {
+                    moveBlock(block, 1);
+                    setBlockMode(block, 'edit', true);
+                    syncBuilderState();
+                });
+
+                bindControl(block.querySelector('[data-layout-edit-content]'), function () {
+                    openContentBlock(block.dataset.layoutBlockId || '');
+                });
+
+                block.addEventListener('click', function (event) {
+                    const eventElement = getEventElementTarget(event);
+
+                    if (eventElement?.closest('[data-layout-inline-control="1"]')) {
+                        return;
+                    }
+
+                    setBlockMode(block, 'edit', true);
+                    syncBuilderState();
+                });
+
+                block.addEventListener('keydown', function (event) {
+                    const eventElement = getEventElementTarget(event);
+
+                    if (eventElement?.closest('[data-layout-inline-control="1"]')) {
+                        return;
+                    }
+
+                    if (event.key !== 'Enter' && event.key !== ' ') {
+                        return;
+                    }
+
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    if (typeof event.stopImmediatePropagation === 'function') {
+                        event.stopImmediatePropagation();
+                    }
+
+                    setBlockMode(block, 'edit', true);
+                    syncBuilderState();
+                });
+            }
+
+            function updateBlock(block, index, totalBlocks) {
+                const previewWidth = block.dataset.previewWidth || 'span_1';
+                const previewHeight = block.dataset.previewHeight || 'regular';
+                const previewStatus = block.dataset.previewStatus || 'published';
+                const meta = block.querySelector('[data-layout-block-meta]');
+                const visibilityLabel = block.querySelector('[data-layout-visibility-label]');
+                const moveUpButton = block.querySelector('[data-layout-move="-1"]');
+                const moveDownButton = block.querySelector('[data-layout-move="1"]');
+                const editContentButton = block.querySelector('[data-layout-edit-content]');
+                const isContentTarget = getCurrentContentId() !== '' && block.dataset.layoutBlockId === getCurrentContentId();
+
+                block.classList.toggle('admin-layout-preview-block--hidden', previewStatus === 'hidden');
+                block.classList.toggle('is-content-target', isContentTarget);
+
+                if (meta) {
+                    meta.textContent = 'Ordem visual ' + String(index + 1) + ' | ' + (widthLabels[previewWidth] || 'Largura') + ' | ' + (heightLabels[previewHeight] || 'Regular') + ' | ' + (statusLabels[previewStatus] || 'Publicado');
+                }
+
+                if (visibilityLabel) {
+                    visibilityLabel.textContent = previewStatus === 'hidden' ? 'Publicar bloco' : 'Ocultar bloco';
+                }
+
+                block.querySelectorAll('[data-layout-choice="width"]').forEach((button) => {
+                    button.classList.toggle('is-selected', button.dataset.choiceValue === previewWidth);
+                });
+
+                block.querySelectorAll('[data-layout-choice="height"]').forEach((button) => {
+                    button.classList.toggle('is-selected', button.dataset.choiceValue === previewHeight);
+                });
+
+                if (moveUpButton instanceof HTMLButtonElement) {
+                    moveUpButton.disabled = index === 0;
+                }
+
+                if (moveDownButton instanceof HTMLButtonElement) {
+                    moveDownButton.disabled = index === totalBlocks - 1;
+                }
+
+                if (editContentButton instanceof HTMLElement) {
+                    editContentButton.classList.toggle('is-active-target', isContentTarget);
+                    editContentButton.textContent = isContentTarget ? 'Conteudo em edicao' : 'Editar conteudo';
+                }
+            }
+
+            function syncBuilderState() {
+                const blocks = getBlocks();
+                blocks.forEach(function (block, index) {
+                    bindBlockControls(block);
+                    applyBlockFrame(block);
+                    updateBlock(block, index, blocks.length);
+                });
+                serializeBlocks();
+            }
+
+            function moveBlock(block, direction) {
+                const blocks = getBlocks();
+                const currentIndex = blocks.indexOf(block);
+                const targetIndex = currentIndex + direction;
+
+                if (currentIndex === -1 || targetIndex < 0 || targetIndex >= blocks.length) {
+                    return;
+                }
+
+                const targetBlock = blocks[targetIndex];
+
+                if (direction < 0) {
+                    preview.insertBefore(block, targetBlock);
+                } else {
+                    preview.insertBefore(targetBlock, block);
+                }
+            }
+
+            function openContentBlock(blockId) {
+                const payload = payloads[String(blockId || '').trim()];
+
+                if (!payload || typeof payload !== 'object') {
+                    return;
+                }
+
+                [
+                    'id',
+                    'page_key',
+                    'type',
+                    'name',
+                    'eyebrow',
+                    'title',
+                    'body',
+                    'items_text',
+                    'cta_label',
+                    'cta_url',
+                    'embed_url',
+                    'media_url',
+                    'media_dark_url',
+                    'media_alt',
+                    'width',
+                    'height',
+                    'position',
+                    'status',
+                    'show_context_note'
+                ].forEach((fieldName) => {
+                    setFieldValue(fieldName, payload[fieldName]);
+                });
+
+                ['page_key', 'type', 'name', 'width', 'height', 'status', 'show_context_note'].forEach(emitFieldSignals);
+                setContentFormMode(payload.id || '');
+                syncBuilderState();
+
+                const targetBlock = getBlocks().find((block) => block.dataset.layoutBlockId === String(payload.id || '')) || null;
+                if (targetBlock) {
+                    setBlockMode(targetBlock, 'edit', false);
+                }
+
+                contentForm.scrollIntoView({
+                    block: 'start',
+                    behavior: 'smooth',
+                });
+
+                const nameField = fieldMap.name;
+                if (nameField instanceof HTMLElement && typeof nameField.focus === 'function') {
+                    window.setTimeout(() => {
+                        nameField.focus();
+                    }, 120);
+                }
+            }
+
+            layoutForm.addEventListener('submit', serializeBlocks);
+
+            syncBuilderState();
+            setContentFormMode(getCurrentContentId());
+
+            const preferredBlock = getBlocks().find((block) => block.dataset.layoutBlockId === getCurrentContentId()) || getBlocks()[0] || null;
+            if (preferredBlock) {
+                setBlockMode(preferredBlock, 'edit', false);
             }
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            window.setTimeout(bootAdminBuilder, 0);
+            window.setTimeout(initAdminInlineBuilder, 0);
         });
 
         window.addEventListener('load', function () {
-            window.setTimeout(bootAdminBuilder, 0);
+            window.setTimeout(initAdminInlineBuilder, 0);
         }, { once: true });
     }());
 </script>
-<script id="content-block-payloads" type="application/json"><?php echo json_encode($contentBlockPayloads, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?></script>
 
 <?php include_once 'includes/footer.php'; ?>
 

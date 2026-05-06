@@ -1135,6 +1135,7 @@ function initAdminBlockForm() {
     const typeOptions = typeSelect ? Array.from(typeSelect.options) : [];
     const widthOptions = widthSelect ? Array.from(widthSelect.options) : [];
     const layoutBuilder = document.querySelector('[data-layout-builder]');
+    const layoutBuilderUsesInlineControls = layoutBuilder?.dataset.layoutInlineControls === '1';
     const layoutBuilderForm = layoutBuilder?.querySelector('[data-layout-builder-form]') || null;
     const layoutPreview = layoutBuilder?.querySelector('[data-layout-preview]') || null;
     const layoutInputs = layoutBuilder ? Array.from(layoutBuilder.querySelectorAll('[data-layout-input]')) : [];
@@ -1624,7 +1625,7 @@ function initAdminBlockForm() {
     }
 
     function bindLayoutBlockInteractions(block) {
-        if (!(block instanceof HTMLElement) || block.dataset.layoutInteractiveBound === '1') {
+        if (layoutBuilderUsesInlineControls || !(block instanceof HTMLElement) || block.dataset.layoutInteractiveBound === '1') {
             return;
         }
 
@@ -1872,13 +1873,19 @@ function initAdminBlockForm() {
             block.style.gridColumn = 'span ' + String(previewSpan) + ' / span ' + String(previewSpan);
             block.style.setProperty('--admin-block-height-factor', String(resolveHeightFactor(previewHeight)));
             updateBlockControls(block, index, blocks.length);
-            bindLayoutBlockInteractions(block);
+
+            if (!layoutBuilderUsesInlineControls) {
+                bindLayoutBlockInteractions(block);
+            }
         });
 
         syncLayoutValueOutputs();
         serializeLayoutBlocks();
         syncActiveContentTarget();
-        ensureEditingBlock();
+
+        if (!layoutBuilderUsesInlineControls) {
+            ensureEditingBlock();
+        }
     }
 
     if (pageSelect) {
