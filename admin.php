@@ -78,6 +78,25 @@ function admin_format_tags(array $tags): string
     return implode(', ', $tags);
 }
 
+function admin_provider_label(?string $provider): string
+{
+    $provider = strtolower(trim((string) $provider));
+
+    switch ($provider) {
+        case 'google':
+            return 'Google';
+        case 'github':
+            return 'GitHub';
+        case 'microsoft':
+            return 'Microsoft';
+        case 'social':
+            return 'Rede social';
+        case 'local':
+        default:
+            return 'Local';
+    }
+}
+
 function admin_content_excerpt(string $text, int $limit = 120): string
 {
     $text = trim(preg_replace('/\s+/', ' ', $text));
@@ -794,7 +813,10 @@ $contentStats = [
 
 $userMap = [];
 $projectCountByUser = [];
+$orientationSupervisionCountByUser = [];
+$orientationAssignedCountByUser = [];
 $adminCount = 0;
+$allOrientations = $orientationManager->listOrientations();
 
 foreach ($users as $user) {
     $userMap[(int) $user['id']] = $user;
@@ -807,6 +829,19 @@ foreach ($projects as $project) {
     if (($project['user_id'] ?? null) !== null) {
         $ownerId = (int) $project['user_id'];
         $projectCountByUser[$ownerId] = ($projectCountByUser[$ownerId] ?? 0) + 1;
+    }
+}
+
+foreach ($allOrientations as $orientation) {
+    $supervisorId = (int) ($orientation['supervisor_id'] ?? 0);
+    $researcherId = (int) ($orientation['researcher_id'] ?? 0);
+
+    if ($supervisorId > 0) {
+        $orientationSupervisionCountByUser[$supervisorId] = ($orientationSupervisionCountByUser[$supervisorId] ?? 0) + 1;
+    }
+
+    if ($researcherId > 0) {
+        $orientationAssignedCountByUser[$researcherId] = ($orientationAssignedCountByUser[$researcherId] ?? 0) + 1;
     }
 }
 
@@ -850,6 +885,18 @@ $userForm = [
 if ($userFormOverrides !== null) {
     $userForm = array_merge($userForm, $userFormOverrides);
 }
+
+$editingUserId = isset($editingUser['id']) ? (int) $editingUser['id'] : 0;
+$editingUserRoleKey = $editingUserId > 0 ? $auth->getRoleKey($editingUser) : $auth->getRoleKey($userForm['role']);
+$editingUserRoleLabel = $editingUserId > 0 ? $auth->getRoleLabel($editingUser) : $auth->getRoleLabel($userForm['role']);
+$editingUserRoleClass = 'admin-pill--' . str_replace('_', '-', $editingUserRoleKey);
+$editingUserProjectCount = $editingUserId > 0 ? (int) ($projectCountByUser[$editingUserId] ?? 0) : 0;
+$editingUserSupervisionCount = $editingUserId > 0 ? (int) ($orientationSupervisionCountByUser[$editingUserId] ?? 0) : 0;
+$editingUserAssignedCount = $editingUserId > 0 ? (int) ($orientationAssignedCountByUser[$editingUserId] ?? 0) : 0;
+$editingUserProviderLabel = $editingUserId > 0 ? admin_provider_label((string) ($editingUser['provider'] ?? 'local')) : 'Local';
+$editingUserCreatedAt = $editingUserId > 0 ? admin_format_datetime($editingUser['created_at'] ?? null) : '-';
+$editingUserUpdatedAt = $editingUserId > 0 ? admin_format_datetime($editingUser['updated_at'] ?? null) : '-';
+$editingUserIsSelf = $editingUserId > 0 && $editingUserId === (int) $currentUser['id'];
 
 $projectForm = [
     'id' => $editingProject['id'] ?? '',
@@ -1035,14 +1082,69 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             <div class="panel-card-header">
                 <div>
                     <p class="eyebrow">Usuarios</p>
-                    <h2><?php echo $userForm['id'] !== '' ? 'Editar usuario' : 'Novo usuario'; ?></h2>
-                    <p class="admin-hierarchy-note">Hierarquia atual: Usuario, Pesquisador Academico, Pesquisador Associado, Pesquisador Pleno e Admin.</p>
+                    <h2><?php echo $userForm['id'] !== '' ? 'Editar perfil do usuario' : 'Novo usuario'; ?></h2>
+                    <p class="admin-hierarchy-note">Hierarquia atual: Usuario, Pesquisador Academico, Pesquisador Associado, Pesquisador Pleno e Admin. O editor abaixo ajusta identidade, contato, permissao e senha da conta selecionada.</p>
                 </div>
 
                 <?php if ($userForm['id'] !== ''): ?>
                     <a class="dashboard-btn dashboard-btn--ghost" href="admin.php#users">Limpar formulario</a>
                 <?php endif; ?>
             </div>
+
+            <?php if ($editingUserId > 0): ?>
+                <section class="admin-user-profile-summary">
+                    <div class="admin-user-profile-summary__head">
+                        <div>
+                            <p class="eyebrow">Perfil em edicao</p>
+                            <h3><?php echo htmlspecialchars((string) ($editingUser['fullname'] ?? $editingUser['username']), ENT_QUOTES, 'UTF-8'); ?></h3>
+                            <p class="admin-meta">@<?php echo htmlspecialchars((string) ($editingUser['username'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></p>
+                        </div>
+
+                        <div class="admin-user-profile-summary__badges">
+                            <span class="admin-pill <?php echo htmlspecialchars($editingUserRoleClass, ENT_QUOTES, 'UTF-8'); ?>">
+                                <?php echo htmlspecialchars($editingUserRoleLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            </span>
+                            <?php if ($editingUserIsSelf): ?>
+                                <span class="admin-self-tag">Conta atual</span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
+                    <div class="admin-user-profile-stats">
+                        <article class="admin-user-profile-stat">
+                            <span>Projetos</span>
+                            <strong><?php echo $editingUserProjectCount; ?></strong>
+                        </article>
+                        <article class="admin-user-profile-stat">
+                            <span>Supervisoes</span>
+                            <strong><?php echo $editingUserSupervisionCount; ?></strong>
+                        </article>
+                        <article class="admin-user-profile-stat">
+                            <span>Orientacoes recebidas</span>
+                            <strong><?php echo $editingUserAssignedCount; ?></strong>
+                        </article>
+                    </div>
+
+                    <ul class="dashboard-list admin-user-profile-list">
+                        <li>
+                            <span>Email atual</span>
+                            <strong><?php echo htmlspecialchars((string) (($editingUser['email'] ?? '') !== '' ? $editingUser['email'] : 'Nao informado'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                        </li>
+                        <li>
+                            <span>Origem da conta</span>
+                            <strong><?php echo htmlspecialchars($editingUserProviderLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                        </li>
+                        <li>
+                            <span>Criado em</span>
+                            <strong><?php echo htmlspecialchars($editingUserCreatedAt, ENT_QUOTES, 'UTF-8'); ?></strong>
+                        </li>
+                        <li>
+                            <span>Ultima atualizacao</span>
+                            <strong><?php echo htmlspecialchars($editingUserUpdatedAt, ENT_QUOTES, 'UTF-8'); ?></strong>
+                        </li>
+                    </ul>
+                </section>
+            <?php endif; ?>
 
             <?php foreach ($userFormErrors as $error): ?>
                 <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
@@ -1067,6 +1169,13 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" value="<?php echo htmlspecialchars((string) $userForm['email'], ENT_QUOTES, 'UTF-8'); ?>">
                 </div>
+
+                <?php if ($editingUserId > 0): ?>
+                    <div class="form-group">
+                        <label for="user_provider_preview">Origem da conta</label>
+                        <input type="text" id="user_provider_preview" value="<?php echo htmlspecialchars($editingUserProviderLabel, ENT_QUOTES, 'UTF-8'); ?>" disabled>
+                    </div>
+                <?php endif; ?>
 
                 <div class="form-group">
                     <label for="role">Nivel hierarquico</label>
@@ -1105,9 +1214,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                             <tr>
                                 <th>Usuario</th>
                                 <th>Nivel</th>
-                                <th>Email</th>
-                                <th>Projetos</th>
-                                <th>Criado em</th>
+                                <th>Perfil</th>
+                                <th>Atuacao</th>
                                 <th>Acoes</th>
                             </tr>
                         </thead>
@@ -1120,23 +1228,36 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 $listedRoleLabel = $auth->getRoleLabel($listedUser);
                                 $listedRoleClass = 'admin-pill--' . str_replace('_', '-', $listedRoleKey);
                                 $isSelf = $listedUserId === (int) $currentUser['id'];
+                                $isEditing = $listedUserId === $editingUserId;
+                                $listedProviderLabel = admin_provider_label((string) ($listedUser['provider'] ?? 'local'));
+                                $listedProjectCount = (int) ($projectCountByUser[$listedUserId] ?? 0);
+                                $listedSupervisionCount = (int) ($orientationSupervisionCountByUser[$listedUserId] ?? 0);
+                                $listedAssignedCount = (int) ($orientationAssignedCountByUser[$listedUserId] ?? 0);
                                 ?>
-                                <tr>
+                                <tr class="<?php echo $isEditing ? 'admin-table-row-active' : ''; ?>">
                                     <td>
                                         <strong><?php echo htmlspecialchars((string) $listedUser['fullname'], ENT_QUOTES, 'UTF-8'); ?></strong>
                                         <div class="admin-meta">@<?php echo htmlspecialchars((string) $listedUser['username'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="admin-meta"><?php echo htmlspecialchars((string) ($listedUser['email'] ?: 'Email nao informado'), ENT_QUOTES, 'UTF-8'); ?></div>
                                     </td>
                                     <td>
                                         <span class="admin-pill <?php echo htmlspecialchars($listedRoleClass, ENT_QUOTES, 'UTF-8'); ?>">
                                             <?php echo htmlspecialchars($listedRoleLabel, ENT_QUOTES, 'UTF-8'); ?>
                                         </span>
                                     </td>
-                                    <td><?php echo htmlspecialchars((string) ($listedUser['email'] ?: '-'), ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo (int) ($projectCountByUser[$listedUserId] ?? 0); ?></td>
-                                    <td><?php echo htmlspecialchars(admin_format_datetime($listedUser['created_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td>
+                                        <strong><?php echo htmlspecialchars($listedProviderLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                                        <div class="admin-meta">Criado em <?php echo htmlspecialchars(admin_format_datetime($listedUser['created_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="admin-meta">Atualizado em <?php echo htmlspecialchars(admin_format_datetime($listedUser['updated_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></div>
+                                    </td>
+                                    <td>
+                                        <strong><?php echo $listedProjectCount; ?> projeto(s)</strong>
+                                        <div class="admin-meta">Supervisiona <?php echo $listedSupervisionCount; ?> orientacao(oes)</div>
+                                        <div class="admin-meta">Recebe <?php echo $listedAssignedCount; ?> orientacao(oes)</div>
+                                    </td>
                                     <td>
                                         <div class="table-actions">
-                                            <a class="dashboard-btn admin-btn-small" href="admin.php?edit_user=<?php echo $listedUserId; ?>#users">Editar</a>
+                                            <a class="dashboard-btn admin-btn-small" href="admin.php?edit_user=<?php echo $listedUserId; ?>#users">Editar perfil</a>
 
                                             <?php if (!$isSelf): ?>
                                                 <form method="POST" onsubmit="return confirm('Remover este usuario?');">
