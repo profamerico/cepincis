@@ -890,8 +890,8 @@ function initTeamCarousel() {
 
     const cards = Array.from(root.querySelectorAll('[data-partner-card]'));
     const dots = Array.from(root.querySelectorAll('[data-partner-dot]'));
-    const memberName = root.querySelector('[data-partner-name]');
-    const memberRole = root.querySelector('[data-partner-description]');
+    const memberName = root.querySelector('[data-partner-display-name]');
+    const memberRole = root.querySelector('[data-partner-display-description]');
     const leftArrow = root.querySelector('[data-partner-prev]');
     const rightArrow = root.querySelector('[data-partner-next]');
 

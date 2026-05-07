@@ -438,8 +438,8 @@ include_once 'includes/header.php';
                             </div>
 
                             <div class="member-info">
-                                <h2 class="member-name" data-partner-name><?php echo htmlspecialchars((string) ($homepagePartners[0]['name'] ?? 'Parceiro'), ENT_QUOTES, 'UTF-8'); ?></h2>
-                                <p class="member-role" data-partner-description><?php echo htmlspecialchars((string) ($homepagePartners[0]['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></p>
+                                <h2 class="member-name" data-partner-display-name><?php echo htmlspecialchars((string) ($homepagePartners[0]['name'] ?? 'Parceiro'), ENT_QUOTES, 'UTF-8'); ?></h2>
+                                <p class="member-role" data-partner-display-description><?php echo htmlspecialchars((string) ($homepagePartners[0]['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></p>
                             </div>
 
                             <div class="dots">
