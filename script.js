@@ -1,12 +1,3 @@
-const teamMembers = [
-    { name: "Universidade de Copenhagen", role: "Copenhagen, Dinamarca" },
-    { name: "Universidade de Roma 3", role: "Roma, Italia" },
-    { name: "Universidade de Fuzhou", role: "Instituicao publica de ensino superior localizada em Fuzhou, capital da provincia de Fujian, na China." },
-    { name: "GETIS", role: "Grupo de Pesquisa em Engenharia, Tecnologia, Inovacao e Sustentabilidade (GETIS) - IFSP-CAR" },
-    { name: "i2", role: "Grupo de Pesquisas em Tecnologias Inovadoras - IFSP CAR" },
-    { name: "ENASA", role: "Grupo de pesquisa em Energia, Agua e Saneamento (ENASA) - IFSP-SP" }
-];
-
 const reducedMotionQuery = typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)')
     : { matches: false };
@@ -892,26 +883,50 @@ function initContentBlockReveal() {
 }
 
 function initTeamCarousel() {
-    const cards = Array.from(document.querySelectorAll('.card'));
-    const dots = Array.from(document.querySelectorAll('.dot'));
-    const memberName = document.querySelector('.member-name');
-    const memberRole = document.querySelector('.member-role');
-    const leftArrow = document.querySelector('.nav-arrow.left');
-    const rightArrow = document.querySelector('.nav-arrow.right');
+    const root = document.querySelector('[data-partners-carousel]');
+    if (!root) {
+        return;
+    }
+
+    const cards = Array.from(root.querySelectorAll('[data-partner-card]'));
+    const dots = Array.from(root.querySelectorAll('[data-partner-dot]'));
+    const memberName = root.querySelector('[data-partner-name]');
+    const memberRole = root.querySelector('[data-partner-description]');
+    const leftArrow = root.querySelector('[data-partner-prev]');
+    const rightArrow = root.querySelector('[data-partner-next]');
 
     if (!cards.length || !memberName || !memberRole) {
         return;
     }
 
+    const partners = cards.map((card, index) => ({
+        name: card.dataset.partnerName || '',
+        description: card.dataset.partnerDescription || '',
+        index
+    }));
     let currentIndex = 0;
     let isAnimating = false;
     let touchStartX = 0;
     let touchEndX = 0;
     const dotStep = dots.length ? Math.max(1, Math.ceil(cards.length / dots.length)) : 1;
 
+    function syncNavigationState() {
+        const shouldDisableNavigation = cards.length <= 1;
+        if (leftArrow instanceof HTMLButtonElement) {
+            leftArrow.disabled = shouldDisableNavigation;
+        }
+        if (rightArrow instanceof HTMLButtonElement) {
+            rightArrow.disabled = shouldDisableNavigation;
+        }
+    }
+
     function updateCarousel(newIndex) {
         if (isAnimating) {
             return;
+        }
+
+        if (cards.length === 1) {
+            currentIndex = 0;
         }
 
         isAnimating = true;
@@ -948,8 +963,8 @@ function initTeamCarousel() {
         memberRole.style.opacity = '0';
 
         setTimeout(() => {
-            memberName.textContent = teamMembers[currentIndex]?.name || '';
-            memberRole.textContent = teamMembers[currentIndex]?.role || '';
+            memberName.textContent = partners[currentIndex]?.name || '';
+            memberRole.textContent = partners[currentIndex]?.description || '';
             memberName.style.opacity = '1';
             memberRole.style.opacity = '1';
         }, 300);
@@ -982,11 +997,11 @@ function initTeamCarousel() {
         }
     });
 
-    document.addEventListener('touchstart', (event) => {
+    root.addEventListener('touchstart', (event) => {
         touchStartX = event.changedTouches[0].screenX;
     });
 
-    document.addEventListener('touchend', (event) => {
+    root.addEventListener('touchend', (event) => {
         touchEndX = event.changedTouches[0].screenX;
         const swipeThreshold = 50;
         const difference = touchStartX - touchEndX;
@@ -996,6 +1011,7 @@ function initTeamCarousel() {
         }
     });
 
+    syncNavigationState();
     updateCarousel(0);
 }
 

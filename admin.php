@@ -4,6 +4,7 @@ $bodyClass = 'app-page admin-page';
 
 require_once 'controllers/AuthController.php';
 require_once 'models/ContentBlock.php';
+require_once 'models/Partner.php';
 require_once 'models/Project.php';
 
 $auth = new AuthController();
@@ -11,6 +12,7 @@ $auth->requireAdmin();
 
 $projectManager = new ProjectManager();
 $contentManager = new ContentBlockManager();
+$partnerManager = new PartnerManager();
 $currentUser = $auth->getCurrentUser();
 $roleOptions = $auth->getRoleDefinitions();
 $contentPageOptions = $contentManager->getPageDefinitions();
@@ -474,10 +476,12 @@ unset($_SESSION['admin_flash']);
 $userFormErrors = [];
 $projectFormErrors = [];
 $contentFormErrors = [];
+$partnerFormErrors = [];
 $contentLayoutErrors = [];
 $userFormOverrides = null;
 $projectFormOverrides = null;
 $contentFormOverrides = null;
+$partnerFormOverrides = null;
 $contentLayoutOverrides = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -584,6 +588,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $flash = ['type' => 'erro', 'message' => 'Nao foi possivel remover o projeto.'];
                 break;
 
+            case 'save_partner':
+                $partnerId = trim((string) ($_POST['partner_id'] ?? ''));
+                $submittedPartner = [
+                    'id' => $partnerId,
+                    'name' => trim((string) ($_POST['name'] ?? '')),
+                    'description' => trim((string) ($_POST['description'] ?? '')),
+                    'image_path' => trim((string) ($_POST['image_path'] ?? '')),
+                ];
+                $uploadedPartnerImage = isset($_FILES['image_file']) && is_array($_FILES['image_file'])
+                    ? $_FILES['image_file']
+                    : null;
+
+                $result = $partnerManager->adminSavePartner($partnerId !== '' ? $partnerId : null, $submittedPartner, $uploadedPartnerImage);
+
+                if ($result['success']) {
+                    admin_set_flash(
+                        'sucesso',
+                        $result['created'] ? 'Parceiro criado com sucesso.' : 'Parceiro atualizado com sucesso.'
+                    );
+                    admin_redirect('partners');
+                }
+
+                $partnerFormErrors = $result['errors'] ?? ['Nao foi possivel salvar o parceiro.'];
+                $partnerFormOverrides = $submittedPartner;
+                break;
+
+            case 'delete_partner':
+                $partnerId = trim((string) ($_POST['partner_id'] ?? ''));
+
+                if ($partnerManager->deletePartner($partnerId)) {
+                    admin_set_flash('sucesso', 'Parceiro removido com sucesso.');
+                    admin_redirect('partners');
+                }
+
+                $flash = ['type' => 'erro', 'message' => 'Nao foi possivel remover o parceiro.'];
+                break;
+
             case 'save_content_block':
                 $blockId = trim((string) ($_POST['block_id'] ?? ''));
                 $submittedBlock = [
@@ -676,6 +717,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $users = $auth->listUsers();
+$partners = $partnerManager->listPartners();
 $contentBlocks = $contentManager->listBlocks(null, false);
 $layoutBuilderPageKeys = [];
 
@@ -718,6 +760,7 @@ $thematicContentBlocks = $pageBlocksByKey['thematic_areas'] ?? [];
 $aboutContentBlocks = $pageBlocksByKey['about'] ?? [];
 $projects = $projectManager->getAllProjects();
 $projectStats = $projectManager->getProjectStats();
+$partnerCount = count($partners);
 $contentStats = [
     'total' => count($contentBlocks),
     'published' => count(array_filter($contentBlocks, static function (array $block): bool {
@@ -776,6 +819,14 @@ if (!empty($_GET['edit_block'])) {
     }
 }
 
+$editingPartner = null;
+if (!empty($_GET['edit_partner'])) {
+    $candidatePartner = $partnerManager->getPartner((string) $_GET['edit_partner']);
+    if (is_array($candidatePartner)) {
+        $editingPartner = $candidatePartner;
+    }
+}
+
 $userForm = [
     'id' => $editingUser['id'] ?? '',
     'username' => $editingUser['username'] ?? '',
@@ -830,6 +881,17 @@ if ($contentFormOverrides !== null) {
     $contentForm['show_context_note'] = !empty($contentFormOverrides['show_context_note']);
 }
 
+$partnerForm = [
+    'id' => $editingPartner['id'] ?? '',
+    'name' => $editingPartner['name'] ?? '',
+    'description' => $editingPartner['description'] ?? '',
+    'image_path' => $editingPartner['image_path'] ?? '',
+];
+
+if ($partnerFormOverrides !== null) {
+    $partnerForm = array_merge($partnerForm, $partnerFormOverrides);
+}
+
 if (!$contentManager->isTypeAllowedForPage((string) $contentForm['page_key'], (string) $contentForm['type'])) {
     $contentForm['type'] = $contentManager->getDefaultTypeForPage((string) $contentForm['page_key']);
 }
@@ -879,11 +941,12 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         <div class="panel-hero-main">
             <p class="eyebrow">Administracao</p>
             <h1>Painel mestre do portal</h1>
-            <p class="hero-copy">Controle usuarios, niveis de acesso, projetos e o conteudo global em blocos. Agora o builder ja abastece Contato, Areas Tematicas e a pagina Sobre com estrutura editavel pelo admin.</p>
+            <p class="hero-copy">Controle usuarios, niveis de acesso, projetos, parceiros e o conteudo global em blocos. Agora o builder ja abastece Contato, Areas Tematicas e a pagina Sobre com estrutura editavel pelo admin, enquanto a home passa a refletir esses conteudos e o carrossel institucional.</p>
 
             <div class="hero-actions">
                 <a class="dashboard-btn" href="#users">Usuarios</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="#projects">Projetos</a>
+                <a class="dashboard-btn dashboard-btn--ghost" href="#partners">Parceiros</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="#content">Conteudo global</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="dashboard.php">Voltar ao dashboard</a>
             </div>
@@ -922,6 +985,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             <span class="metric-label">Projetos</span>
             <strong class="metric-value"><?php echo (int) $projectStats['total']; ?></strong>
             <p>Total de itens salvos no portal.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Parceiros</span>
+            <strong class="metric-value"><?php echo (int) $partnerCount; ?></strong>
+            <p>Cards alimentando o carrossel institucional da home.</p>
         </article>
         <article class="metric-card">
             <span class="metric-label">Sem responsavel</span>
@@ -1199,6 +1267,134 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                                                 <input type="hidden" name="action" value="delete_project">
                                                 <input type="hidden" name="project_id" value="<?php echo htmlspecialchars((string) $project['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                                                <button type="submit" class="dashboard-btn admin-btn-danger">Excluir</button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </article>
+    </section>
+
+    <section id="partners" class="admin-workspace">
+        <article class="panel-card">
+            <div class="panel-card-header">
+                <div>
+                    <p class="eyebrow">Carrossel institucional</p>
+                    <h2><?php echo $partnerForm['id'] !== '' ? 'Editar parceiro' : 'Novo parceiro'; ?></h2>
+                    <p class="admin-subtitle">Gerencie os cards da secao Parceiros na home com imagem, nome e descricao. O upload substitui o caminho atual quando voce quiser renovar uma marca ou identidade visual.</p>
+                </div>
+
+                <?php if ($partnerForm['id'] !== ''): ?>
+                    <a class="dashboard-btn dashboard-btn--ghost" href="admin.php#partners">Limpar formulario</a>
+                <?php endif; ?>
+            </div>
+
+            <?php foreach ($partnerFormErrors as $error): ?>
+                <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
+            <?php endforeach; ?>
+
+            <?php if ((string) $partnerForm['image_path'] !== ''): ?>
+                <div class="admin-partner-preview">
+                    <img
+                        src="<?php echo htmlspecialchars((string) $partnerForm['image_path'], ENT_QUOTES, 'UTF-8'); ?>"
+                        alt="<?php echo htmlspecialchars((string) ($partnerForm['name'] !== '' ? $partnerForm['name'] : 'Preview do parceiro'), ENT_QUOTES, 'UTF-8'); ?>"
+                        class="admin-partner-preview__image"
+                    >
+                    <div class="admin-partner-preview__copy">
+                        <strong><?php echo htmlspecialchars((string) ($partnerForm['name'] !== '' ? $partnerForm['name'] : 'Parceiro em edicao'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <p><?php echo htmlspecialchars(admin_content_excerpt((string) $partnerForm['description'], 180), ENT_QUOTES, 'UTF-8'); ?></p>
+                        <span><?php echo htmlspecialchars((string) $partnerForm['image_path'], ENT_QUOTES, 'UTF-8'); ?></span>
+                    </div>
+                </div>
+            <?php endif; ?>
+
+            <form method="POST" enctype="multipart/form-data" class="stack-form">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="action" value="save_partner">
+                <input type="hidden" name="partner_id" value="<?php echo htmlspecialchars((string) $partnerForm['id'], ENT_QUOTES, 'UTF-8'); ?>">
+
+                <div class="form-group">
+                    <label for="partner_name">Nome</label>
+                    <input type="text" id="partner_name" name="name" value="<?php echo htmlspecialchars((string) $partnerForm['name'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="partner_description">Descricao</label>
+                    <textarea id="partner_description" name="description" rows="5" required><?php echo htmlspecialchars((string) $partnerForm['description'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="partner_image_file">Imagem do card</label>
+                    <input type="file" id="partner_image_file" name="image_file" accept="image/png,image/jpeg,image/webp,image/gif">
+                    <p class="form-help">Envie JPG, PNG, WEBP ou GIF com ate 5 MB. Se voce subir um novo arquivo, ele passa a ser usado na home automaticamente.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="partner_image_path">Ou caminho da imagem</label>
+                    <input type="text" id="partner_image_path" name="image_path" value="<?php echo htmlspecialchars((string) $partnerForm['image_path'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="./img/parceiro.png ou ./uploads/partners/arquivo.png">
+                    <p class="form-help">Esse campo e util quando a marca ja existe no projeto e voce quer apontar para um asset local sem reenviar o arquivo.</p>
+                </div>
+
+                <button type="submit" class="dashboard-btn"><?php echo $partnerForm['id'] !== '' ? 'Salvar parceiro' : 'Criar parceiro'; ?></button>
+            </form>
+        </article>
+
+        <article class="panel-card">
+            <div class="panel-card-header">
+                <div>
+                    <p class="eyebrow">Home page</p>
+                    <h2>Parceiros cadastrados</h2>
+                    <p class="admin-subtitle">A ordem abaixo alimenta diretamente o carrossel da home, incluindo nome, descricao e arte do card.</p>
+                </div>
+            </div>
+
+            <?php if (empty($partners)): ?>
+                <p class="admin-empty">Nenhum parceiro cadastrado ainda.</p>
+            <?php else: ?>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Parceiro</th>
+                                <th>Imagem</th>
+                                <th>Atualizado em</th>
+                                <th>Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($partners as $partner): ?>
+                                <?php $partnerId = (string) ($partner['id'] ?? ''); ?>
+                                <tr>
+                                    <td>
+                                        <strong><?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                                        <div class="admin-meta"><?php echo htmlspecialchars(admin_content_excerpt((string) ($partner['description'] ?? ''), 180), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <div class="admin-meta"><?php echo htmlspecialchars((string) ($partner['image_path'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
+                                    </td>
+                                    <td>
+                                        <?php if ((string) ($partner['image_path'] ?? '') !== ''): ?>
+                                            <img
+                                                src="<?php echo htmlspecialchars((string) $partner['image_path'], ENT_QUOTES, 'UTF-8'); ?>"
+                                                alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES, 'UTF-8'); ?>"
+                                                class="admin-partner-thumb"
+                                            >
+                                        <?php else: ?>
+                                            <span class="admin-empty">Sem imagem</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo htmlspecialchars(admin_format_datetime($partner['updated_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td>
+                                        <div class="table-actions">
+                                            <a class="dashboard-btn admin-btn-small" href="admin.php?edit_partner=<?php echo urlencode($partnerId); ?>#partners">Editar</a>
+
+                                            <form method="POST" onsubmit="return confirm('Excluir este parceiro do carrossel?');">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="action" value="delete_partner">
+                                                <input type="hidden" name="partner_id" value="<?php echo htmlspecialchars($partnerId, ENT_QUOTES, 'UTF-8'); ?>">
                                                 <button type="submit" class="dashboard-btn admin-btn-danger">Excluir</button>
                                             </form>
                                         </div>

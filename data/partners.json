@@ -1,0 +1,50 @@
+[
+    {
+        "id": "partner_copenhagen",
+        "name": "Universidade de Copenhagen",
+        "description": "Copenhagen, Dinamarca",
+        "image_path": "./img/copenhagen.png",
+        "created_at": "2026-05-06 00:00:00",
+        "updated_at": "2026-05-06 00:00:00"
+    },
+    {
+        "id": "partner_roma3",
+        "name": "Universidade de Roma 3",
+        "description": "Roma, Italia",
+        "image_path": "./img/Roma 3.png",
+        "created_at": "2026-05-06 00:00:00",
+        "updated_at": "2026-05-06 00:00:00"
+    },
+    {
+        "id": "partner_fuzhou",
+        "name": "Universidade de Fuzhou",
+        "description": "Instituicao publica de ensino superior localizada em Fuzhou, capital da provincia de Fujian, na China.",
+        "image_path": "./img/Fuhzou.png",
+        "created_at": "2026-05-06 00:00:00",
+        "updated_at": "2026-05-06 00:00:00"
+    },
+    {
+        "id": "partner_getis",
+        "name": "GETIS",
+        "description": "Grupo de Pesquisa em Engenharia, Tecnologia, Inovacao e Sustentabilidade (GETIS) - IFSP-CAR",
+        "image_path": "./img/Getis.png",
+        "created_at": "2026-05-06 00:00:00",
+        "updated_at": "2026-05-06 00:00:00"
+    },
+    {
+        "id": "partner_i2",
+        "name": "i2",
+        "description": "Grupo de Pesquisas em Tecnologias Inovadoras - IFSP CAR",
+        "image_path": "./img/i2v2.png",
+        "created_at": "2026-05-06 00:00:00",
+        "updated_at": "2026-05-06 00:00:00"
+    },
+    {
+        "id": "partner_enasa",
+        "name": "ENASA",
+        "description": "Grupo de pesquisa em Energia, Agua e Saneamento (ENASA) - IFSP-SP",
+        "image_path": "./img/enasa.png",
+        "created_at": "2026-05-06 00:00:00",
+        "updated_at": "2026-05-06 00:00:00"
+    }
+]

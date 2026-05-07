@@ -4195,6 +4195,60 @@ body.auth-page header {
     align-content: start;
 }
 
+.admin-partner-preview {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr);
+    gap: 18px;
+    align-items: center;
+    margin-bottom: 24px;
+    padding: 18px;
+    border-radius: 24px;
+    border: 1px solid rgba(7, 36, 15, 0.08);
+    background: linear-gradient(180deg, rgba(227, 239, 231, 0.72), rgba(255, 255, 255, 0.9));
+}
+
+.admin-partner-preview__image,
+.admin-partner-thumb {
+    width: 100%;
+    border-radius: 20px;
+    border: 1px solid rgba(7, 36, 15, 0.08);
+    background: #f7f9f6;
+    object-fit: contain;
+}
+
+.admin-partner-preview__image {
+    aspect-ratio: 1 / 1;
+    padding: 12px;
+}
+
+.admin-partner-thumb {
+    width: 94px;
+    height: 94px;
+    padding: 10px;
+}
+
+.admin-partner-preview__copy {
+    display: grid;
+    gap: 8px;
+}
+
+.admin-partner-preview__copy strong {
+    color: #07240f;
+    font-size: 1.05rem;
+}
+
+.admin-partner-preview__copy p,
+.admin-partner-preview__copy span {
+    margin: 0;
+    color: #5f6e64;
+    line-height: 1.7;
+}
+
+.admin-partner-preview__copy span {
+    font-size: 0.92rem;
+    word-break: break-word;
+}
+
 .admin-workspace__full {
     grid-column: 1 / -1;
 }
@@ -5075,6 +5129,13 @@ body.auth-page footer p {
 
 .public-partners-panel .member-role {
     color: #5f6e64;
+    margin-inline: auto;
+    max-width: 68ch;
+    font-size: 1rem;
+    line-height: 1.75;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    opacity: 1;
 }
 
 .public-partners-panel .dots {
@@ -5087,6 +5148,17 @@ body.auth-page footer p {
 
 .public-partners-panel .dot.active {
     background: #07240f;
+}
+
+.public-partners-empty {
+    padding: 28px;
+    border-radius: 28px;
+    border: 1px solid rgba(7, 36, 15, 0.08);
+    background: #f7f9f6;
+}
+
+.public-partners-empty p {
+    margin: 0;
 }
 
 .infraestruturas {
@@ -6401,6 +6473,28 @@ html[data-theme="dark"] .public-partners-panel .dot.active {
 html[data-theme="dark"] .public-partners-panel .nav-arrow {
     background: rgba(7, 36, 15, 0.9);
     color: #ffffff;
+}
+
+html[data-theme="dark"] .admin-partner-preview {
+    background: linear-gradient(180deg, rgba(19, 29, 23, 0.96), rgba(12, 18, 15, 0.98));
+    border-color: var(--theme-dark-border);
+}
+
+html[data-theme="dark"] .admin-partner-preview__image,
+html[data-theme="dark"] .admin-partner-thumb,
+html[data-theme="dark"] .public-partners-empty {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--theme-dark-border);
+}
+
+html[data-theme="dark"] .admin-partner-preview__copy strong {
+    color: var(--theme-dark-text);
+}
+
+html[data-theme="dark"] .admin-partner-preview__copy p,
+html[data-theme="dark"] .admin-partner-preview__copy span,
+html[data-theme="dark"] .public-partners-empty p {
+    color: var(--theme-dark-muted);
 }
 
 html[data-theme="dark"] .status-card-publicacao--active {
