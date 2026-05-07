@@ -60,6 +60,16 @@ class AuthController
         }
     }
 
+    public function requireAtLeastRole(string $requiredRole, string $fallback = 'dashboard.php'): void
+    {
+        $this->requireAuth();
+
+        if (!$this->hasAtLeastRole($requiredRole, $this->getCurrentUser())) {
+            header('Location: ' . $fallback);
+            exit();
+        }
+    }
+
     public function redirectIfLoggedIn(): void
     {
         if ($this->getCurrentUser() !== null) {
@@ -259,6 +269,21 @@ class AuthController
         return $this->getRoleRank($user) >= $this->getRoleRank($requiredRole);
     }
 
+    public function isAcademicResearcher(?array $user = null): bool
+    {
+        return $this->normalizeRole($user ?: $this->getCurrentUser()) === self::ROLE_ACADEMIC_RESEARCHER;
+    }
+
+    public function isAssociateResearcher(?array $user = null): bool
+    {
+        return $this->normalizeRole($user ?: $this->getCurrentUser()) === self::ROLE_ASSOCIATE_RESEARCHER;
+    }
+
+    public function isFullResearcher(?array $user = null): bool
+    {
+        return $this->normalizeRole($user ?: $this->getCurrentUser()) === self::ROLE_FULL_RESEARCHER;
+    }
+
     public function isAdmin(?array $user = null): bool
     {
         $user = $user ?: $this->getCurrentUser();
@@ -268,6 +293,21 @@ class AuthController
         }
 
         return $this->normalizeRole($user) === self::ROLE_ADMIN;
+    }
+
+    public function canAccessResearchWorkspace(?array $user = null): bool
+    {
+        return $this->hasAtLeastRole(self::ROLE_ACADEMIC_RESEARCHER, $user ?: $this->getCurrentUser());
+    }
+
+    public function canManageOrientations(?array $user = null): bool
+    {
+        return $this->hasAtLeastRole(self::ROLE_ASSOCIATE_RESEARCHER, $user ?: $this->getCurrentUser());
+    }
+
+    public function canCreateProjects(?array $user = null): bool
+    {
+        return $this->hasAtLeastRole(self::ROLE_FULL_RESEARCHER, $user ?: $this->getCurrentUser());
     }
 
     public function updateProfile(array $data): array

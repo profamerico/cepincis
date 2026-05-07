@@ -4,6 +4,7 @@ $bodyClass = 'app-page admin-page';
 
 require_once 'controllers/AuthController.php';
 require_once 'models/ContentBlock.php';
+require_once 'models/Orientation.php';
 require_once 'models/Partner.php';
 require_once 'models/Project.php';
 
@@ -12,6 +13,7 @@ $auth->requireAdmin();
 
 $projectManager = new ProjectManager();
 $contentManager = new ContentBlockManager();
+$orientationManager = new OrientationManager();
 $partnerManager = new PartnerManager();
 $currentUser = $auth->getCurrentUser();
 $roleOptions = $auth->getRoleDefinitions();
@@ -529,9 +531,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($result['success']) {
                     $orphanedProjects = $projectManager->clearProjectsForUser($userId);
+                    $removedOrientations = $orientationManager->deleteOrientationsForUser($userId);
                     $message = 'Usuario removido com sucesso.';
                     if ($orphanedProjects > 0) {
                         $message .= ' ' . $orphanedProjects . ' projeto(s) ficaram sem responsavel.';
+                    }
+                    if ($removedOrientations > 0) {
+                        $message .= ' ' . $removedOrientations . ' orientacao(oes) vinculada(s) a essa conta foram removidas.';
                     }
 
                     admin_set_flash('sucesso', $message);
@@ -581,7 +587,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $projectId = trim((string) ($_POST['project_id'] ?? ''));
 
                 if ($projectManager->deleteProject($projectId)) {
-                    admin_set_flash('sucesso', 'Projeto removido com sucesso.');
+                    $clearedOrientations = $orientationManager->clearProjectReferences($projectId);
+                    $message = 'Projeto removido com sucesso.';
+                    if ($clearedOrientations > 0) {
+                        $message .= ' ' . $clearedOrientations . ' orientacao(oes) perderam o vinculo com este projeto.';
+                    }
+
+                    admin_set_flash('sucesso', $message);
                     admin_redirect('projects');
                 }
 

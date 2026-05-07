@@ -12,6 +12,8 @@ $displayName = $isLoggedIn
     : '';
 $currentRole = strtolower(trim((string) ($currentUser['role'] ?? '')));
 $isAdmin = $isLoggedIn && ($currentRole === 'admin' || (int) ($currentUser['id'] ?? 0) === 1 || strtolower((string) ($currentUser['username'] ?? '')) === 'admin');
+$canAccessResearchWorkspace = $isLoggedIn && in_array($currentRole, ['academic_researcher', 'associate_researcher', 'full_researcher', 'admin'], true);
+$canCreateResearchProjects = $isLoggedIn && in_array($currentRole, ['full_researcher', 'admin'], true);
 $faviconPath = './img/Captura_de_tela_2026-03-23_165121-removebg-preview.png';
 $currentScript = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
 $mobileAccountLinks = $isLoggedIn
@@ -25,6 +27,22 @@ $mobileAccountLinks = $isLoggedIn
         ['href' => './index.php', 'label' => 'Home', 'icon' => 'fa-house'],
         ['href' => './login.php', 'label' => 'Entrar', 'icon' => 'fa-right-to-bracket'],
     ];
+
+if ($canAccessResearchWorkspace) {
+    array_splice($mobileAccountLinks, 2, 0, [[
+        'href' => './orientations.php',
+        'label' => 'Orientacoes',
+        'icon' => 'fa-user-graduate',
+    ]]);
+}
+
+if ($canCreateResearchProjects) {
+    array_splice($mobileAccountLinks, 3, 0, [[
+        'href' => './research-projects.php',
+        'label' => 'Projetos',
+        'icon' => 'fa-diagram-project',
+    ]]);
+}
 
 if ($isAdmin) {
     array_splice($mobileAccountLinks, 3, 0, [[
