@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 $pageTitle = 'Painel Admin | CEPIN-CIS';
 $bodyClass = 'app-page admin-page';
 
@@ -302,6 +302,7 @@ function admin_render_layout_builder(
                     </div>
                 </div>
 
+                
                 <div class="admin-layout-control">
                     <div class="admin-layout-control__top">
                         <label for="<?php echo htmlspecialchars($pageKey, ENT_QUOTES, 'UTF-8'); ?>_mobile_columns">Colunas no mobile</label>
