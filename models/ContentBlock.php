@@ -30,7 +30,6 @@ class ContentBlockManager
     ];
 
 
-    
     private const TYPE_DEFINITIONS = [
         'contact_info' => [
             'label' => 'Contato principal',

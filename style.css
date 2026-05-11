@@ -7308,6 +7308,12 @@ html[data-theme="dark"] body.auth-page footer {
     line-height: 1.6;
 }
 
+.tag-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+}
+
 .checkbox-row {
     display: flex;
     align-items: flex-start;
@@ -7322,6 +7328,21 @@ html[data-theme="dark"] body.auth-page footer {
     height: 18px;
     margin-top: 2px;
     accent-color: #0f4b24;
+}
+
+.tag-option-card {
+    min-height: 60px;
+    padding: 14px 16px;
+    border-radius: 18px;
+    border: 1px solid rgba(7, 36, 15, 0.08);
+    background: rgba(255, 255, 255, 0.72);
+    transition: border-color 0.25s ease, transform 0.25s ease, background 0.25s ease;
+}
+
+.tag-option-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(15, 75, 36, 0.22);
+    background: rgba(227, 239, 231, 0.82);
 }
 
 .admin-pill--published {
@@ -7400,6 +7421,16 @@ html[data-theme="dark"] .form-help {
 
 html[data-theme="dark"] .checkbox-row {
     color: var(--theme-dark-text);
+}
+
+html[data-theme="dark"] .tag-option-card {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .tag-option-card:hover {
+    background: rgba(82, 149, 101, 0.12);
+    border-color: rgba(82, 149, 101, 0.3);
 }
 
 html[data-theme="dark"] .admin-pill--published {

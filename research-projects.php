@@ -95,6 +95,7 @@ $projectManager = new ProjectManager();
 $orientationManager = new OrientationManager();
 $allUsers = $auth->listUsers();
 $allProjects = $projectManager->getAllProjects();
+$thematicAreaOptions = $projectManager->getThematicAreaOptions();
 $isAdmin = $auth->isAdmin($currentUser);
 $displayName = (string) ($currentUser['fullname'] ?? $currentUser['username']);
 $roleLabel = $auth->getRoleLabel($currentUser);
@@ -143,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'user_id' => $isAdmin ? trim((string) ($_POST['user_id'] ?? '')) : (string) ((int) $currentUser['id']),
                     'title' => trim((string) ($_POST['title'] ?? '')),
                     'category' => trim((string) ($_POST['category'] ?? '')),
-                    'tags' => trim((string) ($_POST['tags'] ?? '')),
+                    'tags' => array_values(array_filter(array_map('strval', (array) ($_POST['tags'] ?? [])))),
                     'status' => trim((string) ($_POST['status'] ?? 'active')),
                     'description' => trim((string) ($_POST['description'] ?? '')),
                 ];
@@ -230,8 +231,8 @@ $projectForm = [
     'id' => '',
     'user_id' => $isAdmin ? '' : (string) ((int) $currentUser['id']),
     'title' => '',
-    'category' => '',
-    'tags' => '',
+    'category' => $projectManager->getDefaultThematicArea(),
+    'tags' => [],
     'status' => 'active',
     'description' => '',
 ];
@@ -241,8 +242,8 @@ if (is_array($editingProject)) {
         'id' => (string) ($editingProject['id'] ?? ''),
         'user_id' => (string) ($editingProject['user_id'] ?? ''),
         'title' => (string) ($editingProject['title'] ?? ''),
-        'category' => (string) ($editingProject['category'] ?? ''),
-        'tags' => research_projects_format_tags($editingProject['tags'] ?? []),
+        'category' => (string) ($editingProject['category'] ?? $projectManager->getDefaultThematicArea()),
+        'tags' => $editingProject['tags'] ?? [],
         'status' => (string) ($editingProject['status'] ?? 'active'),
         'description' => (string) ($editingProject['description'] ?? ''),
     ];
@@ -254,7 +255,7 @@ if (is_array($formOverrides)) {
         'user_id' => (string) ($formOverrides['user_id'] ?? $projectForm['user_id']),
         'title' => (string) ($formOverrides['title'] ?? $projectForm['title']),
         'category' => (string) ($formOverrides['category'] ?? $projectForm['category']),
-        'tags' => (string) ($formOverrides['tags'] ?? $projectForm['tags']),
+        'tags' => is_array($formOverrides['tags'] ?? null) ? $formOverrides['tags'] : $projectForm['tags'],
         'status' => (string) ($formOverrides['status'] ?? $projectForm['status']),
         'description' => (string) ($formOverrides['description'] ?? $projectForm['description']),
     ]);
@@ -372,12 +373,28 @@ if (is_array($formOverrides)) {
 
                 <div class="form-group">
                     <label for="project_category">Categoria</label>
-                    <input type="text" id="project_category" name="category" value="<?php echo htmlspecialchars((string) $projectForm['category'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Ex.: Governanca urbana, mobilidade, energia">
+                    <select id="project_category" name="category" required>
+                        <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
+                            <option value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $projectForm['category'] === (string) $areaKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="form-help">A categoria principal do projeto fica restrita as 5 siglas oficiais das Areas Tematicas.</p>
                 </div>
 
                 <div class="form-group">
                     <label for="project_tags">Tags</label>
-                    <input type="text" id="project_tags" name="tags" value="<?php echo htmlspecialchars((string) $projectForm['tags'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="Separadas por virgula">
+                    <div class="tag-options-grid" id="project_tags">
+                        <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
+                            <?php $isChecked = in_array((string) $areaKey, $projectForm['tags'], true); ?>
+                            <label class="checkbox-row tag-option-card">
+                                <input type="checkbox" name="tags[]" value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo $isChecked ? 'checked' : ''; ?>>
+                                <span><?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="form-help">Escolha entre as mesmas 5 siglas oficiais para alimentar filtros e destaques do portal.</p>
                 </div>
 
                 <div class="form-group">

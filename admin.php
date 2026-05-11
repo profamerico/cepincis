@@ -15,6 +15,7 @@ $projectManager = new ProjectManager();
 $contentManager = new ContentBlockManager();
 $orientationManager = new OrientationManager();
 $partnerManager = new PartnerManager();
+$thematicAreaOptions = $projectManager->getThematicAreaOptions();
 $currentUser = $auth->getCurrentUser();
 $roleOptions = $auth->getRoleDefinitions();
 $contentPageOptions = $contentManager->getPageDefinitions();
@@ -577,7 +578,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'user_id' => trim((string) ($_POST['user_id'] ?? '')),
                     'title' => trim((string) ($_POST['title'] ?? '')),
                     'category' => trim((string) ($_POST['category'] ?? '')),
-                    'tags' => trim((string) ($_POST['tags'] ?? '')),
+                    'tags' => array_values(array_filter(array_map('strval', (array) ($_POST['tags'] ?? [])))),
                     'status' => trim((string) ($_POST['status'] ?? 'active')),
                     'description' => trim((string) ($_POST['description'] ?? '')),
                 ];
@@ -903,8 +904,8 @@ $projectForm = [
     'id' => $editingProject['id'] ?? '',
     'user_id' => isset($editingProject['user_id']) && $editingProject['user_id'] !== null ? (string) $editingProject['user_id'] : '',
     'title' => $editingProject['title'] ?? '',
-    'category' => $editingProject['category'] ?? 'Geral',
-    'tags' => implode(', ', $editingProject['tags'] ?? []),
+    'category' => $editingProject['category'] ?? $projectManager->getDefaultThematicArea(),
+    'tags' => $editingProject['tags'] ?? [],
     'status' => $editingProject['status'] ?? 'active',
     'description' => $editingProject['description'] ?? '',
 ];
@@ -1323,13 +1324,28 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
 
                 <div class="form-group">
                     <label for="category">Categoria</label>
-                    <input type="text" id="category" name="category" value="<?php echo htmlspecialchars((string) $projectForm['category'], ENT_QUOTES, 'UTF-8'); ?>">
+                    <select id="category" name="category" required>
+                        <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
+                            <option value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $projectForm['category'] === (string) $areaKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                    <p class="form-help">A categoria principal do projeto agora fica restrita as 5 siglas oficiais das Areas Tematicas.</p>
                 </div>
 
                 <div class="form-group">
                     <label for="tags">Tags</label>
-                    <input type="text" id="tags" name="tags" value="<?php echo htmlspecialchars((string) $projectForm['tags'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="IoT, UrbanSmart, CarbonZero">
-                    <p class="form-help">Separe as tags por virgula para alimentar filtros e cards da home.</p>
+                    <div class="tag-options-grid" id="tags">
+                        <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
+                            <?php $isChecked = in_array((string) $areaKey, $projectForm['tags'], true); ?>
+                            <label class="checkbox-row tag-option-card">
+                                <input type="checkbox" name="tags[]" value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo $isChecked ? 'checked' : ''; ?>>
+                                <span><?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                            </label>
+                        <?php endforeach; ?>
+                    </div>
+                    <p class="form-help">As tags tambem ficam limitadas as 5 siglas das Areas Tematicas e alimentam os filtros e cards da home.</p>
                 </div>
 
                 <div class="form-group">
@@ -2790,4 +2806,3 @@ foreach ($contentBlocks as $block) {
 </script>
 
 <?php include_once 'includes/footer.php'; ?>
-

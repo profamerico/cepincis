@@ -2,6 +2,13 @@
 class ProjectManager
 {
     private $projectsFile;
+    private const THEMATIC_AREA_OPTIONS = [
+        'EduCIS' => 'EduCIS',
+        'EcoMat' => 'EcoMat',
+        'IoT' => 'IoT',
+        'CarbonZero' => 'CarbonZero',
+        'UrbanSmart' => 'UrbanSmart',
+    ];
 
     public function __construct($projectsFile = null)
     {
@@ -9,18 +16,28 @@ class ProjectManager
         $this->ensureFileExists();
     }
 
-    public function createProject($userId, $title, $description, $category = 'Geral', $tags = [])
+    public function createProject($userId, $title, $description, $category = null, $tags = [])
     {
         $result = $this->adminSaveProject(null, [
             'user_id' => $userId,
             'title' => $title,
             'description' => $description,
-            'category' => $category,
+            'category' => $category ?? $this->getDefaultThematicArea(),
             'tags' => $tags,
             'status' => 'active',
         ]);
 
         return $result['success'] ? $result['project'] : false;
+    }
+
+    public function getThematicAreaOptions(): array
+    {
+        return self::THEMATIC_AREA_OPTIONS;
+    }
+
+    public function getDefaultThematicArea(): string
+    {
+        return array_key_first(self::THEMATIC_AREA_OPTIONS) ?: 'EduCIS';
     }
 
     public function getAllProjects(): array
@@ -119,14 +136,26 @@ class ProjectManager
 
         $title = trim((string) ($data['title'] ?? ''));
         $description = trim((string) ($data['description'] ?? ''));
-        $category = trim((string) ($data['category'] ?? 'Geral'));
-        $tags = $this->normalizeTags($data['tags'] ?? []);
+        $categoryInput = trim((string) ($data['category'] ?? ''));
+        $category = $this->normalizeCategory($categoryInput);
+        $tagsInput = $data['tags'] ?? [];
+        $tags = $this->normalizeTags($tagsInput);
         $status = $this->normalizeStatus((string) ($data['status'] ?? 'active'));
         $userId = $this->normalizeUserId($data['user_id'] ?? null);
 
         $errors = [];
         if ($title === '') {
             $errors[] = 'Titulo e obrigatorio.';
+        }
+        if ($categoryInput === '') {
+            $errors[] = 'Area tematica e obrigatoria.';
+        } elseif (!$this->isValidThematicArea($categoryInput)) {
+            $errors[] = 'Area tematica invalida. Escolha uma das 5 siglas oficiais.';
+        }
+
+        $invalidTags = $this->findInvalidTags($tagsInput);
+        if (!empty($invalidTags)) {
+            $errors[] = 'As tags devem usar apenas as 5 siglas oficiais das Areas Tematicas.';
         }
 
         if ($errors) {
@@ -139,7 +168,7 @@ class ProjectManager
                 'user_id' => $userId,
                 'title' => $title,
                 'description' => $description,
-                'category' => $category !== '' ? $category : 'Geral',
+                'category' => $category,
                 'tags' => $tags,
                 'status' => $status,
                 'created_at' => $this->now(),
@@ -150,7 +179,7 @@ class ProjectManager
             $projects[$projectIndex]['user_id'] = $userId;
             $projects[$projectIndex]['title'] = $title;
             $projects[$projectIndex]['description'] = $description;
-            $projects[$projectIndex]['category'] = $category !== '' ? $category : 'Geral';
+            $projects[$projectIndex]['category'] = $category;
             $projects[$projectIndex]['tags'] = $tags;
             $projects[$projectIndex]['status'] = $status;
             $projects[$projectIndex]['updated_at'] = $this->now();
@@ -305,7 +334,7 @@ class ProjectManager
             'user_id' => $this->normalizeUserId($project['user_id'] ?? null),
             'title' => trim((string) ($project['title'] ?? '')),
             'description' => trim((string) ($project['description'] ?? '')),
-            'category' => trim((string) ($project['category'] ?? 'Geral')) ?: 'Geral',
+            'category' => $this->normalizeCategory((string) ($project['category'] ?? $this->getDefaultThematicArea())),
             'tags' => $this->normalizeTags($project['tags'] ?? []),
             'status' => $this->normalizeStatus((string) ($project['status'] ?? 'active')),
             'created_at' => $createdAt,
@@ -330,16 +359,46 @@ class ProjectManager
         return in_array($status, $allowed, true) ? $status : 'active';
     }
 
-    private function normalizeTags($tags): array
+    private function normalizeCategory(string $category): string
+    {
+        $canonicalArea = $this->canonicalizeThematicArea($category);
+
+        return $canonicalArea ?? $this->getDefaultThematicArea();
+    }
+
+    private function isValidThematicArea(string $value): bool
+    {
+        return $this->canonicalizeThematicArea($value) !== null;
+    }
+
+    private function canonicalizeThematicArea(string $value): ?string
+    {
+        $value = trim($value);
+        if ($value === '') {
+            return null;
+        }
+
+        foreach (array_keys(self::THEMATIC_AREA_OPTIONS) as $areaKey) {
+            if (strcasecmp($areaKey, $value) === 0) {
+                return $areaKey;
+            }
+        }
+
+        return null;
+    }
+
+    private function parseTags($tags): array
     {
         if (is_string($tags)) {
             $tags = preg_split('/[,;\r\n]+/', $tags) ?: [];
         }
 
-        if (!is_array($tags)) {
-            return [];
-        }
+        return is_array($tags) ? $tags : [];
+    }
 
+    private function normalizeTags($tags): array
+    {
+        $tags = $this->parseTags($tags);
         $normalizedTags = [];
         $seenTags = [];
 
@@ -349,18 +408,43 @@ class ProjectManager
                 continue;
             }
 
+            $canonicalTag = $this->canonicalizeThematicArea($cleanTag);
+            if ($canonicalTag === null) {
+                continue;
+            }
+
             $normalizedKey = function_exists('mb_strtolower')
-                ? mb_strtolower($cleanTag, 'UTF-8')
-                : strtolower($cleanTag);
+                ? mb_strtolower($canonicalTag, 'UTF-8')
+                : strtolower($canonicalTag);
             if (isset($seenTags[$normalizedKey])) {
                 continue;
             }
 
             $seenTags[$normalizedKey] = true;
-            $normalizedTags[] = $cleanTag;
+            $normalizedTags[] = $canonicalTag;
         }
 
         return $normalizedTags;
+    }
+
+    private function findInvalidTags($tags): array
+    {
+        $invalidTags = [];
+
+        foreach ($this->parseTags($tags) as $tag) {
+            $cleanTag = trim((string) $tag);
+            if ($cleanTag === '') {
+                continue;
+            }
+
+            if ($this->canonicalizeThematicArea($cleanTag) !== null) {
+                continue;
+            }
+
+            $invalidTags[] = $cleanTag;
+        }
+
+        return array_values(array_unique($invalidTags));
     }
 
     private function findProjectIndex(array $projects, string $projectId): ?int
