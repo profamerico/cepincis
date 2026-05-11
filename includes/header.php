@@ -165,6 +165,12 @@ if ($isAdmin) {
                         <i class="fa-solid fa-table-columns"></i>
                     </a>
 
+                    <?php if ($canCreateResearchProjects): ?>
+                        <a href="./research-projects.php" class="header-icon-link" aria-label="Projetos de pesquisa" title="Projetos de pesquisa">
+                            <i class="fa-solid fa-diagram-project"></i>
+                        </a>
+                    <?php endif; ?>
+
                     <a href="./profile.php" class="header-icon-link" aria-label="Perfil" title="Perfil">
                         <i class="fa-solid fa-user"></i>
                     </a>

@@ -1395,13 +1395,13 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="form-group">
                     <label for="project_image_file">Imagem do banner</label>
                     <input type="file" id="project_image_file" name="image_file" accept="image/png,image/jpeg,image/webp,image/gif">
-                    <p class="form-help">Envie JPG, PNG, WEBP ou GIF com ate 6 MB. Essa imagem sera usada no banner da pagina detalhada do projeto.</p>
+                    <p class="form-help">Envie JPG, PNG, WEBP ou GIF com ate 6 MB. Esse campo e opcional: sem imagem, a pagina do projeto usa automaticamente uma capa editorial escura do CEPIN-CIS.</p>
                 </div>
 
                 <div class="form-group">
                     <label for="project_image_path">Ou caminho da imagem</label>
                     <input type="text" id="project_image_path" name="image_path" value="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="./img/projeto-banner.png ou ./uploads/projects/arquivo.png">
-                    <p class="form-help">Se voce ja possui o asset no projeto, pode apontar o caminho diretamente sem reenviar o arquivo.</p>
+                    <p class="form-help">Se voce ja possui o asset no projeto, pode apontar o caminho diretamente sem reenviar o arquivo. Se deixar vazio, o fallback visual entra automaticamente.</p>
                 </div>
 
                 <button type="submit" class="dashboard-btn"><?php echo $projectForm['id'] !== '' ? 'Salvar projeto' : 'Criar projeto'; ?></button>

@@ -183,9 +183,6 @@ class ProjectManager
         }
 
         $hasUpload = $this->hasUploadedFile($uploadedImage);
-        if ($isCreate && !$hasUpload && $imagePath === '') {
-            $errors[] = 'Envie uma imagem ou informe um caminho valido para o banner do projeto.';
-        }
 
         if ($imagePath !== '' && !$hasUpload) {
             $imagePathValidation = $this->validateImagePath($imagePath);

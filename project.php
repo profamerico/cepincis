@@ -148,6 +148,36 @@ function project_detail_build_mailto(array $project, ?array $owner, string $cepi
     return 'mailto:' . $cepinEmail . '?' . http_build_query($query);
 }
 
+function project_detail_resolve_banner(array $project): array
+{
+    $configuredPath = trim((string) ($project['image_path'] ?? ''));
+    if ($configuredPath !== '') {
+        return [
+            'path' => $configuredPath,
+            'is_fallback' => false,
+        ];
+    }
+
+    $fallbackPaths = [
+        './img/AreasTematicasBG.jpg',
+        './img/RegulamentoBG.jpg',
+        './img/ProjetosBG.jpg',
+    ];
+
+    $seed = implode('|', [
+        (string) ($project['id'] ?? ''),
+        (string) ($project['category'] ?? ''),
+        (string) ($project['title'] ?? ''),
+    ]);
+    $hash = sprintf('%u', crc32($seed !== '' ? $seed : 'cepin-cis-project'));
+    $index = (int) $hash % count($fallbackPaths);
+
+    return [
+        'path' => $fallbackPaths[$index],
+        'is_fallback' => true,
+    ];
+}
+
 $cepinEmail = 'cepin.cis@ifspcaraguatatuba.edu.br';
 $projectManager = new ProjectManager();
 $auth = new AuthController();
@@ -191,7 +221,9 @@ $statusLabel = project_detail_status_label((string) ($project['status'] ?? 'acti
 $projectTags = $projectManager->getProjectTagList($project, false);
 $projectDescription = trim((string) ($project['description'] ?? ''));
 $participationInfo = trim((string) ($project['participation_info'] ?? ''));
-$bannerPath = trim((string) ($project['image_path'] ?? ''));
+$banner = project_detail_resolve_banner($project);
+$bannerPath = (string) ($banner['path'] ?? '');
+$isFallbackBanner = !empty($banner['is_fallback']);
 $participationMailto = project_detail_build_mailto($project, $owner, $cepinEmail);
 $displayParticipationText = $participationInfo !== ''
     ? $participationInfo
@@ -199,7 +231,7 @@ $displayParticipationText = $participationInfo !== ''
 ?>
 
 <main class="page-shell public-shell project-detail-shell">
-    <section class="panel-card project-detail-hero<?php echo $bannerPath !== '' ? ' project-detail-hero--with-media' : ''; ?>">
+    <section class="panel-card project-detail-hero<?php echo $bannerPath !== '' ? ' project-detail-hero--with-media' : ''; ?><?php echo $isFallbackBanner ? ' project-detail-hero--fallback' : ''; ?>">
         <?php if ($bannerPath !== ''): ?>
             <img
                 class="project-detail-hero__background"
@@ -228,8 +260,8 @@ $displayParticipationText = $participationInfo !== ''
                 <h1><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto'), ENT_QUOTES, 'UTF-8'); ?></h1>
                 <p class="project-detail-hero__lede"><?php echo htmlspecialchars(project_detail_excerpt($projectDescription), ENT_QUOTES, 'UTF-8'); ?></p>
 
-                <?php if ($bannerPath === ''): ?>
-                    <p class="project-detail-hero__note">Este projeto ainda nao recebeu um banner proprio, entao o portal esta exibindo um fundo institucional temporario.</p>
+                <?php if ($isFallbackBanner): ?>
+                    <p class="project-detail-hero__note">Este projeto ainda nao recebeu um banner proprio, entao o portal esta usando um dos fundos editoriais do CEPIN-CIS como capa temporaria.</p>
                 <?php endif; ?>
 
                 <div class="hero-actions">
