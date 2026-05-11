@@ -192,9 +192,6 @@ $projectTags = $projectManager->getProjectTagList($project, false);
 $projectDescription = trim((string) ($project['description'] ?? ''));
 $participationInfo = trim((string) ($project['participation_info'] ?? ''));
 $bannerPath = trim((string) ($project['image_path'] ?? ''));
-$heroStyle = $bannerPath !== ''
-    ? '--project-hero-image:url(' . json_encode($bannerPath, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ');'
-    : '';
 $participationMailto = project_detail_build_mailto($project, $owner, $cepinEmail);
 $displayParticipationText = $participationInfo !== ''
     ? $participationInfo
@@ -202,7 +199,16 @@ $displayParticipationText = $participationInfo !== ''
 ?>
 
 <main class="page-shell public-shell project-detail-shell">
-    <section class="panel-card project-detail-hero" style="<?php echo htmlspecialchars($heroStyle, ENT_QUOTES, 'UTF-8'); ?>">
+    <section class="panel-card project-detail-hero<?php echo $bannerPath !== '' ? ' project-detail-hero--with-media' : ''; ?>">
+        <?php if ($bannerPath !== ''): ?>
+            <img
+                class="project-detail-hero__background"
+                src="<?php echo htmlspecialchars($bannerPath, ENT_QUOTES, 'UTF-8'); ?>"
+                alt=""
+                aria-hidden="true"
+            >
+        <?php endif; ?>
+
         <div class="project-detail-hero__veil" aria-hidden="true"></div>
 
         <div class="project-detail-hero__grid">
