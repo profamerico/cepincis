@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = 'Painel Admin | CEPIN-CIS';
 $bodyClass = 'app-page admin-page';
 
