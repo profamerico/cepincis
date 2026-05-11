@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../bootstrap.php';
+
 class ProjectManager
 {
     private $projectsFile;
