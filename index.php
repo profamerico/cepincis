@@ -241,10 +241,6 @@ include_once 'includes/header.php';
                                 $projectTags = $projectManager->getProjectTagList($project);
                                 $displayTags = $projectManager->getProjectTagList($project, false);
                                 $searchTags = implode(' ', $projectTags);
-                                $contactQuery = http_build_query([
-                                    'project' => $project['title'] ?? '',
-                                    'category' => $project['category'] ?? '',
-                                ]);
                                 ?>
                                 <article
                                     class="card-publicacao-carrossel"
@@ -275,7 +271,7 @@ include_once 'includes/header.php';
                                             <?php endforeach; ?>
                                         </div>
 
-                                        <a class="botao-explorar-publicacao" href="./contact.php?<?php echo htmlspecialchars($contactQuery, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <a class="botao-explorar-publicacao" href="./project.php?id=<?php echo urlencode((string) ($project['id'] ?? '')); ?>">
                                             <span>Saiba mais</span>
                                         </a>
                                     </div>

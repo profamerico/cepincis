@@ -7,7 +7,10 @@ class PartnerManager
 
     private const ALLOWED_IMAGE_TYPES = [
         'image/jpeg' => 'jpg',
+        'image/jpg' => 'jpg',
+        'image/pjpeg' => 'jpg',
         'image/png' => 'png',
+        'image/x-png' => 'png',
         'image/webp' => 'webp',
         'image/gif' => 'gif',
     ];
@@ -336,8 +339,8 @@ class PartnerManager
             return ['success' => false, 'error' => 'O upload da imagem nao foi reconhecido pelo servidor.'];
         }
 
-        $mimeType = $this->detectMimeType($tmpName);
-        if ($mimeType === '' || !isset(self::ALLOWED_IMAGE_TYPES[$mimeType])) {
+        $imageFormat = $this->resolveUploadedImageFormat($uploadedImage, $tmpName);
+        if (!$imageFormat['success']) {
             return ['success' => false, 'error' => 'Formato de imagem nao suportado. Envie JPG, PNG, WEBP ou GIF.'];
         }
 
@@ -345,7 +348,11 @@ class PartnerManager
             return ['success' => false, 'error' => 'A imagem do parceiro deve ter no maximo 5 MB.'];
         }
 
-        return ['success' => true, 'mime_type' => $mimeType];
+        return [
+            'success' => true,
+            'mime_type' => (string) ($imageFormat['mime_type'] ?? ''),
+            'extension' => (string) ($imageFormat['extension'] ?? 'png'),
+        ];
     }
 
     private function storeImageUpload(?array $uploadedImage): array
@@ -356,8 +363,7 @@ class PartnerManager
         }
 
         $tmpName = (string) ($uploadedImage['tmp_name'] ?? '');
-        $mimeType = (string) ($validation['mime_type'] ?? '');
-        $extension = self::ALLOWED_IMAGE_TYPES[$mimeType] ?? 'png';
+        $extension = (string) ($validation['extension'] ?? 'png');
         $filename = uniqid('partner_', true) . '.' . $extension;
         $destination = $this->uploadsDirectory . DIRECTORY_SEPARATOR . $filename;
 
@@ -385,10 +391,67 @@ class PartnerManager
         }
 
         if (function_exists('mime_content_type')) {
-            return (string) mime_content_type($tmpName);
+            $mimeType = (string) mime_content_type($tmpName);
+            if ($mimeType !== '') {
+                return $mimeType;
+            }
+        }
+
+        if (function_exists('getimagesize')) {
+            $imageInfo = @getimagesize($tmpName);
+            if (is_array($imageInfo) && !empty($imageInfo['mime'])) {
+                return (string) $imageInfo['mime'];
+            }
         }
 
         return '';
+    }
+
+    private function resolveUploadedImageFormat(?array $uploadedImage, string $tmpName): array
+    {
+        $mimeCandidates = [
+            $this->detectMimeType($tmpName),
+            (string) ($uploadedImage['type'] ?? ''),
+        ];
+
+        foreach ($mimeCandidates as $mimeCandidate) {
+            $normalizedMimeType = $this->normalizeImageMimeType($mimeCandidate);
+            if ($normalizedMimeType !== '') {
+                return [
+                    'success' => true,
+                    'mime_type' => $normalizedMimeType,
+                    'extension' => self::ALLOWED_IMAGE_TYPES[$normalizedMimeType],
+                ];
+            }
+        }
+
+        $extension = strtolower((string) pathinfo((string) ($uploadedImage['name'] ?? ''), PATHINFO_EXTENSION));
+        if ($extension !== '') {
+            if ($extension === 'jpeg') {
+                $extension = 'jpg';
+            }
+
+            $mimeType = array_search($extension, self::ALLOWED_IMAGE_TYPES, true);
+            if (is_string($mimeType)) {
+                return [
+                    'success' => true,
+                    'mime_type' => $mimeType,
+                    'extension' => $extension,
+                ];
+            }
+        }
+
+        return ['success' => false];
+    }
+
+    private function normalizeImageMimeType(string $mimeType): string
+    {
+        $mimeType = strtolower(trim($mimeType));
+        if ($mimeType === '') {
+            return '';
+        }
+
+        return isset(self::ALLOWED_IMAGE_TYPES[$mimeType]) ? $mimeType : '';
     }
 
     private function validateImagePath(string $imagePath): array

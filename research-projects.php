@@ -147,7 +147,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'tags' => array_values(array_filter(array_map('strval', (array) ($_POST['tags'] ?? [])))),
                     'status' => trim((string) ($_POST['status'] ?? 'active')),
                     'description' => trim((string) ($_POST['description'] ?? '')),
+                    'participation_info' => trim((string) ($_POST['participation_info'] ?? '')),
+                    'image_path' => trim((string) ($_POST['image_path'] ?? '')),
                 ];
+                $uploadedProjectImage = isset($_FILES['image_file']) && is_array($_FILES['image_file'])
+                    ? $_FILES['image_file']
+                    : null;
 
                 if ($isAdmin && $submittedProject['user_id'] !== '' && !isset($userMap[(int) $submittedProject['user_id']])) {
                     $formErrors = ['Selecione um responsavel valido para o projeto.'];
@@ -162,7 +167,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'tags' => $submittedProject['tags'],
                     'status' => $submittedProject['status'],
                     'description' => $submittedProject['description'],
-                ]);
+                    'participation_info' => $submittedProject['participation_info'],
+                    'image_path' => $submittedProject['image_path'],
+                ], $uploadedProjectImage);
 
                 if ($result['success']) {
                     research_projects_set_flash(
@@ -235,6 +242,8 @@ $projectForm = [
     'tags' => [],
     'status' => 'active',
     'description' => '',
+    'participation_info' => '',
+    'image_path' => '',
 ];
 
 if (is_array($editingProject)) {
@@ -246,6 +255,8 @@ if (is_array($editingProject)) {
         'tags' => $editingProject['tags'] ?? [],
         'status' => (string) ($editingProject['status'] ?? 'active'),
         'description' => (string) ($editingProject['description'] ?? ''),
+        'participation_info' => (string) ($editingProject['participation_info'] ?? ''),
+        'image_path' => (string) ($editingProject['image_path'] ?? ''),
     ];
 }
 
@@ -258,6 +269,8 @@ if (is_array($formOverrides)) {
         'tags' => is_array($formOverrides['tags'] ?? null) ? $formOverrides['tags'] : $projectForm['tags'],
         'status' => (string) ($formOverrides['status'] ?? $projectForm['status']),
         'description' => (string) ($formOverrides['description'] ?? $projectForm['description']),
+        'participation_info' => (string) ($formOverrides['participation_info'] ?? $projectForm['participation_info']),
+        'image_path' => (string) ($formOverrides['image_path'] ?? $projectForm['image_path']),
     ]);
 }
 ?>
@@ -341,7 +354,7 @@ if (is_array($formOverrides)) {
                 <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8'); ?></div>
             <?php endforeach; ?>
 
-            <form method="POST" class="stack-form">
+            <form method="POST" enctype="multipart/form-data" class="stack-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="save_research_project">
                 <input type="hidden" name="project_id" value="<?php echo htmlspecialchars((string) $projectForm['id'], ENT_QUOTES, 'UTF-8'); ?>">
@@ -409,6 +422,39 @@ if (is_array($formOverrides)) {
                 <div class="form-group">
                     <label for="project_description">Descricao</label>
                     <textarea id="project_description" name="description" rows="8" placeholder="Apresente objetivo, escopo, impacto e contexto do projeto."><?php echo htmlspecialchars((string) $projectForm['description'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="project_participation_info">Como participar</label>
+                    <textarea id="project_participation_info" name="participation_info" rows="6" placeholder="Explique quem pode entrar, disponibilidade esperada, perfil desejado e como a pessoa deve se apresentar ao escrever para a equipe."><?php echo htmlspecialchars((string) $projectForm['participation_info'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <p class="form-help">Esse texto aparecera na pagina detalhada do projeto, junto do CTA para a pessoa escrever ao responsavel e ao CEPIN-CIS.</p>
+                </div>
+
+                <?php if ((string) $projectForm['image_path'] !== ''): ?>
+                    <div class="admin-partner-preview admin-project-preview">
+                        <img
+                            src="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?>"
+                            alt="<?php echo htmlspecialchars((string) ($projectForm['title'] !== '' ? $projectForm['title'] : 'Preview do projeto'), ENT_QUOTES, 'UTF-8'); ?>"
+                            class="admin-partner-preview__image"
+                        >
+                        <div class="admin-partner-preview__copy">
+                            <strong>Banner atual do projeto</strong>
+                            <p><?php echo htmlspecialchars((string) ($projectForm['title'] !== '' ? $projectForm['title'] : 'Projeto em edicao'), ENT_QUOTES, 'UTF-8'); ?></p>
+                            <span><?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?></span>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <div class="form-group">
+                    <label for="project_image_file">Imagem do banner</label>
+                    <input type="file" id="project_image_file" name="image_file" accept="image/png,image/jpeg,image/webp,image/gif">
+                    <p class="form-help">Envie JPG, PNG, WEBP ou GIF com ate 6 MB. Essa arte sera usada como imagem de fundo do banner na pagina detalhada do projeto.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="project_image_path">Ou caminho da imagem</label>
+                    <input type="text" id="project_image_path" name="image_path" value="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="./img/projeto-banner.png ou ./uploads/projects/arquivo.png">
+                    <p class="form-help">Se o asset ja existe no projeto, voce pode apontar o caminho local diretamente sem reenviar o arquivo.</p>
                 </div>
 
                 <button type="submit" class="dashboard-btn"><?php echo $projectForm['id'] !== '' ? 'Salvar projeto' : 'Criar projeto'; ?></button>
@@ -504,6 +550,7 @@ if (is_array($formOverrides)) {
                                     <td><?php echo htmlspecialchars(research_projects_format_datetime($project['updated_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
                                         <div class="table-actions">
+                                            <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project.php?id=<?php echo urlencode($projectId); ?>">Ver pagina</a>
                                             <a class="dashboard-btn admin-btn-small" href="research-projects.php?edit=<?php echo urlencode($projectId); ?>#manage">Editar</a>
                                             <form method="POST" onsubmit="return confirm('Excluir este projeto?');">
                                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">

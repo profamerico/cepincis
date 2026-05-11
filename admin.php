@@ -581,7 +581,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'tags' => array_values(array_filter(array_map('strval', (array) ($_POST['tags'] ?? [])))),
                     'status' => trim((string) ($_POST['status'] ?? 'active')),
                     'description' => trim((string) ($_POST['description'] ?? '')),
+                    'participation_info' => trim((string) ($_POST['participation_info'] ?? '')),
+                    'image_path' => trim((string) ($_POST['image_path'] ?? '')),
                 ];
+                $uploadedProjectImage = isset($_FILES['image_file']) && is_array($_FILES['image_file'])
+                    ? $_FILES['image_file']
+                    : null;
 
                 $result = $projectManager->adminSaveProject($projectId !== '' ? $projectId : null, [
                     'user_id' => $submittedProject['user_id'],
@@ -590,7 +595,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'tags' => $submittedProject['tags'],
                     'status' => $submittedProject['status'],
                     'description' => $submittedProject['description'],
-                ]);
+                    'participation_info' => $submittedProject['participation_info'],
+                    'image_path' => $submittedProject['image_path'],
+                ], $uploadedProjectImage);
 
                 if ($result['success']) {
                     admin_set_flash(
@@ -908,6 +915,8 @@ $projectForm = [
     'tags' => $editingProject['tags'] ?? [],
     'status' => $editingProject['status'] ?? 'active',
     'description' => $editingProject['description'] ?? '',
+    'participation_info' => $editingProject['participation_info'] ?? '',
+    'image_path' => $editingProject['image_path'] ?? '',
 ];
 
 if ($projectFormOverrides !== null) {
@@ -1299,7 +1308,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
             <?php endforeach; ?>
 
-            <form method="POST" class="stack-form">
+            <form method="POST" enctype="multipart/form-data" class="stack-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="save_project">
                 <input type="hidden" name="project_id" value="<?php echo htmlspecialchars((string) $projectForm['id'], ENT_QUOTES, 'UTF-8'); ?>">
@@ -1362,6 +1371,39 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     <textarea id="description" name="description" rows="6"><?php echo htmlspecialchars((string) $projectForm['description'], ENT_QUOTES, 'UTF-8'); ?></textarea>
                 </div>
 
+                <div class="form-group">
+                    <label for="participation_info">Como participar</label>
+                    <textarea id="participation_info" name="participation_info" rows="5" placeholder="Explique o perfil desejado, disponibilidade esperada, tipo de colaboracao e qualquer orientacao para entrada no projeto."><?php echo htmlspecialchars((string) $projectForm['participation_info'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <p class="form-help">Esse texto aparecera na pagina detalhada do projeto para orientar quem quiser participar.</p>
+                </div>
+
+                <?php if ((string) $projectForm['image_path'] !== ''): ?>
+                    <div class="admin-partner-preview admin-project-preview">
+                        <img
+                            src="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?>"
+                            alt="<?php echo htmlspecialchars((string) ($projectForm['title'] !== '' ? $projectForm['title'] : 'Preview do projeto'), ENT_QUOTES, 'UTF-8'); ?>"
+                            class="admin-partner-preview__image"
+                        >
+                        <div class="admin-partner-preview__copy">
+                            <strong>Banner atual do projeto</strong>
+                            <p><?php echo htmlspecialchars((string) ($projectForm['title'] !== '' ? $projectForm['title'] : 'Projeto em edicao'), ENT_QUOTES, 'UTF-8'); ?></p>
+                            <span><?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?></span>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <div class="form-group">
+                    <label for="project_image_file">Imagem do banner</label>
+                    <input type="file" id="project_image_file" name="image_file" accept="image/png,image/jpeg,image/webp,image/gif">
+                    <p class="form-help">Envie JPG, PNG, WEBP ou GIF com ate 6 MB. Essa imagem sera usada no banner da pagina detalhada do projeto.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="project_image_path">Ou caminho da imagem</label>
+                    <input type="text" id="project_image_path" name="image_path" value="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="./img/projeto-banner.png ou ./uploads/projects/arquivo.png">
+                    <p class="form-help">Se voce ja possui o asset no projeto, pode apontar o caminho diretamente sem reenviar o arquivo.</p>
+                </div>
+
                 <button type="submit" class="dashboard-btn"><?php echo $projectForm['id'] !== '' ? 'Salvar projeto' : 'Criar projeto'; ?></button>
             </form>
         </article>
@@ -1400,6 +1442,9 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                         <strong><?php echo htmlspecialchars((string) $project['title'], ENT_QUOTES, 'UTF-8'); ?></strong>
                                         <div class="admin-meta"><?php echo htmlspecialchars((string) $project['description'], ENT_QUOTES, 'UTF-8'); ?></div>
                                         <div class="admin-meta">Tags: <?php echo htmlspecialchars(admin_format_tags($projectManager->getProjectTagList($project, false)), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <?php if ((string) ($project['image_path'] ?? '') !== ''): ?>
+                                            <div class="admin-meta">Banner: <?php echo htmlspecialchars((string) $project['image_path'], ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <?php endif; ?>
                                     </td>
                                     <td><?php echo htmlspecialchars((string) ($owner['fullname'] ?? 'Sem responsavel'), ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
@@ -1411,6 +1456,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                     <td><?php echo htmlspecialchars(admin_format_datetime($project['updated_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
                                         <div class="table-actions">
+                                            <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project.php?id=<?php echo urlencode((string) $project['id']); ?>">Ver pagina</a>
                                             <a class="dashboard-btn admin-btn-small" href="admin.php?edit_project=<?php echo urlencode((string) $project['id']); ?>#projects">Editar</a>
 
                                             <form method="POST" onsubmit="return confirm('Excluir este projeto?');">

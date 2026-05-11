@@ -2,6 +2,8 @@
 class ProjectManager
 {
     private $projectsFile;
+    private $uploadsDirectory;
+
     private const THEMATIC_AREA_OPTIONS = [
         'EduCIS' => 'EduCIS',
         'EcoMat' => 'EcoMat',
@@ -10,9 +12,20 @@ class ProjectManager
         'UrbanSmart' => 'UrbanSmart',
     ];
 
-    public function __construct($projectsFile = null)
+    private const ALLOWED_IMAGE_TYPES = [
+        'image/jpeg' => 'jpg',
+        'image/jpg' => 'jpg',
+        'image/pjpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/x-png' => 'png',
+        'image/webp' => 'webp',
+        'image/gif' => 'gif',
+    ];
+
+    public function __construct($projectsFile = null, $uploadsDirectory = null)
     {
         $this->projectsFile = $projectsFile ?: __DIR__ . '/../data/projects.json';
+        $this->uploadsDirectory = $uploadsDirectory ?: __DIR__ . '/../uploads/projects';
         $this->ensureFileExists();
     }
 
@@ -61,7 +74,7 @@ class ProjectManager
     public function getProject($projectId)
     {
         foreach ($this->loadProjects() as $project) {
-            if ((string) $project['id'] === (string) $projectId) {
+            if ((string) ($project['id'] ?? '') === (string) $projectId) {
                 return $project;
             }
         }
@@ -106,29 +119,35 @@ class ProjectManager
     {
         $projects = $this->loadProjects();
         $filteredProjects = [];
-        $wasRemoved = false;
+        $removedProject = null;
 
         foreach ($projects as $project) {
-            if ((string) $project['id'] === (string) $projectId) {
-                $wasRemoved = true;
+            if ((string) ($project['id'] ?? '') === (string) $projectId) {
+                $removedProject = $project;
                 continue;
             }
 
             $filteredProjects[] = $project;
         }
 
-        if (!$wasRemoved) {
+        if ($removedProject === null) {
             return false;
         }
 
-        return $this->saveProjects($filteredProjects);
+        if (!$this->saveProjects($filteredProjects)) {
+            return false;
+        }
+
+        $this->deleteManagedImage((string) ($removedProject['image_path'] ?? ''));
+
+        return true;
     }
 
-    public function adminSaveProject(?string $projectId, array $data): array
+    public function adminSaveProject(?string $projectId, array $data, ?array $uploadedImage = null): array
     {
         $projects = $this->loadProjects();
         $isCreate = $projectId === null || trim($projectId) === '';
-        $projectIndex = $isCreate ? null : $this->findProjectIndex($projects, $projectId);
+        $projectIndex = $isCreate ? null : $this->findProjectIndex($projects, (string) $projectId);
 
         if (!$isCreate && $projectIndex === null) {
             return ['success' => false, 'errors' => ['Projeto nao encontrado.']];
@@ -136,16 +155,21 @@ class ProjectManager
 
         $title = trim((string) ($data['title'] ?? ''));
         $description = trim((string) ($data['description'] ?? ''));
+        $participationInfo = trim((string) ($data['participation_info'] ?? ''));
         $categoryInput = trim((string) ($data['category'] ?? ''));
         $category = $this->normalizeCategory($categoryInput);
         $tagsInput = $data['tags'] ?? [];
         $tags = $this->normalizeTags($tagsInput);
         $status = $this->normalizeStatus((string) ($data['status'] ?? 'active'));
         $userId = $this->normalizeUserId($data['user_id'] ?? null);
-
+        $imagePath = trim((string) ($data['image_path'] ?? ''));
         $errors = [];
+
         if ($title === '') {
             $errors[] = 'Titulo e obrigatorio.';
+        }
+        if ($description === '') {
+            $errors[] = 'Descricao do projeto e obrigatoria.';
         }
         if ($categoryInput === '') {
             $errors[] = 'Area tematica e obrigatoria.';
@@ -158,8 +182,40 @@ class ProjectManager
             $errors[] = 'As tags devem usar apenas as 5 siglas oficiais das Areas Tematicas.';
         }
 
+        $hasUpload = $this->hasUploadedFile($uploadedImage);
+        if ($isCreate && !$hasUpload && $imagePath === '') {
+            $errors[] = 'Envie uma imagem ou informe um caminho valido para o banner do projeto.';
+        }
+
+        if ($imagePath !== '' && !$hasUpload) {
+            $imagePathValidation = $this->validateImagePath($imagePath);
+            if (!$imagePathValidation['success']) {
+                $errors[] = $imagePathValidation['error'];
+            }
+        }
+
+        if ($hasUpload) {
+            $uploadValidation = $this->validateImageUpload($uploadedImage);
+            if (!$uploadValidation['success']) {
+                $errors[] = $uploadValidation['error'];
+            }
+        }
+
         if ($errors) {
             return ['success' => false, 'errors' => $errors];
+        }
+
+        $existingProject = !$isCreate ? $projects[$projectIndex] : null;
+        $previousImagePath = (string) ($existingProject['image_path'] ?? '');
+        $nextImagePath = $imagePath !== '' ? $imagePath : $previousImagePath;
+
+        if ($hasUpload) {
+            $uploadResult = $this->storeImageUpload($uploadedImage);
+            if (!$uploadResult['success']) {
+                return ['success' => false, 'errors' => [$uploadResult['error']]];
+            }
+
+            $nextImagePath = (string) $uploadResult['path'];
         }
 
         if ($isCreate) {
@@ -168,8 +224,10 @@ class ProjectManager
                 'user_id' => $userId,
                 'title' => $title,
                 'description' => $description,
+                'participation_info' => $participationInfo,
                 'category' => $category,
                 'tags' => $tags,
+                'image_path' => $nextImagePath,
                 'status' => $status,
                 'created_at' => $this->now(),
                 'updated_at' => $this->now(),
@@ -179,14 +237,26 @@ class ProjectManager
             $projects[$projectIndex]['user_id'] = $userId;
             $projects[$projectIndex]['title'] = $title;
             $projects[$projectIndex]['description'] = $description;
+            $projects[$projectIndex]['participation_info'] = $participationInfo;
             $projects[$projectIndex]['category'] = $category;
             $projects[$projectIndex]['tags'] = $tags;
+            $projects[$projectIndex]['image_path'] = $nextImagePath;
             $projects[$projectIndex]['status'] = $status;
             $projects[$projectIndex]['updated_at'] = $this->now();
             $savedProject = $projects[$projectIndex];
         }
 
-        $this->saveProjects($projects);
+        if (!$this->saveProjects($projects)) {
+            if ($hasUpload && $nextImagePath !== '' && $nextImagePath !== $previousImagePath) {
+                $this->deleteManagedImage($nextImagePath);
+            }
+
+            return ['success' => false, 'errors' => ['Nao foi possivel salvar o projeto.']];
+        }
+
+        if ($hasUpload && $previousImagePath !== '' && $previousImagePath !== $nextImagePath) {
+            $this->deleteManagedImage($previousImagePath);
+        }
 
         return ['success' => true, 'project' => $savedProject, 'created' => $isCreate];
     }
@@ -275,6 +345,10 @@ class ProjectManager
             mkdir($directory, 0775, true);
         }
 
+        if (!is_dir($this->uploadsDirectory)) {
+            mkdir($this->uploadsDirectory, 0775, true);
+        }
+
         if (!file_exists($this->projectsFile)) {
             file_put_contents($this->projectsFile, json_encode([]), LOCK_EX);
         }
@@ -301,7 +375,7 @@ class ProjectManager
         }
 
         usort($projects, static function (array $left, array $right): int {
-            return strtotime((string) $right['updated_at']) <=> strtotime((string) $left['updated_at']);
+            return strtotime((string) ($right['updated_at'] ?? '')) <=> strtotime((string) ($left['updated_at'] ?? ''));
         });
 
         return $projects;
@@ -334,8 +408,10 @@ class ProjectManager
             'user_id' => $this->normalizeUserId($project['user_id'] ?? null),
             'title' => trim((string) ($project['title'] ?? '')),
             'description' => trim((string) ($project['description'] ?? '')),
+            'participation_info' => trim((string) ($project['participation_info'] ?? '')),
             'category' => $this->normalizeCategory((string) ($project['category'] ?? $this->getDefaultThematicArea())),
             'tags' => $this->normalizeTags($project['tags'] ?? []),
+            'image_path' => trim((string) ($project['image_path'] ?? '')),
             'status' => $this->normalizeStatus((string) ($project['status'] ?? 'active')),
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,
@@ -456,6 +532,192 @@ class ProjectManager
         }
 
         return null;
+    }
+
+    private function hasUploadedFile(?array $uploadedImage): bool
+    {
+        if (!is_array($uploadedImage)) {
+            return false;
+        }
+
+        return isset($uploadedImage['error']) && (int) ($uploadedImage['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+    }
+
+    private function validateImageUpload(?array $uploadedImage): array
+    {
+        if (!$this->hasUploadedFile($uploadedImage)) {
+            return ['success' => true];
+        }
+
+        if ((int) ($uploadedImage['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
+            return ['success' => false, 'error' => 'Nao foi possivel processar a imagem enviada.'];
+        }
+
+        $tmpName = (string) ($uploadedImage['tmp_name'] ?? '');
+        if ($tmpName === '' || !is_uploaded_file($tmpName)) {
+            return ['success' => false, 'error' => 'O upload da imagem nao foi reconhecido pelo servidor.'];
+        }
+
+        $imageFormat = $this->resolveUploadedImageFormat($uploadedImage, $tmpName);
+        if (!$imageFormat['success']) {
+            return ['success' => false, 'error' => 'Formato de imagem nao suportado. Envie JPG, PNG, WEBP ou GIF.'];
+        }
+
+        if ((int) ($uploadedImage['size'] ?? 0) > 6 * 1024 * 1024) {
+            return ['success' => false, 'error' => 'A imagem do projeto deve ter no maximo 6 MB.'];
+        }
+
+        return [
+            'success' => true,
+            'mime_type' => (string) ($imageFormat['mime_type'] ?? ''),
+            'extension' => (string) ($imageFormat['extension'] ?? 'png'),
+        ];
+    }
+
+    private function storeImageUpload(?array $uploadedImage): array
+    {
+        $validation = $this->validateImageUpload($uploadedImage);
+        if (!$validation['success']) {
+            return $validation;
+        }
+
+        $tmpName = (string) ($uploadedImage['tmp_name'] ?? '');
+        $extension = (string) ($validation['extension'] ?? 'png');
+        $filename = uniqid('project_', true) . '.' . $extension;
+        $destination = $this->uploadsDirectory . DIRECTORY_SEPARATOR . $filename;
+
+        if (!is_dir($this->uploadsDirectory)) {
+            mkdir($this->uploadsDirectory, 0775, true);
+        }
+
+        if (!move_uploaded_file($tmpName, $destination)) {
+            return ['success' => false, 'error' => 'Nao foi possivel salvar a imagem do projeto no servidor.'];
+        }
+
+        return ['success' => true, 'path' => './uploads/projects/' . $filename];
+    }
+
+    private function detectMimeType(string $tmpName): string
+    {
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            if ($finfo) {
+                $mimeType = (string) finfo_file($finfo, $tmpName);
+                finfo_close($finfo);
+
+                return $mimeType;
+            }
+        }
+
+        if (function_exists('mime_content_type')) {
+            $mimeType = (string) mime_content_type($tmpName);
+            if ($mimeType !== '') {
+                return $mimeType;
+            }
+        }
+
+        if (function_exists('getimagesize')) {
+            $imageInfo = @getimagesize($tmpName);
+            if (is_array($imageInfo) && !empty($imageInfo['mime'])) {
+                return (string) $imageInfo['mime'];
+            }
+        }
+
+        return '';
+    }
+
+    private function resolveUploadedImageFormat(?array $uploadedImage, string $tmpName): array
+    {
+        $mimeCandidates = [
+            $this->detectMimeType($tmpName),
+            (string) ($uploadedImage['type'] ?? ''),
+        ];
+
+        foreach ($mimeCandidates as $mimeCandidate) {
+            $normalizedMimeType = $this->normalizeImageMimeType($mimeCandidate);
+            if ($normalizedMimeType !== '') {
+                return [
+                    'success' => true,
+                    'mime_type' => $normalizedMimeType,
+                    'extension' => self::ALLOWED_IMAGE_TYPES[$normalizedMimeType],
+                ];
+            }
+        }
+
+        $extension = strtolower((string) pathinfo((string) ($uploadedImage['name'] ?? ''), PATHINFO_EXTENSION));
+        if ($extension !== '') {
+            if ($extension === 'jpeg') {
+                $extension = 'jpg';
+            }
+
+            $mimeType = array_search($extension, self::ALLOWED_IMAGE_TYPES, true);
+            if (is_string($mimeType)) {
+                return [
+                    'success' => true,
+                    'mime_type' => $mimeType,
+                    'extension' => $extension,
+                ];
+            }
+        }
+
+        return ['success' => false];
+    }
+
+    private function normalizeImageMimeType(string $mimeType): string
+    {
+        $mimeType = strtolower(trim($mimeType));
+        if ($mimeType === '') {
+            return '';
+        }
+
+        return isset(self::ALLOWED_IMAGE_TYPES[$mimeType]) ? $mimeType : '';
+    }
+
+    private function validateImagePath(string $imagePath): array
+    {
+        $imagePath = trim($imagePath);
+        if ($imagePath === '') {
+            return ['success' => false, 'error' => 'A imagem do projeto nao pode ficar vazia.'];
+        }
+
+        $url = filter_var($imagePath, FILTER_VALIDATE_URL);
+        if ($url !== false) {
+            $scheme = strtolower((string) parse_url($imagePath, PHP_URL_SCHEME));
+            if (in_array($scheme, ['http', 'https'], true)) {
+                return ['success' => true];
+            }
+        }
+
+        $candidatePath = $imagePath;
+        if (strpos($candidatePath, './') === 0) {
+            $candidatePath = __DIR__ . '/../' . substr($candidatePath, 2);
+        } elseif (!preg_match('/^[a-zA-Z]:[\\\\\\/]/', $candidatePath) && strpos($candidatePath, '/') !== 0) {
+            $candidatePath = __DIR__ . '/../' . ltrim($candidatePath, '\\/');
+        }
+
+        if (!file_exists($candidatePath)) {
+            return ['success' => false, 'error' => 'O caminho informado para a imagem do projeto nao foi encontrado no projeto.'];
+        }
+
+        return ['success' => true];
+    }
+
+    private function deleteManagedImage(string $relativePath): void
+    {
+        $relativePath = trim($relativePath);
+        if ($relativePath === '' || strpos($relativePath, './uploads/projects/') !== 0) {
+            return;
+        }
+
+        $filename = basename($relativePath);
+        if ($filename === '') {
+            return;
+        }
+
+        $absolutePath = $this->uploadsDirectory . DIRECTORY_SEPARATOR . $filename;
+        if (is_file($absolutePath)) {
+            @unlink($absolutePath);
+        }
     }
 
     private function now(): string
