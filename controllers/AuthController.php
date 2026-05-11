@@ -203,8 +203,12 @@ class AuthController
         if ($fullname === '') {
             $errors[] = 'Nome completo e obrigatorio.';
         }
-        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if ($email === '') {
+            $errors[] = 'Email institucional e obrigatorio para o cadastro local.';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Email invalido.';
+        } elseif (!$this->isAllowedSelfRegistrationEmail($email)) {
+            $errors[] = 'Use um email institucional do IF ou um dominio gov.br para criar conta local.';
         }
         if ($this->findUserIndexByUsername($users, $username) !== null) {
             $errors[] = 'Usuario ja existe.';
@@ -329,11 +333,22 @@ class AuthController
         $passwordConfirm = (string) ($data['password_confirm'] ?? '');
 
         $errors = [];
+        $currentEmail = trim((string) ($users[$userIndex]['email'] ?? ''));
+        $provider = strtolower(trim((string) ($users[$userIndex]['provider'] ?? 'local')));
+        $emailChanged = strcasecmp($email, $currentEmail) !== 0;
+
         if ($fullname === '') {
             $errors[] = 'Nome completo e obrigatorio.';
         }
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Email invalido.';
+        }
+        if ($provider === 'local' && $emailChanged) {
+            if ($email === '') {
+                $errors[] = 'Contas locais devem manter um email institucional do IF ou dominio gov.br.';
+            } elseif (!$this->isAllowedSelfRegistrationEmail($email)) {
+                $errors[] = 'Contas locais so podem usar email institucional do IF ou dominio gov.br.';
+            }
         }
         if ($password !== '' && strlen($password) < 6) {
             $errors[] = 'A nova senha deve ter ao menos 6 caracteres.';
@@ -468,7 +483,7 @@ class AuthController
                 'fullname' => $fullname,
                 'email' => $email,
                 'role' => $role,
-                'provider' => 'local',
+                'provider' => 'admin',
                 'created_at' => $this->nowIso(),
                 'updated_at' => $this->nowIso(),
             ];
@@ -802,6 +817,29 @@ class AuthController
         $value = preg_replace('/[^a-z0-9]+/', '', $value);
 
         return substr((string) $value, 0, 24);
+    }
+
+    private function isAllowedSelfRegistrationEmail(string $email): bool
+    {
+        $email = strtolower(trim($email));
+        if ($email === '' || strpos($email, '@') === false) {
+            return false;
+        }
+
+        $domain = (string) substr(strrchr($email, '@'), 1);
+        if ($domain === '') {
+            return false;
+        }
+
+        if (preg_match('/^(?:[a-z0-9-]+\.)*gov\.br$/i', $domain) === 1) {
+            return true;
+        }
+
+        if (preg_match('/^(?:[a-z0-9-]+\.)*if[a-z0-9-]+\.edu\.br$/i', $domain) === 1) {
+            return true;
+        }
+
+        return false;
     }
 
     private function nowIso(): string

@@ -92,6 +92,8 @@ function admin_provider_label(?string $provider): string
             return 'Microsoft';
         case 'social':
             return 'Rede social';
+        case 'admin':
+            return 'Painel admin';
         case 'local':
         default:
             return 'Local';
@@ -1268,7 +1270,10 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                     </td>
                                     <td>
                                         <div class="table-actions">
-                                            <a class="dashboard-btn admin-btn-small" href="admin.php?edit_user=<?php echo $listedUserId; ?>#users">Editar perfil</a>
+                                            <form method="GET" action="admin.php#users" class="table-actions__inline-form">
+                                                <input type="hidden" name="edit_user" value="<?php echo $listedUserId; ?>">
+                                                <button type="submit" class="dashboard-btn admin-btn-small">Editar perfil</button>
+                                            </form>
 
                                             <?php if (!$isSelf): ?>
                                                 <form method="POST" onsubmit="return confirm('Remover este usuario?');">

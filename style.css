@@ -4400,6 +4400,10 @@ body.auth-page header {
        align-items: center;
 }
 
+.table-actions__inline-form {
+       margin: 0;
+}
+
 .admin-btn-small,
 .admin-btn-danger {
        padding: 10px 16px;

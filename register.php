@@ -43,12 +43,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <aside class="auth-aside">
             <p class="eyebrow">Novo acesso</p>
             <h1>Crie uma conta para colaborar</h1>
-            <p class="auth-copy">O cadastro libera o painel interno para acompanhar atividades, manter seus dados atualizados e acessar as ferramentas do portal.</p>
+            <p class="auth-copy">O cadastro local libera o painel interno para acompanhar atividades, manter seus dados atualizados e acessar as ferramentas do portal.</p>
 
             <div class="auth-highlights">
                 <div class="auth-highlight">
-                    <strong>Onboarding simples</strong>
-                    <span>Cadastro rapido com nome, email e credenciais locais.</span>
+                    <strong>Email institucional</strong>
+                    <span>O auto-cadastro local aceita apenas dominios do IF e enderecos vinculados a `gov.br`.</span>
                 </div>
                 <div class="auth-highlight">
                     <strong>Area autenticada renovada</strong>
@@ -90,7 +90,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         id="email"
                         name="email"
                         value="<?php echo htmlspecialchars($email, ENT_QUOTES, 'UTF-8'); ?>"
+                        required
                     >
+                    <p class="form-help">Exemplos aceitos: `@ifsp.edu.br`, `@aluno.ifsp.edu.br`, `@campus.ifce.edu.br`, `@sp.gov.br`, `@educacao.sp.gov.br` e outros dominios `gov.br`.</p>
                 </div>
 
                 <div class="form-group">
