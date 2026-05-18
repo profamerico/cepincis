@@ -1,36 +1,37 @@
 <?php
+
 class Database {
-    public $conn;
+
+    private $conn;
 
     public function getConnection() {
+
         $this->conn = null;
 
         try {
-            // SQLite - funciona sem MySQL
-            $database_file = __DIR__ . '/../database.sqlite';
-            $this->conn = new PDO("sqlite:" . $database_file);
+
+            $url = parse_url($_ENV['DATABASE_URL']);
+
+            $host = $url["host"];
+            $port = $url["port"];
+            $user = $url["user"];
+            $pass = $url["pass"];
+            $db = ltrim($url["path"], '/');
+
+            $this->conn = new PDO(
+                "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4",
+                $user,
+                $pass
+            );
+
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
-            // Criar tabela automaticamente
-            $this->createTable();
-            
-        } catch(PDOException $exception) {
-            echo "Erro de conexão: " . $exception->getMessage();
+
+        } catch(PDOException $e) {
+
+            die("Erro de conexão: " . $e->getMessage());
+
         }
 
         return $this->conn;
     }
-
-    
-    private function createTable() {
-        $query = "CREATE TABLE IF NOT EXISTS usuarios (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL,
-            data_criacao DATETIME DEFAULT CURRENT_TIMESTAMP
-        )";
-        
-        $this->conn->exec($query);
-    }
 }
-?>
