@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/../config/database.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
@@ -36,12 +37,12 @@ class AuthController
         ],
     ];
 
-    private $usersFile;
+    private PDO $db;
 
-    public function __construct($usersFile = null)
+    public function __construct()
     {
-        $this->usersFile = $usersFile ?: __DIR__ . '/../storage/users.json';
-        $this->ensureUsersFile();
+        $database = new Database();
+        $this->db = $database->getConnection();
     }
 
     public function requireAuth(): void
@@ -82,34 +83,38 @@ class AuthController
 
     public function login(string $username, string $password): array
     {
-        $errors = [];
-        $username = trim($username);
+        $stmt = $this->db->prepare("
+            SELECT * FROM users
+            WHERE username = :username
+            LIMIT 1
+        ");
 
-        if ($username === '') {
-            $errors[] = 'Usuario e obrigatorio.';
-        }
-        if ($password === '') {
-            $errors[] = 'Senha e obrigatoria.';
-        }
+        $stmt->execute([
+            'username' => trim($username)
+        ]);
 
-        if ($errors) {
-            return ['success' => false, 'errors' => $errors];
-        }
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        foreach ($this->loadUsers() as $user) {
-            if (strcasecmp($user['username'], $username) !== 0) {
-                continue;
-            }
-
-            if (!password_verify($password, $user['password_hash'])) {
-                return ['success' => false, 'errors' => ['Usuario ou senha invalidos.']];
-            }
-
-            $this->syncSessionUser($user);
-            return ['success' => true, 'user' => $user];
+        if (!$user) {
+            return [
+                'success' => false,
+                'errors' => ['Usuario nao encontrado.']
+            ];
         }
 
-        return ['success' => false, 'errors' => ['Usuario ou senha invalidos.']];
+        if (!password_verify($password, $user['password_hash'])) {
+            return [
+                'success' => false,
+                'errors' => ['Senha incorreta.']
+            ];
+        }
+
+        $this->syncSessionUser($user);
+
+        return [
+            'success' => true,
+            'user' => $user
+        ];
     }
 
     public function loginSocialUser(string $displayName, string $email = '', string $provider = 'social'): array
@@ -119,58 +124,118 @@ class AuthController
         $provider = trim($provider) !== '' ? trim($provider) : 'social';
 
         if ($displayName === '') {
-            return ['success' => false, 'errors' => ['Nao foi possivel identificar o usuario da rede social.']];
+            return [
+                'success' => false,
+                'errors' => ['Nao foi possivel identificar o usuario da rede social.']
+            ];
         }
 
-        $users = $this->loadUsers();
-        $foundIndex = null;
+        $stmt = $this->db->prepare("
+            SELECT * FROM users
+            WHERE email = :email
+            LIMIT 1
+        ");
 
-        if ($email !== '') {
-            foreach ($users as $index => $user) {
-                if (($user['email'] ?? '') !== '' && strcasecmp($user['email'], $email) === 0) {
-                    $foundIndex = $index;
-                    break;
-                }
-            }
-        }
+        $stmt->execute([
+            'email' => $email
+        ]);
 
-        if ($foundIndex === null) {
-            $username = $this->generateUniqueUsername($users, $displayName, $email, $provider);
-            $users[] = [
-                'id' => $this->getNextUserId($users),
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            $username = $this->generateUsername($displayName, $email);
+
+            $insert = $this->db->prepare("
+                INSERT INTO users (
+                    username,
+                    password_hash,
+                    fullname,
+                    email,
+                    role,
+                    provider,
+                    created_at,
+                    updated_at
+                )
+                VALUES (
+                    :username,
+                    :password_hash,
+                    :fullname,
+                    :email,
+                    :role,
+                    :provider,
+                    NOW(),
+                    NOW()
+                )
+            ");
+
+            $insert->execute([
                 'username' => $username,
                 'password_hash' => password_hash(bin2hex(random_bytes(16)), PASSWORD_DEFAULT),
                 'fullname' => $displayName,
                 'email' => $email,
                 'role' => self::ROLE_MEMBER,
-                'provider' => $provider,
-                'created_at' => $this->nowIso(),
-                'updated_at' => $this->nowIso(),
-            ];
-            $foundIndex = array_key_last($users);
+                'provider' => $provider
+            ]);
+
+            $userId = (int) $this->db->lastInsertId();
+
+            $select = $this->db->prepare("
+                SELECT * FROM users
+                WHERE id = :id
+                LIMIT 1
+            ");
+
+            $select->execute([
+                'id' => $userId
+            ]);
+
+            $user = $select->fetch(PDO::FETCH_ASSOC);
         } else {
-            $users[$foundIndex]['fullname'] = $displayName;
-            if ($email !== '') {
-                $users[$foundIndex]['email'] = $email;
-            }
-            $users[$foundIndex]['provider'] = $provider;
-            $users[$foundIndex]['updated_at'] = $this->nowIso();
+            $update = $this->db->prepare("
+                UPDATE users
+                SET
+                    fullname = :fullname,
+                    provider = :provider,
+                    updated_at = NOW()
+                WHERE id = :id
+            ");
+
+            $update->execute([
+                'fullname' => $displayName,
+                'provider' => $provider,
+                'id' => $user['id']
+            ]);
+
+            $refresh = $this->db->prepare("
+                SELECT * FROM users
+                WHERE id = :id
+                LIMIT 1
+            ");
+
+            $refresh->execute([
+                'id' => $user['id']
+            ]);
+
+            $user = $refresh->fetch(PDO::FETCH_ASSOC);
         }
 
-        $this->saveUsers($users);
-        $savedUser = $this->loadUsers()[$foundIndex] ?? $users[$foundIndex];
-        $this->syncSessionUser($savedUser);
+        $this->syncSessionUser($user);
 
-        return ['success' => true, 'user' => $savedUser];
+        return [
+            'success' => true,
+            'user' => $user
+        ];
     }
 
     public function logout(): void
     {
         $this->clearLegacySessionKeys();
+
         $_SESSION = [];
 
         if (ini_get('session.use_cookies')) {
             $params = session_get_cookie_params();
+
             setcookie(
                 session_name(),
                 '',
@@ -183,58 +248,88 @@ class AuthController
         }
 
         session_destroy();
+
         header('Location: login.php');
         exit();
     }
 
-    public function register(string $username, string $password, string $fullname, string $email): array
-    {
-        $errors = [];
-        $users = $this->loadUsers();
-
+    public function register(
+        string $username,
+        string $password,
+        string $fullname,
+        string $email
+    ): array {
         $username = trim($username);
         $fullname = trim($fullname);
         $email = trim($email);
 
-        if ($username === '') {
-            $errors[] = 'Usuario e obrigatorio.';
-        }
-        if (strlen($password) < 6) {
-            $errors[] = 'Senha deve ter ao menos 6 caracteres.';
-        }
-        if ($fullname === '') {
-            $errors[] = 'Nome completo e obrigatorio.';
-        }
-        if ($email === '') {
-            $errors[] = 'Email institucional e obrigatorio para o cadastro local.';
-        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email invalido.';
-        } elseif (!$this->isAllowedSelfRegistrationEmail($email)) {
-            $errors[] = 'Use um email institucional do IF ou um dominio gov.br para criar conta local.';
-        }
-        if ($this->findUserIndexByUsername($users, $username) !== null) {
-            $errors[] = 'Usuario ja existe.';
+        if (
+            $username === '' ||
+            $password === '' ||
+            $fullname === '' ||
+            $email === ''
+        ) {
+            return [
+                'success' => false,
+                'errors' => ['Preencha todos os campos.']
+            ];
         }
 
-        if ($errors) {
-            return ['success' => false, 'errors' => $errors];
+        $check = $this->db->prepare("
+            SELECT id
+            FROM users
+            WHERE username = :username
+            LIMIT 1
+        ");
+
+        $check->execute([
+            'username' => $username
+        ]);
+
+        if ($check->fetch()) {
+            return [
+                'success' => false,
+                'errors' => ['Usuario ja existe.']
+            ];
         }
 
-        $users[] = [
-            'id' => $this->getNextUserId($users),
+        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+
+        $stmt = $this->db->prepare("
+            INSERT INTO users (
+                username,
+                password_hash,
+                fullname,
+                email,
+                role,
+                provider,
+                created_at,
+                updated_at
+            )
+            VALUES (
+                :username,
+                :password_hash,
+                :fullname,
+                :email,
+                :role,
+                :provider,
+                NOW(),
+                NOW()
+            )
+        ");
+
+        $stmt->execute([
             'username' => $username,
-            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            'password_hash' => $hashedPassword,
             'fullname' => $fullname,
             'email' => $email,
             'role' => self::ROLE_MEMBER,
-            'provider' => 'local',
-            'created_at' => $this->nowIso(),
-            'updated_at' => $this->nowIso(),
+            'provider' => 'local'
+        ]);
+
+        return [
+            'success' => true
         ];
-
-        $this->saveUsers($users);
-
-        return ['success' => true];
     }
 
     public function getCurrentUser(): ?array
@@ -260,34 +355,45 @@ class AuthController
     {
         $roleKey = $this->normalizeRole($roleOrUser);
 
-        return self::ROLE_DEFINITIONS[$roleKey]['label'] ?? self::ROLE_DEFINITIONS[self::ROLE_MEMBER]['label'];
+        return self::ROLE_DEFINITIONS[$roleKey]['label']
+            ?? self::ROLE_DEFINITIONS[self::ROLE_MEMBER]['label'];
     }
 
     public function getRoleRank($roleOrUser = null): int
     {
         $roleKey = $this->normalizeRole($roleOrUser);
 
-        return (int) (self::ROLE_DEFINITIONS[$roleKey]['rank'] ?? self::ROLE_DEFINITIONS[self::ROLE_MEMBER]['rank']);
+        return (int) (
+            self::ROLE_DEFINITIONS[$roleKey]['rank']
+            ?? self::ROLE_DEFINITIONS[self::ROLE_MEMBER]['rank']
+        );
     }
 
     public function hasAtLeastRole(string $requiredRole, ?array $user = null): bool
     {
-        return $this->getRoleRank($user) >= $this->getRoleRank($requiredRole);
+        return $this->getRoleRank($user)
+            >= $this->getRoleRank($requiredRole);
     }
 
     public function isAcademicResearcher(?array $user = null): bool
     {
-        return $this->normalizeRole($user ?: $this->getCurrentUser()) === self::ROLE_ACADEMIC_RESEARCHER;
+        return $this->normalizeRole(
+            $user ?: $this->getCurrentUser()
+        ) === self::ROLE_ACADEMIC_RESEARCHER;
     }
 
     public function isAssociateResearcher(?array $user = null): bool
     {
-        return $this->normalizeRole($user ?: $this->getCurrentUser()) === self::ROLE_ASSOCIATE_RESEARCHER;
+        return $this->normalizeRole(
+            $user ?: $this->getCurrentUser()
+        ) === self::ROLE_ASSOCIATE_RESEARCHER;
     }
 
     public function isFullResearcher(?array $user = null): bool
     {
-        return $this->normalizeRole($user ?: $this->getCurrentUser()) === self::ROLE_FULL_RESEARCHER;
+        return $this->normalizeRole(
+            $user ?: $this->getCurrentUser()
+        ) === self::ROLE_FULL_RESEARCHER;
     }
 
     public function isAdmin(?array $user = null): bool
@@ -303,368 +409,68 @@ class AuthController
 
     public function canAccessResearchWorkspace(?array $user = null): bool
     {
-        return $this->hasAtLeastRole(self::ROLE_ACADEMIC_RESEARCHER, $user ?: $this->getCurrentUser());
+        return $this->hasAtLeastRole(
+            self::ROLE_ACADEMIC_RESEARCHER,
+            $user ?: $this->getCurrentUser()
+        );
     }
 
     public function canManageOrientations(?array $user = null): bool
     {
-        return $this->hasAtLeastRole(self::ROLE_ASSOCIATE_RESEARCHER, $user ?: $this->getCurrentUser());
+        return $this->hasAtLeastRole(
+            self::ROLE_ASSOCIATE_RESEARCHER,
+            $user ?: $this->getCurrentUser()
+        );
     }
 
     public function canCreateProjects(?array $user = null): bool
     {
-        return $this->hasAtLeastRole(self::ROLE_FULL_RESEARCHER, $user ?: $this->getCurrentUser());
-    }
-
-    public function updateProfile(array $data): array
-    {
-        $this->requireAuth();
-
-        $current = $this->getCurrentUser();
-        $users = $this->loadUsers();
-        $userId = (int) $current['id'];
-        $userIndex = $this->findUserIndexById($users, $userId);
-
-        if ($userIndex === null) {
-            return ['success' => false, 'errors' => ['Usuario nao encontrado.']];
-        }
-
-        $fullname = trim((string) ($data['fullname'] ?? ''));
-        $email = trim((string) ($data['email'] ?? ''));
-        $password = (string) ($data['password'] ?? '');
-        $passwordConfirm = (string) ($data['password_confirm'] ?? '');
-
-        $errors = [];
-        $currentEmail = trim((string) ($users[$userIndex]['email'] ?? ''));
-        $provider = strtolower(trim((string) ($users[$userIndex]['provider'] ?? 'local')));
-        $emailChanged = strcasecmp($email, $currentEmail) !== 0;
-
-        if ($fullname === '') {
-            $errors[] = 'Nome completo e obrigatorio.';
-        }
-        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email invalido.';
-        }
-        if ($provider === 'local' && $emailChanged) {
-            if ($email === '') {
-                $errors[] = 'Contas locais devem manter um email institucional do IF ou dominio gov.br.';
-            } elseif (!$this->isAllowedSelfRegistrationEmail($email)) {
-                $errors[] = 'Contas locais so podem usar email institucional do IF ou dominio gov.br.';
-            }
-        }
-        if ($password !== '' && strlen($password) < 6) {
-            $errors[] = 'A nova senha deve ter ao menos 6 caracteres.';
-        }
-        if ($password !== '' && $password !== $passwordConfirm) {
-            $errors[] = 'As senhas nao coincidem.';
-        }
-
-        if ($errors) {
-            return ['success' => false, 'errors' => $errors];
-        }
-
-        $users[$userIndex]['fullname'] = $fullname;
-        $users[$userIndex]['email'] = $email;
-        $users[$userIndex]['updated_at'] = $this->nowIso();
-
-        if ($password !== '') {
-            $users[$userIndex]['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
-        }
-
-        $this->saveUsers($users);
-        $this->syncSessionUser($users[$userIndex]);
-
-        return ['success' => true];
-    }
-
-    public function changePassword(string $currentPassword, string $newPassword, string $confirmPassword): array
-    {
-        $this->requireAuth();
-
-        $currentUser = $this->getCurrentUser();
-        $users = $this->loadUsers();
-        $userIndex = $this->findUserIndexById($users, (int) $currentUser['id']);
-
-        if ($userIndex === null) {
-            return ['success' => false, 'errors' => ['Usuario nao encontrado.']];
-        }
-
-        $errors = [];
-
-        if ($currentPassword === '') {
-            $errors[] = 'Senha atual e obrigatoria.';
-        }
-        if (strlen($newPassword) < 6) {
-            $errors[] = 'Nova senha deve ter ao menos 6 caracteres.';
-        }
-        if ($newPassword !== $confirmPassword) {
-            $errors[] = 'As senhas nao coincidem.';
-        }
-        if (!password_verify($currentPassword, $users[$userIndex]['password_hash'])) {
-            $errors[] = 'Senha atual incorreta.';
-        }
-
-        if ($errors) {
-            return ['success' => false, 'errors' => $errors];
-        }
-
-        $users[$userIndex]['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
-        $users[$userIndex]['updated_at'] = $this->nowIso();
-        $this->saveUsers($users);
-
-        return ['success' => true];
+        return $this->hasAtLeastRole(
+            self::ROLE_FULL_RESEARCHER,
+            $user ?: $this->getCurrentUser()
+        );
     }
 
     public function listUsers(): array
     {
-        return $this->loadUsers();
+        $stmt = $this->db->query("
+            SELECT *
+            FROM users
+            ORDER BY id ASC
+        ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getUserById(int $id): ?array
     {
-        foreach ($this->loadUsers() as $user) {
-            if ((int) $user['id'] === $id) {
-                return $user;
-            }
-        }
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM users
+            WHERE id = :id
+            LIMIT 1
+        ");
 
-        return null;
-    }
+        $stmt->execute([
+            'id' => $id
+        ]);
 
-    public function adminSaveUser(?int $id, array $data): array
-    {
-        $this->requireAdmin();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $users = $this->loadUsers();
-        $isCreate = empty($id);
-        $userIndex = $isCreate ? null : $this->findUserIndexById($users, (int) $id);
-
-        if (!$isCreate && $userIndex === null) {
-            return ['success' => false, 'errors' => ['Usuario nao encontrado.']];
-        }
-
-        $username = trim((string) ($data['username'] ?? ''));
-        $fullname = trim((string) ($data['fullname'] ?? ''));
-        $email = trim((string) ($data['email'] ?? ''));
-        $password = (string) ($data['password'] ?? '');
-        $role = $this->normalizeRole((string) ($data['role'] ?? self::ROLE_MEMBER));
-
-        $errors = [];
-        if ($username === '') {
-            $errors[] = 'Usuario e obrigatorio.';
-        }
-        if ($fullname === '') {
-            $errors[] = 'Nome completo e obrigatorio.';
-        }
-        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email invalido.';
-        }
-        if ($isCreate && strlen($password) < 6) {
-            $errors[] = 'Defina uma senha com pelo menos 6 caracteres.';
-        }
-        if (!$isCreate && $password !== '' && strlen($password) < 6) {
-            $errors[] = 'A nova senha deve ter ao menos 6 caracteres.';
-        }
-        if ($this->findUserIndexByUsername($users, $username, $isCreate ? null : (int) $id) !== null) {
-            $errors[] = 'Ja existe outro usuario com esse login.';
-        }
-
-        if (!$isCreate && $role !== self::ROLE_ADMIN && $this->isAdmin($users[$userIndex]) && $this->countAdmins($users, (int) $id) === 0) {
-            $errors[] = 'Nao e possivel remover a permissao do ultimo admin.';
-        }
-
-        if ($errors) {
-            return ['success' => false, 'errors' => $errors];
-        }
-
-        if ($isCreate) {
-            $savedUser = [
-                'id' => $this->getNextUserId($users),
-                'username' => $username,
-                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
-                'fullname' => $fullname,
-                'email' => $email,
-                'role' => $role,
-                'provider' => 'admin',
-                'created_at' => $this->nowIso(),
-                'updated_at' => $this->nowIso(),
-            ];
-            $users[] = $savedUser;
-        } else {
-            $users[$userIndex]['username'] = $username;
-            $users[$userIndex]['fullname'] = $fullname;
-            $users[$userIndex]['email'] = $email;
-            $users[$userIndex]['role'] = $role;
-            $users[$userIndex]['updated_at'] = $this->nowIso();
-
-            if ($password !== '') {
-                $users[$userIndex]['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
-            }
-
-            $savedUser = $users[$userIndex];
-        }
-
-        $this->saveUsers($users);
-
-        $currentUser = $this->getCurrentUser();
-        if ($currentUser && (int) $currentUser['id'] === (int) $savedUser['id']) {
-            $this->syncSessionUser($savedUser);
-        }
-
-        return ['success' => true, 'user' => $savedUser, 'created' => $isCreate];
-    }
-
-    public function deleteUser(int $id): array
-    {
-        $this->requireAdmin();
-
-        $currentUser = $this->getCurrentUser();
-        if ($currentUser && (int) $currentUser['id'] === $id) {
-            return ['success' => false, 'errors' => ['Voce nao pode remover a propria conta pelo painel admin.']];
-        }
-
-        $users = $this->loadUsers();
-        $userIndex = $this->findUserIndexById($users, $id);
-
-        if ($userIndex === null) {
-            return ['success' => false, 'errors' => ['Usuario nao encontrado.']];
-        }
-
-        if ($this->isAdmin($users[$userIndex]) && $this->countAdmins($users, $id) === 0) {
-            return ['success' => false, 'errors' => ['Nao e possivel remover o ultimo admin.']];
-        }
-
-        $deletedUser = $users[$userIndex];
-        unset($users[$userIndex]);
-        $this->saveUsers(array_values($users));
-
-        return ['success' => true, 'user' => $deletedUser];
-    }
-
-    private function ensureUsersFile(): void
-    {
-        $directory = dirname($this->usersFile);
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0755, true);
-        }
-
-        if (!file_exists($this->usersFile)) {
-            $this->saveUsers([$this->getDefaultAdminUser()]);
-            return;
-        }
-
-        $contents = @file_get_contents($this->usersFile);
-        $decoded = json_decode((string) $contents, true);
-
-        if (!is_array($decoded) || empty($decoded)) {
-            $this->saveUsers([$this->getDefaultAdminUser()]);
-            return;
-        }
-
-        $needsRewrite = false;
-        $normalizedUsers = [];
-
-        foreach ($decoded as $user) {
-            if (!is_array($user)) {
-                $needsRewrite = true;
-                continue;
-            }
-
-            $normalizedUser = $this->normalizeUser($user);
-            $normalizedUsers[] = $normalizedUser;
-
-            if ($normalizedUser != $user) {
-                $needsRewrite = true;
-            }
-        }
-
-        if ($needsRewrite) {
-            $this->saveUsers($normalizedUsers);
-        }
-    }
-
-    private function getDefaultAdminUser(): array
-    {
-        return [
-            'id' => 1,
-            'username' => 'admin',
-            'password_hash' => password_hash('admin123', PASSWORD_DEFAULT),
-            'fullname' => 'Administrador',
-            'email' => 'admin@example.com',
-            'role' => self::ROLE_ADMIN,
-            'provider' => 'local',
-            'created_at' => $this->nowIso(),
-            'updated_at' => $this->nowIso(),
-        ];
-    }
-
-    private function loadUsers(): array
-    {
-        if (!file_exists($this->usersFile)) {
-            return [];
-        }
-
-        $contents = @file_get_contents($this->usersFile);
-        $decoded = json_decode((string) $contents, true);
-
-        if (!is_array($decoded)) {
-            return [];
-        }
-
-        $users = [];
-        foreach ($decoded as $user) {
-            if (is_array($user)) {
-                $users[] = $this->normalizeUser($user);
-            }
-        }
-
-        usort($users, static function (array $left, array $right): int {
-            return (int) $left['id'] <=> (int) $right['id'];
-        });
-
-        return $users;
-    }
-
-    private function saveUsers(array $users): void
-    {
-        $normalizedUsers = [];
-
-        foreach ($users as $user) {
-            if (is_array($user)) {
-                $normalizedUsers[] = $this->normalizeUser($user);
-            }
-        }
-
-        file_put_contents(
-            $this->usersFile,
-            json_encode($normalizedUsers, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
-            LOCK_EX
-        );
+        return $user ?: null;
     }
 
     private function normalizeUser(array $user): array
     {
-        $id = isset($user['id']) ? (int) $user['id'] : 0;
-        $username = trim((string) ($user['username'] ?? ''));
-        $fullname = trim((string) ($user['fullname'] ?? $user['full_name'] ?? $username));
-        $email = trim((string) ($user['email'] ?? ''));
-        $role = $this->normalizeRole($user);
-        $provider = trim((string) ($user['provider'] ?? 'local'));
-        $passwordHash = (string) ($user['password_hash'] ?? $user['password'] ?? '');
-        $createdAt = (string) ($user['created_at'] ?? $this->nowIso());
-        $updatedAt = (string) ($user['updated_at'] ?? $createdAt);
-
         return [
-            'id' => $id,
-            'username' => $username,
-            'password_hash' => $passwordHash,
-            'fullname' => $fullname !== '' ? $fullname : $username,
-            'email' => $email,
-            'role' => $role,
-            'provider' => $provider !== '' ? $provider : 'local',
-            'created_at' => $createdAt,
-            'updated_at' => $updatedAt,
+            'id' => (int) ($user['id'] ?? 0),
+            'username' => (string) ($user['username'] ?? ''),
+            'fullname' => (string) ($user['fullname'] ?? ''),
+            'email' => (string) ($user['email'] ?? ''),
+            'role' => $this->normalizeRole($user),
+            'provider' => (string) ($user['provider'] ?? 'local'),
+            'created_at' => (string) ($user['created_at'] ?? ''),
+            'updated_at' => (string) ($user['updated_at'] ?? '')
         ];
     }
 
@@ -736,87 +542,461 @@ class AuthController
         return self::ROLE_MEMBER;
     }
 
-    private function findUserIndexById(array $users, int $id): ?int
+    private function generateUsername(string $displayName, string $email): string
     {
-        foreach ($users as $index => $user) {
-            if ((int) ($user['id'] ?? 0) === $id) {
-                return $index;
-            }
-        }
+        $base = $email !== ''
+            ? strstr($email, '@', true)
+            : $displayName;
 
-        return null;
-    }
+        $base = strtolower(trim($base));
+        $base = preg_replace('/[^a-z0-9]/', '', $base);
 
-    private function findUserIndexByUsername(array $users, string $username, ?int $exceptId = null): ?int
-    {
-        foreach ($users as $index => $user) {
-            if ($exceptId !== null && (int) ($user['id'] ?? 0) === $exceptId) {
-                continue;
-            }
-
-            if (strcasecmp((string) ($user['username'] ?? ''), $username) === 0) {
-                return $index;
-            }
-        }
-
-        return null;
-    }
-
-    private function countAdmins(array $users, ?int $exceptId = null): int
-    {
-        $total = 0;
-
-        foreach ($users as $user) {
-            if ($exceptId !== null && (int) ($user['id'] ?? 0) === $exceptId) {
-                continue;
-            }
-
-            if ($this->isAdmin($user)) {
-                $total++;
-            }
-        }
-
-        return $total;
-    }
-
-    private function getNextUserId(array $users): int
-    {
-        $highestId = 0;
-
-        foreach ($users as $user) {
-            $highestId = max($highestId, (int) ($user['id'] ?? 0));
-        }
-
-        return $highestId + 1;
-    }
-
-    private function generateUniqueUsername(array $users, string $displayName, string $email, string $provider): string
-    {
-        $baseSource = $email !== '' ? strstr($email, '@', true) : $displayName;
-        $base = $this->slugifyUsername((string) $baseSource);
-
-        if ($base === '') {
-            $base = $this->slugifyUsername($provider);
-        }
         if ($base === '') {
             $base = 'user';
         }
 
-        $candidate = $base;
-        $suffix = 1;
+        $username = $base;
+        $counter = 1;
 
-        while ($this->findUserIndexByUsername($users, $candidate) !== null) {
-            $suffix++;
-            $candidate = $base . $suffix;
+        while ($this->usernameExists($username)) {
+            $counter++;
+            $username = $base . $counter;
         }
 
-        return $candidate;
+        return substr($username, 0, 24);
+    }
+
+    private function usernameExists(string $username): bool
+    {
+        $stmt = $this->db->prepare("
+            SELECT id
+            FROM users
+            WHERE username = :username
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'username' => $username
+        ]);
+
+        return (bool) $stmt->fetch();
+    }
+
+    public function updateProfile(array $data): array
+    {
+        $this->requireAuth();
+
+        $currentUser = $this->getCurrentUser();
+
+        $fullname = trim((string) ($data['fullname'] ?? ''));
+        $email = trim((string) ($data['email'] ?? ''));
+        $password = (string) ($data['password'] ?? '');
+        $passwordConfirm = (string) ($data['password_confirm'] ?? '');
+
+        $errors = [];
+
+        if ($fullname === '') {
+            $errors[] = 'Nome completo e obrigatorio.';
+        }
+
+        if ($email === '') {
+            $errors[] = 'Email e obrigatorio.';
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Email invalido.';
+        }
+
+        if ($password !== '' && strlen($password) < 6) {
+            $errors[] = 'A nova senha deve ter ao menos 6 caracteres.';
+        }
+
+        if ($password !== '' && $password !== $passwordConfirm) {
+            $errors[] = 'As senhas nao coincidem.';
+        }
+
+        if ($errors) {
+            return [
+                'success' => false,
+                'errors' => $errors
+            ];
+        }
+
+        if ($password !== '') {
+            $stmt = $this->db->prepare("
+            UPDATE users
+            SET
+                fullname = :fullname,
+                email = :email,
+                password_hash = :password_hash,
+                updated_at = NOW()
+            WHERE id = :id
+        ");
+
+            $stmt->execute([
+                'fullname' => $fullname,
+                'email' => $email,
+                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                'id' => $currentUser['id']
+            ]);
+        } else {
+            $stmt = $this->db->prepare("
+            UPDATE users
+            SET
+                fullname = :fullname,
+                email = :email,
+                updated_at = NOW()
+            WHERE id = :id
+        ");
+
+            $stmt->execute([
+                'fullname' => $fullname,
+                'email' => $email,
+                'id' => $currentUser['id']
+            ]);
+        }
+
+        $refresh = $this->db->prepare("
+        SELECT *
+        FROM users
+        WHERE id = :id
+        LIMIT 1
+    ");
+
+        $refresh->execute([
+            'id' => $currentUser['id']
+        ]);
+
+        $updatedUser = $refresh->fetch(PDO::FETCH_ASSOC);
+
+        $this->syncSessionUser($updatedUser);
+
+        return [
+            'success' => true
+        ];
+    }
+
+    public function changePassword(
+        string $currentPassword,
+        string $newPassword,
+        string $confirmPassword
+    ): array {
+        $this->requireAuth();
+
+        $currentUser = $this->getCurrentUser();
+
+        $stmt = $this->db->prepare("
+        SELECT *
+        FROM users
+        WHERE id = :id
+        LIMIT 1
+    ");
+
+        $stmt->execute([
+            'id' => $currentUser['id']
+        ]);
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'errors' => ['Usuario nao encontrado.']
+            ];
+        }
+
+        $errors = [];
+
+        if ($currentPassword === '') {
+            $errors[] = 'Senha atual e obrigatoria.';
+        }
+
+        if (strlen($newPassword) < 6) {
+            $errors[] = 'Nova senha deve ter ao menos 6 caracteres.';
+        }
+
+        if ($newPassword !== $confirmPassword) {
+            $errors[] = 'As senhas nao coincidem.';
+        }
+
+        if (!password_verify($currentPassword, $user['password_hash'])) {
+            $errors[] = 'Senha atual incorreta.';
+        }
+
+        if ($errors) {
+            return [
+                'success' => false,
+                'errors' => $errors
+            ];
+        }
+
+        $update = $this->db->prepare("
+        UPDATE users
+        SET
+            password_hash = :password_hash,
+            updated_at = NOW()
+        WHERE id = :id
+    ");
+
+        $update->execute([
+            'password_hash' => password_hash($newPassword, PASSWORD_DEFAULT),
+            'id' => $user['id']
+        ]);
+
+        return [
+            'success' => true
+        ];
+    }
+
+    public function adminSaveUser(?int $id, array $data): array
+    {
+        $this->requireAdmin();
+
+        $isCreate = empty($id);
+
+        $username = trim((string) ($data['username'] ?? ''));
+        $fullname = trim((string) ($data['fullname'] ?? ''));
+        $email = trim((string) ($data['email'] ?? ''));
+        $password = (string) ($data['password'] ?? '');
+
+        $role = $this->normalizeRole(
+            (string) ($data['role'] ?? self::ROLE_MEMBER)
+        );
+
+        $errors = [];
+
+        if ($username === '') {
+            $errors[] = 'Usuario e obrigatorio.';
+        }
+
+        if ($fullname === '') {
+            $errors[] = 'Nome completo e obrigatorio.';
+        }
+
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $errors[] = 'Email invalido.';
+        }
+
+        if ($isCreate && strlen($password) < 6) {
+            $errors[] = 'Defina uma senha com pelo menos 6 caracteres.';
+        }
+
+        if (!$isCreate && $password !== '' && strlen($password) < 6) {
+            $errors[] = 'A nova senha deve ter ao menos 6 caracteres.';
+        }
+
+        $checkUsername = $this->db->prepare("
+        SELECT id
+        FROM users
+        WHERE username = :username
+    ");
+
+        $checkUsername->execute([
+            'username' => $username
+        ]);
+
+        $existingUser = $checkUsername->fetch(PDO::FETCH_ASSOC);
+
+        if (
+            $existingUser &&
+            ($isCreate || (int) $existingUser['id'] !== (int) $id)
+        ) {
+            $errors[] = 'Ja existe outro usuario com esse login.';
+        }
+
+        if ($errors) {
+            return [
+                'success' => false,
+                'errors' => $errors
+            ];
+        }
+
+        if ($isCreate) {
+            $insert = $this->db->prepare("
+            INSERT INTO users (
+                username,
+                password_hash,
+                fullname,
+                email,
+                role,
+                provider,
+                created_at,
+                updated_at
+            )
+            VALUES (
+                :username,
+                :password_hash,
+                :fullname,
+                :email,
+                :role,
+                :provider,
+                NOW(),
+                NOW()
+            )
+        ");
+
+            $insert->execute([
+                'username' => $username,
+                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                'fullname' => $fullname,
+                'email' => $email,
+                'role' => $role,
+                'provider' => 'admin'
+            ]);
+
+            $savedId = (int) $this->db->lastInsertId();
+        } else {
+            if ($password !== '') {
+                $update = $this->db->prepare("
+                UPDATE users
+                SET
+                    username = :username,
+                    fullname = :fullname,
+                    email = :email,
+                    role = :role,
+                    password_hash = :password_hash,
+                    updated_at = NOW()
+                WHERE id = :id
+            ");
+
+                $update->execute([
+                    'username' => $username,
+                    'fullname' => $fullname,
+                    'email' => $email,
+                    'role' => $role,
+                    'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                    'id' => $id
+                ]);
+            } else {
+                $update = $this->db->prepare("
+                UPDATE users
+                SET
+                    username = :username,
+                    fullname = :fullname,
+                    email = :email,
+                    role = :role,
+                    updated_at = NOW()
+                WHERE id = :id
+            ");
+
+                $update->execute([
+                    'username' => $username,
+                    'fullname' => $fullname,
+                    'email' => $email,
+                    'role' => $role,
+                    'id' => $id
+                ]);
+            }
+
+            $savedId = (int) $id;
+        }
+
+        $select = $this->db->prepare("
+        SELECT *
+        FROM users
+        WHERE id = :id
+        LIMIT 1
+    ");
+
+        $select->execute([
+            'id' => $savedId
+        ]);
+
+        $savedUser = $select->fetch(PDO::FETCH_ASSOC);
+
+        $currentUser = $this->getCurrentUser();
+
+        if (
+            $currentUser &&
+            (int) $currentUser['id'] === (int) $savedUser['id']
+        ) {
+            $this->syncSessionUser($savedUser);
+        }
+
+        return [
+            'success' => true,
+            'user' => $savedUser,
+            'created' => $isCreate
+        ];
+    }
+
+    public function deleteUser(int $id): array
+    {
+        $this->requireAdmin();
+
+        $currentUser = $this->getCurrentUser();
+
+        if (
+            $currentUser &&
+            (int) $currentUser['id'] === $id
+        ) {
+            return [
+                'success' => false,
+                'errors' => [
+                    'Voce nao pode remover a propria conta pelo painel admin.'
+                ]
+            ];
+        }
+
+        $stmt = $this->db->prepare("
+        SELECT *
+        FROM users
+        WHERE id = :id
+        LIMIT 1
+    ");
+
+        $stmt->execute([
+            'id' => $id
+        ]);
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$user) {
+            return [
+                'success' => false,
+                'errors' => ['Usuario nao encontrado.']
+            ];
+        }
+
+        $delete = $this->db->prepare("
+        DELETE FROM users
+        WHERE id = :id
+    ");
+
+        $delete->execute([
+            'id' => $id
+        ]);
+
+        return [
+            'success' => true,
+            'user' => $user
+        ];
+    }
+
+    private function getDefaultAdminUser(): array
+    {
+        return [
+            'id' => 1,
+            'username' => 'admin',
+            'password_hash' => password_hash('admin123', PASSWORD_DEFAULT),
+            'fullname' => 'Administrador',
+            'email' => 'admin@example.com',
+            'role' => self::ROLE_ADMIN,
+            'provider' => 'local',
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s'),
+        ];
     }
 
     private function slugifyUsername(string $value): string
     {
         $value = strtolower(trim($value));
-        $value = preg_replace('/[^a-z0-9]+/', '', $value);
+
+        $value = preg_replace(
+            '/[^a-z0-9]+/',
+            '',
+            $value
+        );
 
         return substr((string) $value, 0, 24);
     }
@@ -824,20 +1004,38 @@ class AuthController
     private function isAllowedSelfRegistrationEmail(string $email): bool
     {
         $email = strtolower(trim($email));
-        if ($email === '' || strpos($email, '@') === false) {
+
+        if (
+            $email === '' ||
+            strpos($email, '@') === false
+        ) {
             return false;
         }
 
-        $domain = (string) substr(strrchr($email, '@'), 1);
+        $domain = (string) substr(
+            strrchr($email, '@'),
+            1
+        );
+
         if ($domain === '') {
             return false;
         }
 
-        if (preg_match('/^(?:[a-z0-9-]+\.)*gov\.br$/i', $domain) === 1) {
+        if (
+            preg_match(
+                '/^(?:[a-z0-9-]+\.)*gov\.br$/i',
+                $domain
+            ) === 1
+        ) {
             return true;
         }
 
-        if (preg_match('/^(?:[a-z0-9-]+\.)*if[a-z0-9-]+\.edu\.br$/i', $domain) === 1) {
+        if (
+            preg_match(
+                '/^(?:[a-z0-9-]+\.)*if[a-z0-9-]+\.edu\.br$/i',
+                $domain
+            ) === 1
+        ) {
             return true;
         }
 
@@ -846,6 +1044,6 @@ class AuthController
 
     private function nowIso(): string
     {
-        return date('c');
+        return date('Y-m-d H:i:s');
     }
 }
