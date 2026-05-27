@@ -268,7 +268,7 @@ function admin_render_layout_builder(
         <div class="panel-card-header">
             <div>
                 <p class="eyebrow">Esqueleto da pagina</p>
-                <h2>Layout visual de<?php echo htmlspecialchars($pageLabel, ENT_QUOTES, 'UTF-8'); ?></h2>
+                <h2>Layout visual de <?php echo htmlspecialchars($pageLabel, ENT_QUOTES, 'UTF-8'); ?></h2>
                 <p class="admin-subtitle">Ajuste o grid desta pagina e refine cada bloco diretamente no canvas com olho, lapis e controles contextuais.</p>
             </div>
         </div>
