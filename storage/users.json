@@ -43,28 +43,7 @@
         "created_at": "2025-11-26T18:04:26+00:00",
         "updated_at": "2025-11-26T18:04:26+00:00"
     },
-    {
-        "id": 5,
-        "username": "x8ap3l",
-        "password_hash": "$2y$10$F29JdinHPj3gkjjSBvT77OU5YoRydMCLi8SyI6e1GnhdCCnspytLG",
-        "fullname": "backup",
-        "email": "zzzzxxxxyyyy00001111@gmail.com",
-        "role": "admin",
-        "provider": "local",
-        "created_at": "2026-04-15T20:25:55+00:00",
-        "updated_at": "2026-05-13T15:12:30-03:00"
-    },
-    {
-        "id": 6,
-        "username": "Pleno1",
-        "password_hash": "$2y$10$x0NdrB6ZK7IaqNjCga1U8un2eOzQ2if6g\/jl7GwvMcyO462Wl1V3u",
-        "fullname": "Pleno",
-        "email": "pleno@gmail.com",
-        "role": "full_researcher",
-        "provider": "local",
-        "created_at": "2026-05-11T16:07:00+00:00",
-        "updated_at": "2026-05-11T16:07:00+00:00"
-    },
+ 
     {
         "id": 7,
         "username": "LeonardoI",
