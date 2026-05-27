@@ -228,6 +228,9 @@ class ProjectManager
                 'tags' => $tags,
                 'image_path' => $nextImagePath,
                 'status' => $status,
+                'authentication_status' => 'missing',
+                'authenticated_document_id' => null,
+                'authenticated_at' => null,
                 'created_at' => $this->now(),
                 'updated_at' => $this->now(),
             ];
@@ -241,6 +244,9 @@ class ProjectManager
             $projects[$projectIndex]['tags'] = $tags;
             $projects[$projectIndex]['image_path'] = $nextImagePath;
             $projects[$projectIndex]['status'] = $status;
+            $projects[$projectIndex]['authentication_status'] = $existingProject['authentication_status'] ?? 'missing';
+            $projects[$projectIndex]['authenticated_document_id'] = $existingProject['authenticated_document_id'] ?? null;
+            $projects[$projectIndex]['authenticated_at'] = $existingProject['authenticated_at'] ?? null;
             $projects[$projectIndex]['updated_at'] = $this->now();
             $savedProject = $projects[$projectIndex];
         }
@@ -318,6 +324,10 @@ class ProjectManager
             'completed' => 0,
             'pending' => 0,
             'without_owner' => 0,
+            'authenticated' => 0,
+            'authentication_pending' => 0,
+            'authentication_rejected' => 0,
+            'authentication_missing' => 0,
         ];
 
         foreach ($this->loadProjects() as $project) {
@@ -331,9 +341,42 @@ class ProjectManager
             if (($project['user_id'] ?? null) === null) {
                 $stats['without_owner']++;
             }
+
+            $authenticationStatus = $project['authentication_status'] ?? 'missing';
+            if ($authenticationStatus === 'approved') {
+                $stats['authenticated']++;
+            } elseif ($authenticationStatus === 'pending') {
+                $stats['authentication_pending']++;
+            } elseif ($authenticationStatus === 'rejected') {
+                $stats['authentication_rejected']++;
+            } else {
+                $stats['authentication_missing']++;
+            }
         }
 
         return $stats;
+    }
+
+    public function setProjectAuthenticationStatus(
+        string $projectId,
+        string $status,
+        ?string $documentId = null,
+        ?string $authenticatedAt = null
+    ): bool {
+        $projects = $this->loadProjects();
+        $projectIndex = $this->findProjectIndex($projects, $projectId);
+
+        if ($projectIndex === null) {
+            return false;
+        }
+
+        $status = $this->normalizeAuthenticationStatus($status);
+        $projects[$projectIndex]['authentication_status'] = $status;
+        $projects[$projectIndex]['authenticated_document_id'] = $status === 'approved' ? $documentId : null;
+        $projects[$projectIndex]['authenticated_at'] = $status === 'approved' ? ($authenticatedAt ?: $this->now()) : null;
+        $projects[$projectIndex]['updated_at'] = $this->now();
+
+        return $this->saveProjects($projects);
     }
 
     private function ensureFileExists(): void
@@ -412,6 +455,13 @@ class ProjectManager
             'tags' => $this->normalizeTags($project['tags'] ?? []),
             'image_path' => trim((string) ($project['image_path'] ?? '')),
             'status' => $this->normalizeStatus((string) ($project['status'] ?? 'active')),
+            'authentication_status' => $this->normalizeAuthenticationStatus((string) ($project['authentication_status'] ?? 'missing')),
+            'authenticated_document_id' => isset($project['authenticated_document_id']) && $project['authenticated_document_id'] !== ''
+                ? (string) $project['authenticated_document_id']
+                : null,
+            'authenticated_at' => isset($project['authenticated_at']) && $project['authenticated_at'] !== ''
+                ? (string) $project['authenticated_at']
+                : null,
             'created_at' => $createdAt,
             'updated_at' => $updatedAt,
         ];
@@ -432,6 +482,14 @@ class ProjectManager
         $status = strtolower(trim($status));
 
         return in_array($status, $allowed, true) ? $status : 'active';
+    }
+
+    private function normalizeAuthenticationStatus(string $status): string
+    {
+        $allowed = ['missing', 'pending', 'approved', 'rejected'];
+        $status = strtolower(trim($status));
+
+        return in_array($status, $allowed, true) ? $status : 'missing';
     }
 
     private function normalizeCategory(string $category): string

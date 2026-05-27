@@ -5,6 +5,7 @@ $bodyClass = 'app-page research-projects-page';
 require_once 'controllers/AuthController.php';
 require_once 'models/Orientation.php';
 require_once 'models/Project.php';
+require_once 'models/ProjectWorkspace.php';
 
 function research_projects_set_flash(string $type, string $message): void
 {
@@ -92,6 +93,7 @@ if (!$auth->canCreateProjects($currentUser)) {
 }
 
 $projectManager = new ProjectManager();
+$workspaceManager = new ProjectWorkspaceManager($projectManager);
 $orientationManager = new OrientationManager();
 $allUsers = $auth->listUsers();
 $allProjects = $projectManager->getAllProjects();
@@ -153,11 +155,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $uploadedProjectImage = isset($_FILES['image_file']) && is_array($_FILES['image_file'])
                     ? $_FILES['image_file']
                     : null;
+                $uploadedProjectDocument = isset($_FILES['document_file']) && is_array($_FILES['document_file'])
+                    ? $_FILES['document_file']
+                    : null;
+                $hasProjectDocumentUpload = is_array($uploadedProjectDocument)
+                    && isset($uploadedProjectDocument['error'])
+                    && (int) ($uploadedProjectDocument['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
 
                 if ($isAdmin && $submittedProject['user_id'] !== '' && !isset($userMap[(int) $submittedProject['user_id']])) {
                     $formErrors = ['Selecione um responsavel valido para o projeto.'];
                     $formOverrides = $submittedProject;
                     break;
+                }
+
+                if ($projectId === '' && !$hasProjectDocumentUpload) {
+                    $formErrors = ['Envie a documentacao obrigatoria em PDF ou DOCX para submeter o projeto.'];
+                    $formOverrides = $submittedProject;
+                    break;
+                }
+
+                if ($hasProjectDocumentUpload) {
+                    $documentValidation = $workspaceManager->validateProjectDocumentUpload($uploadedProjectDocument);
+                    if (!$documentValidation['success']) {
+                        $formErrors = [$documentValidation['error'] ?? 'Documento invalido.'];
+                        $formOverrides = $submittedProject;
+                        break;
+                    }
                 }
 
                 $result = $projectManager->adminSaveProject($projectId !== '' ? $projectId : null, [
@@ -172,9 +195,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ], $uploadedProjectImage);
 
                 if ($result['success']) {
+                    $savedProject = $result['project'];
+                    if ($hasProjectDocumentUpload) {
+                        $documentResult = $workspaceManager->uploadProjectDocument($savedProject, $currentUser, $uploadedProjectDocument);
+
+                        if (!$documentResult['success']) {
+                            if (!empty($result['created'])) {
+                                $projectManager->deleteProject((string) ($savedProject['id'] ?? ''));
+                            }
+
+                            $formErrors = [$documentResult['error'] ?? ($documentResult['errors'][0] ?? 'Nao foi possivel anexar a documentacao.')];
+                            $formOverrides = $submittedProject;
+                            break;
+                        }
+
+                        $workspaceManager->notifyAdministrators(
+                            $allUsers,
+                            'document_pending',
+                            'Documento aguardando aprovacao',
+                            'O projeto "' . (string) ($savedProject['title'] ?? 'Projeto') . '" recebeu uma nova documentacao.',
+                            (string) ($savedProject['id'] ?? ''),
+                            'admin.php#document-authentication',
+                            (int) ($currentUser['id'] ?? 0)
+                        );
+                    }
+
                     research_projects_set_flash(
                         'sucesso',
-                        !empty($result['created']) ? 'Projeto criado com sucesso.' : 'Projeto atualizado com sucesso.'
+                        !empty($result['created']) ? 'Projeto criado e documentacao enviada para avaliacao.' : 'Projeto atualizado com sucesso.'
                     );
                     research_projects_redirect('#manage');
                 }
@@ -198,6 +246,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 if ($projectManager->deleteProject($projectId)) {
+                    $workspaceManager->deleteProjectData($projectId);
                     $clearedOrientations = $orientationManager->clearProjectReferences($projectId);
                     $message = 'Projeto removido com sucesso.';
                     if ($clearedOrientations > 0) {
@@ -430,6 +479,12 @@ if (is_array($formOverrides)) {
                     <p class="form-help">Esse texto aparecera na pagina detalhada do projeto, junto do CTA para a pessoa escrever ao responsavel e ao CEPIN-CIS.</p>
                 </div>
 
+                <div class="form-group">
+                    <label for="project_document_file">Documentacao obrigatoria</label>
+                    <input type="file" id="project_document_file" name="document_file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" <?php echo $projectForm['id'] === '' ? 'required' : ''; ?>>
+                    <p class="form-help">Todo novo projeto precisa de um PDF ou DOCX para entrar na fila de autenticacao administrativa. Em edicoes, envie outro arquivo apenas se quiser substituir ou complementar a avaliacao.</p>
+                </div>
+
                 <?php if ((string) $projectForm['image_path'] !== ''): ?>
                     <div class="admin-partner-preview admin-project-preview">
                         <img
@@ -523,6 +578,7 @@ if (is_array($formOverrides)) {
                                 <th>Projeto</th>
                                 <th>Categoria e tags</th>
                                 <th>Status</th>
+                                <th>Autenticacao</th>
                                 <th>Responsavel</th>
                                 <th>Atualizado em</th>
                                 <th>Acoes</th>
@@ -533,6 +589,7 @@ if (is_array($formOverrides)) {
                                 <?php
                                 $projectId = (string) ($project['id'] ?? '');
                                 $owner = $userMap[(int) ($project['user_id'] ?? 0)] ?? null;
+                                $authentication = $workspaceManager->getAuthenticationStatus($project);
                                 ?>
                                 <tr>
                                     <td>
@@ -546,11 +603,13 @@ if (is_array($formOverrides)) {
                                         <div class="admin-meta"><?php echo htmlspecialchars(research_projects_format_tags($project['tags'] ?? []), ENT_QUOTES, 'UTF-8'); ?></div>
                                     </td>
                                     <td><span class="admin-pill admin-pill--status"><?php echo htmlspecialchars(research_projects_status_label((string) ($project['status'] ?? 'active')), ENT_QUOTES, 'UTF-8'); ?></span></td>
+                                    <td><span class="admin-pill admin-pill--<?php echo htmlspecialchars((string) ($authentication['status'] ?? 'missing'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentacao'), ENT_QUOTES, 'UTF-8'); ?></span></td>
                                     <td><?php echo htmlspecialchars((string) ($owner['fullname'] ?? $owner['username'] ?? 'Sem responsavel'), ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars(research_projects_format_datetime($project['updated_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
                                         <div class="table-actions">
                                             <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project.php?id=<?php echo urlencode($projectId); ?>">Ver pagina</a>
+                                            <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-workspace.php?id=<?php echo urlencode($projectId); ?>">Workspace</a>
                                             <a class="dashboard-btn admin-btn-small" href="research-projects.php?edit=<?php echo urlencode($projectId); ?>#manage">Editar</a>
                                             <form method="POST" onsubmit="return confirm('Excluir este projeto?');">
                                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">

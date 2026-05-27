@@ -3,6 +3,7 @@ $bodyClass = 'public-page project-detail-page';
 
 require_once 'controllers/AuthController.php';
 require_once 'models/Project.php';
+require_once 'models/ProjectWorkspace.php';
 
 function project_detail_status_key(?string $status): string
 {
@@ -180,6 +181,7 @@ function project_detail_resolve_banner(array $project): array
 
 $cepinEmail = 'cepin.cis@ifspcaraguatatuba.edu.br';
 $projectManager = new ProjectManager();
+$workspaceManager = new ProjectWorkspaceManager($projectManager);
 $auth = new AuthController();
 $projectId = trim((string) ($_GET['id'] ?? ''));
 $project = $projectId !== '' ? $projectManager->getProject($projectId) : false;
@@ -213,6 +215,7 @@ include_once 'includes/header.php';
 $owner = isset($project['user_id']) && $project['user_id'] !== null
     ? $auth->getUserById((int) $project['user_id'])
     : null;
+$currentUser = $auth->getCurrentUser();
 $ownerName = project_detail_owner_name($owner);
 $ownerEmail = trim((string) ($owner['email'] ?? ''));
 $ownerRole = $owner !== null ? $auth->getRoleLabel($owner) : 'Equipe CEPIN-CIS';
@@ -224,6 +227,10 @@ $participationInfo = trim((string) ($project['participation_info'] ?? ''));
 $banner = project_detail_resolve_banner($project);
 $bannerPath = (string) ($banner['path'] ?? '');
 $isFallbackBanner = !empty($banner['is_fallback']);
+$authentication = $workspaceManager->getAuthenticationStatus($project);
+$timelineEvents = $workspaceManager->getProjectTimeline((string) ($project['id'] ?? ''));
+$collaborators = $workspaceManager->getProjectCollaborators((string) ($project['id'] ?? ''));
+$canOpenWorkspace = $workspaceManager->canViewWorkspace($project, $currentUser);
 $participationMailto = project_detail_build_mailto($project, $owner, $cepinEmail);
 $displayParticipationText = $participationInfo !== ''
     ? $participationInfo
@@ -252,6 +259,9 @@ $displayParticipationText = $participationInfo !== ''
                     <span class="project-detail-badge project-detail-badge--status project-detail-badge--<?php echo htmlspecialchars($statusKey, ENT_QUOTES, 'UTF-8'); ?>">
                         <?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>
                     </span>
+                    <span class="project-detail-badge project-detail-badge--auth project-detail-badge--<?php echo htmlspecialchars((string) ($authentication['status'] ?? 'missing'), ENT_QUOTES, 'UTF-8'); ?>">
+                        <?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentacao'), ENT_QUOTES, 'UTF-8'); ?>
+                    </span>
                     <?php foreach ($projectTags as $tag): ?>
                         <span class="project-detail-badge project-detail-badge--tag"><?php echo htmlspecialchars($tag, ENT_QUOTES, 'UTF-8'); ?></span>
                     <?php endforeach; ?>
@@ -266,6 +276,9 @@ $displayParticipationText = $participationInfo !== ''
 
                 <div class="hero-actions">
                     <a class="dashboard-btn" href="<?php echo htmlspecialchars($participationMailto, ENT_QUOTES, 'UTF-8'); ?>">Quero participar</a>
+                    <?php if ($canOpenWorkspace): ?>
+                        <a class="dashboard-btn dashboard-btn--ghost" href="project-workspace.php?id=<?php echo urlencode((string) ($project['id'] ?? '')); ?>">Abrir workspace</a>
+                    <?php endif; ?>
                     <a class="dashboard-btn dashboard-btn--ghost" href="./index.php#projetos">Voltar aos projetos</a>
                 </div>
             </div>
@@ -327,6 +340,10 @@ $displayParticipationText = $participationInfo !== ''
                     <dd><?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?></dd>
                 </div>
                 <div>
+                    <dt>Autenticacao</dt>
+                    <dd><?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentacao'), ENT_QUOTES, 'UTF-8'); ?></dd>
+                </div>
+                <div>
                     <dt>Responsavel</dt>
                     <dd><?php echo htmlspecialchars($ownerName, ENT_QUOTES, 'UTF-8'); ?></dd>
                 </div>
@@ -345,6 +362,58 @@ $displayParticipationText = $participationInfo !== ''
                 <a class="dashboard-btn dashboard-btn--ghost" href="mailto:<?php echo htmlspecialchars($cepinEmail, ENT_QUOTES, 'UTF-8'); ?>">Falar com o CEPIN-CIS</a>
             </div>
         </aside>
+    </section>
+
+    <section class="project-detail-grid project-detail-grid--secondary">
+        <article class="panel-card public-section-card project-detail-section-card">
+            <p class="eyebrow">Timeline</p>
+            <h2>Evolucao do projeto</h2>
+            <?php if (empty($timelineEvents)): ?>
+                <p>A equipe ainda nao publicou eventos na timeline deste projeto.</p>
+            <?php else: ?>
+                <div class="project-timeline project-timeline--public">
+                    <?php foreach ($timelineEvents as $event): ?>
+                        <article class="project-timeline-item project-timeline-item--<?php echo htmlspecialchars((string) ($event['event_type'] ?? 'update'), ENT_QUOTES, 'UTF-8'); ?>">
+                            <span class="project-timeline-date"><?php echo htmlspecialchars(project_detail_format_datetime($event['event_date'] ?? null), ENT_QUOTES, 'UTF-8'); ?></span>
+                            <div class="project-timeline-card">
+                                <div class="project-timeline-card__header">
+                                    <span><?php echo htmlspecialchars($workspaceManager->getTimelineTypeLabel((string) ($event['event_type'] ?? 'update')), ENT_QUOTES, 'UTF-8'); ?></span>
+                                </div>
+                                <h3><?php echo htmlspecialchars((string) ($event['title'] ?? 'Atualizacao'), ENT_QUOTES, 'UTF-8'); ?></h3>
+                                <?php echo project_detail_render_body((string) ($event['description'] ?? '')); ?>
+                                <?php if (!empty($event['attachment_path'])): ?>
+                                    <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-file.php?kind=timeline&id=<?php echo urlencode((string) ($event['id'] ?? '')); ?>">Baixar anexo</a>
+                                <?php endif; ?>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
+        </article>
+
+        <article class="panel-card public-section-card project-detail-section-card">
+            <p class="eyebrow">Equipe</p>
+            <h2>Colaboradores</h2>
+            <div class="project-detail-contact-stack project-detail-contact-stack--compact">
+                <div class="project-detail-contact-item">
+                    <span>Responsavel</span>
+                    <strong><?php echo htmlspecialchars($ownerName, ENT_QUOTES, 'UTF-8'); ?></strong>
+                </div>
+                <?php foreach ($collaborators as $collaborator): ?>
+                    <?php $collaboratorUser = $auth->getUserById((int) ($collaborator['user_id'] ?? 0)); ?>
+                    <div class="project-detail-contact-item">
+                        <span><?php echo (string) ($collaborator['role'] ?? '') === 'project_admin' ? 'Admin do projeto' : 'Colaborador'; ?></span>
+                        <strong><?php echo htmlspecialchars(project_detail_owner_name($collaboratorUser), ENT_QUOTES, 'UTF-8'); ?></strong>
+                    </div>
+                <?php endforeach; ?>
+                <?php if (empty($collaborators)): ?>
+                    <div class="project-detail-contact-item">
+                        <span>Colaboradores</span>
+                        <strong>Equipe em formacao</strong>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </article>
     </section>
 
     <section class="project-detail-grid project-detail-grid--secondary">

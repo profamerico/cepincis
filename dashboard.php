@@ -5,6 +5,7 @@ $bodyClass = 'app-page dashboard-page';
 require_once 'controllers/AuthController.php';
 require_once 'models/Orientation.php';
 require_once 'models/Project.php';
+require_once 'models/ProjectWorkspace.php';
 
 function dashboard_count_distinct(array $items, string $key): int
 {
@@ -30,6 +31,7 @@ $auth = new AuthController();
 $auth->requireAuth();
 
 $projectManager = new ProjectManager();
+$workspaceManager = new ProjectWorkspaceManager($projectManager);
 $orientationManager = new OrientationManager();
 $currentUser = $auth->getCurrentUser();
 $displayName = (string) ($currentUser['fullname'] ?? $currentUser['username']);
@@ -43,6 +45,9 @@ $canManageOrientations = $auth->canManageOrientations($currentUser);
 $canCreateProjects = $auth->canCreateProjects($currentUser);
 $userStats = $projectManager->getUserStats((int) $currentUser['id']);
 $projectStats = $isAdmin ? $projectManager->getProjectStats() : null;
+$workspaceProjects = $workspaceManager->getAccessibleProjectsForUser($projectManager->getAllProjects(), $currentUser);
+$pendingWorkspaceInvites = $workspaceManager->getUserInvites((int) $currentUser['id']);
+$unreadNotifications = $workspaceManager->getUnreadNotificationCount((int) $currentUser['id']);
 $users = $isAdmin ? $auth->listUsers() : [];
 $workspaceOrientations = [];
 $orientationStats = null;
@@ -87,6 +92,18 @@ $heroMeta = [
 ];
 $actionCards = [
     [
+        'href' => 'notifications.php',
+        'icon' => 'fa-bell',
+        'title' => 'Notificacoes',
+        'copy' => 'Veja convites, autenticacoes e atualizacoes de timeline.',
+    ],
+    [
+        'href' => 'project-workspace.php',
+        'icon' => 'fa-users-gear',
+        'title' => 'Workspaces',
+        'copy' => 'Acesse projetos em que voce cria, administra ou colabora.',
+    ],
+    [
         'href' => 'profile.php',
         'icon' => 'fa-id-card',
         'title' => 'Atualizar perfil',
@@ -105,6 +122,9 @@ $statusPanelItems = [
     ['label' => 'Permissao atual', 'value' => $roleLabel],
     ['label' => 'Usuario', 'value' => '@' . (string) $currentUser['username']],
     ['label' => 'Email', 'value' => (string) ($currentUser['email'] ?: 'Nao informado')],
+    ['label' => 'Notificacoes nao lidas', 'value' => (string) $unreadNotifications],
+    ['label' => 'Workspaces acessiveis', 'value' => (string) count($workspaceProjects)],
+    ['label' => 'Convites pendentes', 'value' => (string) count($pendingWorkspaceInvites)],
 ];
 $accentEyebrow = 'Conta';
 $accentTitle = 'Proximo passo sugerido';
@@ -141,7 +161,7 @@ if ($isAdmin) {
         ['label' => 'Usuarios', 'value' => count($users), 'copy' => 'Contas registradas atualmente no portal.'],
         ['label' => 'Projetos', 'value' => (int) ($projectStats['total'] ?? 0), 'copy' => 'Projetos totais na plataforma.'],
         ['label' => 'Orientacoes', 'value' => (int) ($orientationStats['total'] ?? 0), 'copy' => 'Orientacoes ativas ou historicas do workspace.'],
-        ['label' => 'Sem responsavel', 'value' => (int) ($projectStats['without_owner'] ?? 0), 'copy' => 'Projetos que hoje estao sem responsavel definido.'],
+        ['label' => 'Docs pendentes', 'value' => (int) ($projectStats['authentication_pending'] ?? 0), 'copy' => 'Projetos aguardando aprovacao documental.'],
     ];
     $statusPanelTitle = 'Radar administrativo';
     $statusPanelItems[] = ['label' => 'Orientacoes ativas', 'value' => (string) (int) ($orientationStats['active'] ?? 0)];

@@ -18,10 +18,20 @@ $canAccessResearchWorkspace = $isLoggedIn && in_array($currentRole, ['academic_r
 $canCreateResearchProjects = $isLoggedIn && in_array($currentRole, ['full_researcher', 'admin'], true);
 $faviconPath = './img/Captura_de_tela_2026-03-23_165121-removebg-preview.png';
 $currentScript = basename((string) ($_SERVER['SCRIPT_NAME'] ?? ''));
+$notificationUnreadCount = 0;
+
+if ($isLoggedIn) {
+    require_once __DIR__ . '/../models/ProjectWorkspace.php';
+    $headerWorkspaceManager = new ProjectWorkspaceManager();
+    $notificationUnreadCount = $headerWorkspaceManager->getUnreadNotificationCount((int) ($currentUser['id'] ?? 0));
+}
+
 $mobileAccountLinks = $isLoggedIn
     ? [
         ['href' => './index.php', 'label' => 'Home', 'icon' => 'fa-house'],
         ['href' => './dashboard.php', 'label' => 'Dashboard', 'icon' => 'fa-table-columns'],
+        ['href' => './notifications.php', 'label' => 'Avisos', 'icon' => 'fa-bell'],
+        ['href' => './project-workspace.php', 'label' => 'Workspaces', 'icon' => 'fa-users-gear'],
         ['href' => './profile.php', 'label' => 'Perfil', 'icon' => 'fa-user'],
         ['href' => './logout.php', 'label' => 'Sair', 'icon' => 'fa-right-from-bracket'],
     ]
@@ -165,6 +175,17 @@ if ($isAdmin) {
 
                     <a href="./dashboard.php" class="header-icon-link" aria-label="Dashboard" title="Dashboard">
                         <i class="fa-solid fa-table-columns"></i>
+                    </a>
+
+                    <a href="./notifications.php" class="header-icon-link header-notification-link" aria-label="Notificacoes" title="Notificacoes">
+                        <i class="fa-solid fa-bell"></i>
+                        <span class="header-notification-count<?php echo $notificationUnreadCount > 0 ? ' is-visible' : ''; ?>" data-notification-count>
+                            <?php echo (int) $notificationUnreadCount; ?>
+                        </span>
+                    </a>
+
+                    <a href="./project-workspace.php" class="header-icon-link" aria-label="Workspaces de projetos" title="Workspaces de projetos">
+                        <i class="fa-solid fa-users-gear"></i>
                     </a>
 
                     <?php if ($canCreateResearchProjects): ?>

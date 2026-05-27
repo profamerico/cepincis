@@ -11,16 +11,19 @@ require_once 'models/ContentBlock.php';
 require_once 'models/Orientation.php';
 require_once 'models/Partner.php';
 require_once 'models/Project.php';
+require_once 'models/ProjectWorkspace.php';
 
 $auth = new AuthController();
 $auth->requireAdmin();
 
 $projectManager = new ProjectManager();
+$workspaceManager = new ProjectWorkspaceManager($projectManager);
 $contentManager = new ContentBlockManager();
 $orientationManager = new OrientationManager();
 $partnerManager = new PartnerManager();
 $thematicAreaOptions = $projectManager->getThematicAreaOptions();
 $currentUser = $auth->getCurrentUser();
+$users = $auth->listUsers();
 $roleOptions = $auth->getRoleDefinitions();
 $contentPageOptions = $contentManager->getPageDefinitions();
 $contentTypeOptions = $contentManager->getTypeDefinitions();
@@ -500,11 +503,13 @@ unset($_SESSION['admin_flash']);
 
 $userFormErrors = [];
 $projectFormErrors = [];
+$documentFormErrors = [];
 $contentFormErrors = [];
 $partnerFormErrors = [];
 $contentLayoutErrors = [];
 $userFormOverrides = null;
 $projectFormOverrides = null;
+$documentFormOverrides = null;
 $contentFormOverrides = null;
 $partnerFormOverrides = null;
 $contentLayoutOverrides = null;
@@ -589,6 +594,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $uploadedProjectImage = isset($_FILES['image_file']) && is_array($_FILES['image_file'])
                     ? $_FILES['image_file']
                     : null;
+                $uploadedProjectDocument = isset($_FILES['document_file']) && is_array($_FILES['document_file'])
+                    ? $_FILES['document_file']
+                    : null;
+                $hasProjectDocumentUpload = is_array($uploadedProjectDocument)
+                    && isset($uploadedProjectDocument['error'])
+                    && (int) ($uploadedProjectDocument['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+
+                if ($projectId === '' && !$hasProjectDocumentUpload) {
+                    $projectFormErrors = ['Envie a documentacao obrigatoria em PDF ou DOCX para criar o projeto.'];
+                    $projectFormOverrides = $submittedProject;
+                    break;
+                }
+
+                if ($hasProjectDocumentUpload) {
+                    $documentValidation = $workspaceManager->validateProjectDocumentUpload($uploadedProjectDocument);
+                    if (!$documentValidation['success']) {
+                        $projectFormErrors = [$documentValidation['error'] ?? 'Documento invalido.'];
+                        $projectFormOverrides = $submittedProject;
+                        break;
+                    }
+                }
 
                 $result = $projectManager->adminSaveProject($projectId !== '' ? $projectId : null, [
                     'user_id' => $submittedProject['user_id'],
@@ -602,9 +628,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 ], $uploadedProjectImage);
 
                 if ($result['success']) {
+                    $savedProject = $result['project'];
+                    if ($hasProjectDocumentUpload) {
+                        $documentResult = $workspaceManager->uploadProjectDocument($savedProject, $currentUser, $uploadedProjectDocument);
+
+                        if (!$documentResult['success']) {
+                            if (!empty($result['created'])) {
+                                $projectManager->deleteProject((string) ($savedProject['id'] ?? ''));
+                            }
+
+                            $projectFormErrors = [$documentResult['error'] ?? ($documentResult['errors'][0] ?? 'Nao foi possivel anexar a documentacao.')];
+                            $projectFormOverrides = $submittedProject;
+                            break;
+                        }
+
+                        $workspaceManager->notifyAdministrators(
+                            $users,
+                            'document_pending',
+                            'Documento aguardando aprovacao',
+                            'O projeto "' . (string) ($savedProject['title'] ?? 'Projeto') . '" recebeu uma nova documentacao.',
+                            (string) ($savedProject['id'] ?? ''),
+                            'admin.php#document-authentication',
+                            (int) ($currentUser['id'] ?? 0)
+                        );
+                    }
+
                     admin_set_flash(
                         'sucesso',
-                        $result['created'] ? 'Projeto criado com sucesso.' : 'Projeto atualizado com sucesso.'
+                        $result['created'] ? 'Projeto criado e documentacao enviada para avaliacao.' : 'Projeto atualizado com sucesso.'
                     );
                     admin_redirect('projects');
                 }
@@ -617,6 +668,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $projectId = trim((string) ($_POST['project_id'] ?? ''));
 
                 if ($projectManager->deleteProject($projectId)) {
+                    $workspaceManager->deleteProjectData($projectId);
                     $clearedOrientations = $orientationManager->clearProjectReferences($projectId);
                     $message = 'Projeto removido com sucesso.';
                     if ($clearedOrientations > 0) {
@@ -628,6 +680,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
 
                 $flash = ['type' => 'erro', 'message' => 'Nao foi possivel remover o projeto.'];
+                break;
+
+            case 'review_project_document':
+                $documentId = trim((string) ($_POST['document_id'] ?? ''));
+                $decision = trim((string) ($_POST['decision'] ?? ''));
+                $reviewNotes = trim((string) ($_POST['review_notes'] ?? ''));
+                $result = $workspaceManager->reviewProjectDocument($documentId, $currentUser, $decision, $reviewNotes);
+
+                if ($result['success']) {
+                    $document = $result['document'];
+                    $project = $projectManager->getProject((string) ($document['project_id'] ?? ''));
+                    $projectTitle = is_array($project) ? (string) ($project['title'] ?? 'Projeto') : 'Projeto';
+                    $isApproved = (string) ($document['status'] ?? '') === 'approved';
+                    $messageTitle = $isApproved ? 'Projeto autenticado' : 'Documento rejeitado';
+                    $messageBody = $isApproved
+                        ? 'O projeto "' . $projectTitle . '" teve a documentacao aprovada.'
+                        : 'A documentacao do projeto "' . $projectTitle . '" foi rejeitada.';
+
+                    $workspaceManager->createNotification(
+                        (int) ($document['uploaded_by_user_id'] ?? 0),
+                        $isApproved ? 'document_approved' : 'document_rejected',
+                        $messageTitle,
+                        $messageBody,
+                        (string) ($document['project_id'] ?? ''),
+                        'project-workspace.php?id=' . rawurlencode((string) ($document['project_id'] ?? '')),
+                        (int) ($currentUser['id'] ?? 0)
+                    );
+
+                    if (is_array($project) && (int) ($project['user_id'] ?? 0) !== (int) ($document['uploaded_by_user_id'] ?? 0)) {
+                        $workspaceManager->createNotification(
+                            (int) ($project['user_id'] ?? 0),
+                            $isApproved ? 'project_authenticated' : 'document_rejected',
+                            $messageTitle,
+                            $messageBody,
+                            (string) ($project['id'] ?? ''),
+                            'project-workspace.php?id=' . rawurlencode((string) ($project['id'] ?? '')),
+                            (int) ($currentUser['id'] ?? 0)
+                        );
+                    }
+
+                    admin_set_flash('sucesso', $isApproved ? 'Documento aprovado e projeto autenticado.' : 'Documento rejeitado.');
+                    admin_redirect('document-authentication');
+                }
+
+                $documentFormErrors = $result['errors'] ?? ['Nao foi possivel revisar o documento.'];
                 break;
 
             case 'save_partner':
@@ -802,6 +899,8 @@ $thematicContentBlocks = $pageBlocksByKey['thematic_areas'] ?? [];
 $aboutContentBlocks = $pageBlocksByKey['about'] ?? [];
 $projects = $projectManager->getAllProjects();
 $projectStats = $projectManager->getProjectStats();
+$pendingProjectDocuments = $workspaceManager->getPendingProjectDocuments();
+$pendingDocumentCount = count($pendingProjectDocuments);
 $partnerCount = count($partners);
 $contentStats = [
     'total' => count($contentBlocks),
@@ -1017,6 +1116,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
 
             <div class="hero-actions">
                 <a class="dashboard-btn" href="#users">Usuarios</a>
+                <a class="dashboard-btn dashboard-btn--ghost" href="#document-authentication">Documentos</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="#projects">Projetos</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="#partners">Parceiros</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="#content">Conteudo global</a>
@@ -1064,9 +1164,9 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             <p>Cards alimentando o carrossel institucional da home.</p>
         </article>
         <article class="metric-card">
-            <span class="metric-label">Sem responsavel</span>
-            <strong class="metric-value"><?php echo (int) $projectStats['without_owner']; ?></strong>
-            <p>Projetos aguardando reatribuicao.</p>
+            <span class="metric-label">Docs pendentes</span>
+            <strong class="metric-value"><?php echo (int) $pendingDocumentCount; ?></strong>
+            <p>Documentos aguardando aprovacao administrativa.</p>
         </article>
         <article class="metric-card">
             <span class="metric-label">Blocos globais</span>
@@ -1296,6 +1396,71 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         </article>
     </section>
 
+    <section id="document-authentication" class="admin-workspace">
+        <article class="panel-card admin-workspace__full">
+            <div class="panel-card-header">
+                <div>
+                    <p class="eyebrow">Autenticador documental</p>
+                    <h2>Documentos pendentes</h2>
+                    <p class="admin-subtitle">Aprove ou rejeite PDF/DOCX enviados pelos responsaveis dos projetos. A aprovacao autentica o projeto na pagina publica.</p>
+                </div>
+            </div>
+
+            <?php foreach ($documentFormErrors as $error): ?>
+                <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8'); ?></div>
+            <?php endforeach; ?>
+
+            <?php if (empty($pendingProjectDocuments)): ?>
+                <p class="admin-empty">Nenhum documento pendente de avaliacao.</p>
+            <?php else: ?>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Documento</th>
+                                <th>Projeto</th>
+                                <th>Enviado por</th>
+                                <th>Data</th>
+                                <th>Avaliacao</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($pendingProjectDocuments as $document): ?>
+                                <?php
+                                $documentProject = $projectManager->getProject((string) ($document['project_id'] ?? ''));
+                                $documentProjectTitle = is_array($documentProject) ? (string) ($documentProject['title'] ?? 'Projeto') : 'Projeto removido';
+                                $uploader = $userMap[(int) ($document['uploaded_by_user_id'] ?? 0)] ?? null;
+                                ?>
+                                <tr>
+                                    <td>
+                                        <strong><?php echo htmlspecialchars((string) ($document['original_name'] ?? 'Documento'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                                        <div class="admin-meta"><?php echo number_format(((int) ($document['size_bytes'] ?? 0)) / 1024, 1, ',', '.'); ?> KB</div>
+                                        <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-file.php?kind=document&id=<?php echo urlencode((string) ($document['id'] ?? '')); ?>">Baixar</a>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($documentProjectTitle, ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars((string) ($uploader['fullname'] ?? $uploader['username'] ?? 'Usuario'), ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars(admin_format_datetime($document['created_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td>
+                                        <form method="POST" class="admin-review-form">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <input type="hidden" name="action" value="review_project_document">
+                                            <input type="hidden" name="document_id" value="<?php echo htmlspecialchars((string) ($document['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                            <textarea name="review_notes" rows="2" placeholder="Observacao opcional"></textarea>
+                                            <div class="table-actions">
+                                                <button type="submit" name="decision" value="approved" class="dashboard-btn admin-btn-small">Aprovar</button>
+                                                <button type="submit" name="decision" value="rejected" class="dashboard-btn admin-btn-danger">Rejeitar</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
+        </article>
+    </section>
+
     <section id="projects" class="admin-workspace">
         <article class="panel-card">
             <div class="panel-card-header">
@@ -1382,6 +1547,12 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     <p class="form-help">Esse texto aparecera na pagina detalhada do projeto para orientar quem quiser participar.</p>
                 </div>
 
+                <div class="form-group">
+                    <label for="project_document_file">Documentacao obrigatoria</label>
+                    <input type="file" id="project_document_file" name="document_file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" <?php echo $projectForm['id'] === '' ? 'required' : ''; ?>>
+                    <p class="form-help">Novos projetos precisam de PDF ou DOCX para entrar no fluxo de autenticacao. Em edicoes, use este campo apenas para enviar uma nova versao documental.</p>
+                </div>
+
    <?php if ((string) $projectForm['image_path'] !== ''): ?>
                     <div class="admin-partner-preview admin-project-preview">
                         <img
@@ -1430,6 +1601,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 <th>Projeto</th>
                                 <th>Responsavel</th>
                                 <th>Status</th>
+                                <th>Autenticacao</th>
                                 <th>Categoria</th>
                                 <th>Atualizado em</th>
                                 <th>Acoes</th>
@@ -1440,6 +1612,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
    <?php
                                 $ownerId = $project['user_id'] ?? null;
                                 $owner = $ownerId !== null && isset($userMap[(int) $ownerId]) ? $userMap[(int) $ownerId] : null;
+                                $authentication = $workspaceManager->getAuthenticationStatus($project);
                                 ?>
                                 <tr>
                                     <td>
@@ -1456,11 +1629,17 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
            <?php echo htmlspecialchars(admin_status_label((string) $project['status']), ENT_QUOTES, 'UTF-8'); ?>
                                         </span>
                                     </td>
+                                    <td>
+                                        <span class="admin-pill admin-pill--<?php echo htmlspecialchars((string) ($authentication['status'] ?? 'missing'), ENT_QUOTES, 'UTF-8'); ?>">
+           <?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentacao'), ENT_QUOTES, 'UTF-8'); ?>
+                                        </span>
+                                    </td>
                                     <td><?php echo htmlspecialchars((string) $project['category'], ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td><?php echo htmlspecialchars(admin_format_datetime($project['updated_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
                                     <td>
                                         <div class="table-actions">
                                             <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project.php?id=<?php echo urlencode((string) $project['id']); ?>">Ver pagina</a>
+                                            <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-workspace.php?id=<?php echo urlencode((string) $project['id']); ?>">Workspace</a>
                                             <a class="dashboard-btn admin-btn-small" href="admin.php?edit_project=<?php echo urlencode((string) $project['id']); ?>#projects">Editar</a>
 
                                             <form method="POST" onsubmit="return confirm('Excluir este projeto?');">

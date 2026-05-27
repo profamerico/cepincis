@@ -6,6 +6,14 @@ $db = new Database();
 
 $pdo = $db->getConnection();
 
+$pdo->exec("
+    CREATE TABLE IF NOT EXISTS migrations (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        migration VARCHAR(255) NOT NULL UNIQUE,
+        executed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+");
+
 $migrationsPath = __DIR__ . '/migrations';
 
 $files = scandir($migrationsPath);

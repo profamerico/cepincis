@@ -2370,6 +2370,43 @@ function runInitializer(initializer) {
           }
 }
 
+function initNotificationPolling() {
+          const counters = Array.from(document.querySelectorAll('[data-notification-count]'));
+
+          if (!counters.length || typeof fetch !== 'function') {
+                    return;
+          }
+
+          const renderCount = (value) => {
+                    const count = Number.parseInt(value, 10) || 0;
+
+                    counters.forEach((counter) => {
+                              counter.textContent = String(count);
+                              counter.classList.toggle('is-visible', count > 0);
+                              counter.setAttribute('aria-label', `${count} notificacoes nao lidas`);
+                    });
+          };
+
+          const poll = () => {
+                    fetch('notifications-poll.php', {
+                              headers: {
+                                        Accept: 'application/json'
+                              },
+                              credentials: 'same-origin'
+                    })
+                              .then((response) => response.ok ? response.json() : null)
+                              .then((payload) => {
+                                        if (payload && payload.success) {
+                                                  renderCount(payload.unread_count);
+                                        }
+                              })
+                              .catch(() => {});
+          };
+
+          window.setTimeout(poll, 4000);
+          window.setInterval(poll, 30000);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
           [
                     initAdminBlockForm,
@@ -2387,7 +2424,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     initFloatingButtonObserver,
                     initInnovationCards,
                     initSettingsTabs,
+                    initNotificationPolling,
                     initGsapPageMotion
           ].forEach(runInitializer);
 });
-
