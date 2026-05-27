@@ -8,6 +8,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once 'controllers/AuthController.php';
 
+
 $auth = new AuthController();
 
 $result = null;
