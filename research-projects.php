@@ -442,7 +442,7 @@ if (is_array($formOverrides)) {
                             </option>
                         <?php endforeach; ?>
                     </select>
-                    <p class="form-help">A categoria principal do projeto fica restrita as 5 siglas oficiais das Areas Tematicas.</p>
+                    <p class="form-help">A categoria principal do projeto fica restrita as 5 siglas oficiais das Áreas Temáticas.</p>
                 </div>
 
                 <div class="form-group">
