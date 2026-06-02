@@ -7,7 +7,7 @@ $provider = $_GET['provider'] ?? '';
 $code = $_GET['code'] ?? '';
 
 if (!$code) {
-    die('Codigo nao fornecido.');
+    die('Codigo não fornecido.');
 }
 
 switch ($provider) {
@@ -34,7 +34,7 @@ switch ($provider) {
         break;
 
     default:
-        die('Provedor invalido ou nao suportado.');
+        die('Provedor inválido ou não suportado.');
 }
 
 $ch = curl_init($token_url);
@@ -78,14 +78,14 @@ if ($provider === 'github') {
 }
 
 if ($nome === '') {
-    die('Erro: nao foi possivel ler os dados da conta.');
+    die('Erro: não foi possivel ler os dados da conta.');
 }
 
 $auth = new AuthController();
 $result = $auth->loginSocialUser($nome, $email, $provider);
 
 if (!$result['success']) {
-    $message = $result['errors'][0] ?? 'Falha ao autenticar o usuario social.';
+    $message = $result['errors'][0] ?? 'Falha ao autenticar o usuário social.';
     die(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
 }
 

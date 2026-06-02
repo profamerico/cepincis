@@ -15,7 +15,7 @@ class ContentBlockManager
             'supports_layout_builder' => true,
         ],
         'thematic_areas' => [
-            'label' => 'Areas tematicas',
+            'label' => 'Áreas temáticas',
             'path' => 'implement.php',
             'allowed_types' => ['thematic_intro', 'thematic_topic', 'thematic_cta'],
             'allowed_widths' => ['half', 'full'],
@@ -42,18 +42,18 @@ class ContentBlockManager
         ],
         'text_card' => [
             'label' => 'Card de texto',
-            'description' => 'Bloco generico para titulo, texto, lista e botao.',
+            'description' => 'Bloco genérico para título, texto, lista e botão.',
         ],
         'thematic_intro' => [
-            'label' => 'Intro de areas',
+            'label' => 'Intro de áreas',
             'description' => 'Bloco de abertura da pagina de Areas Tematicas.',
         ],
         'thematic_topic' => [
-            'label' => 'Area tematica',
+            'label' => 'Área temática',
             'description' => 'Card com tag, titulo e descricao de uma area tematica.',
         ],
         'thematic_cta' => [
-            'label' => 'CTA tematico',
+            'label' => 'CTA temático',
             'description' => 'Card complementar para regulamento, contato ou chamadas finais.',
         ],
         'about_text' => [
