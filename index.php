@@ -141,7 +141,7 @@ $defaultAboutTextBlock = [
 $defaultAboutMediaBlock = [
     'media_url' => './img/banner.png',
     'media_dark_url' => './img/bannerescuro.png',
-    'media_alt' => 'Logo CEPIN-CIS',
+    'media_alt' => 'Logo CEPIN-CIS', //é aqui que quero mexer
 ];
 $defaultContactInfoBlock = [
     'title' => 'Contato',
