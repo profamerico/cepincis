@@ -12,12 +12,14 @@ require_once 'models/Orientation.php';
 require_once 'models/Partner.php';
 require_once 'models/Project.php';
 require_once 'models/ProjectWorkspace.php';
+require_once 'models/UserProfileExtras.php';
 
 $auth = new AuthController();
 $auth->requireAdmin();
 
 $projectManager = new ProjectManager();
 $workspaceManager = new ProjectWorkspaceManager($projectManager);
+$profileExtrasManager = new UserProfileExtrasManager();
 $contentManager = new ContentBlockManager();
 $orientationManager = new OrientationManager();
 $partnerManager = new PartnerManager();
@@ -504,6 +506,7 @@ unset($_SESSION['admin_flash']);
 $userFormErrors = [];
 $projectFormErrors = [];
 $documentFormErrors = [];
+$roleRequestErrors = [];
 $contentFormErrors = [];
 $partnerFormErrors = [];
 $contentLayoutErrors = [];
@@ -727,6 +730,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $documentFormErrors = $result['errors'] ?? ['Nao foi possivel revisar o documento.'];
                 break;
 
+            case 'review_role_request':
+                $requestId = trim((string) ($_POST['request_id'] ?? ''));
+                $decision = trim((string) ($_POST['decision'] ?? ''));
+                $reviewNotes = trim((string) ($_POST['review_notes'] ?? ''));
+                $reviewResult = $profileExtrasManager->reviewRoleRequest($requestId, (int) ($currentUser['id'] ?? 0), $decision, $reviewNotes);
+
+                if (!$reviewResult['success']) {
+                    $roleRequestErrors = $reviewResult['errors'] ?? ['Nao foi possivel revisar a solicitacao.'];
+                    break;
+                }
+
+                $roleRequest = $reviewResult['request'];
+                $requestUser = $auth->getUserById((int) ($roleRequest['user_id'] ?? 0));
+
+                if ($decision === 'approved' && is_array($requestUser)) {
+                    $saveResult = $auth->adminSaveUser((int) ($requestUser['id'] ?? 0), [
+                        'username' => (string) ($requestUser['username'] ?? ''),
+                        'fullname' => (string) ($requestUser['fullname'] ?? ''),
+                        'email' => (string) ($requestUser['email'] ?? ''),
+                        'role' => (string) ($roleRequest['requested_role'] ?? ''),
+                        'password' => '',
+                    ]);
+
+                    if (!$saveResult['success']) {
+                        $roleRequestErrors = $saveResult['errors'] ?? ['Nao foi possivel promover o usuario.'];
+                        break;
+                    }
+                }
+
+                if (is_array($requestUser)) {
+                    $workspaceManager->createNotification(
+                        (int) ($requestUser['id'] ?? 0),
+                        $decision === 'approved' ? 'role_request_approved' : 'role_request_rejected',
+                        $decision === 'approved' ? 'Nivel aprovado' : 'Solicitacao de nivel recusada',
+                        $decision === 'approved'
+                            ? 'Sua solicitacao para ' . $profileExtrasManager->getRoleRequestLabel((string) ($roleRequest['requested_role'] ?? '')) . ' foi aprovada.'
+                            : 'Sua solicitacao de aumento de nivel foi recusada.',
+                        null,
+                        'profile.php',
+                        (int) ($currentUser['id'] ?? 0)
+                    );
+                }
+
+                admin_set_flash('sucesso', $decision === 'approved' ? 'Solicitacao aprovada e usuario promovido.' : 'Solicitacao rejeitada.');
+                admin_redirect('role-requests');
+                break;
+
             case 'save_partner':
                 $partnerId = trim((string) ($_POST['partner_id'] ?? ''));
                 $submittedPartner = [
@@ -901,6 +951,8 @@ $projects = $projectManager->getAllProjects();
 $projectStats = $projectManager->getProjectStats();
 $pendingProjectDocuments = $workspaceManager->getPendingProjectDocuments();
 $pendingDocumentCount = count($pendingProjectDocuments);
+$pendingRoleRequests = $profileExtrasManager->listRoleRequests('pending');
+$pendingRoleRequestCount = count($pendingRoleRequests);
 $partnerCount = count($partners);
 $contentStats = [
     'total' => count($contentBlocks),
@@ -1116,6 +1168,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
 
             <div class="hero-actions">
                 <a class="dashboard-btn" href="#users">Usuarios</a>
+                <a class="dashboard-btn dashboard-btn--ghost" href="#role-requests">Niveis</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="#document-authentication">Documentos</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="#projects">Projetos</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="#partners">Parceiros</a>
@@ -1169,6 +1222,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             <p>Documentos aguardando aprovacao administrativa.</p>
         </article>
         <article class="metric-card">
+            <span class="metric-label">Niveis</span>
+            <strong class="metric-value"><?php echo (int) $pendingRoleRequestCount; ?></strong>
+            <p>Solicitacoes de aumento de nivel pendentes.</p>
+        </article>
+        <article class="metric-card">
             <span class="metric-label">Blocos globais</span>
             <strong class="metric-value"><?php echo (int) $contentStats['total']; ?></strong>
             <p><?php echo (int) $contentStats['published']; ?> publicados no total entre as paginas administraveis.</p>
@@ -1187,6 +1245,64 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             <span class="metric-label">Sobre</span>
             <strong class="metric-value"><?php echo (int) $contentStats['about_total']; ?></strong>
             <p><?php echo (int) $contentStats['about_published']; ?> publicados na pagina Sobre.</p>
+        </article>
+    </section>
+
+    <section id="role-requests" class="admin-workspace">
+        <article class="panel-card admin-workspace__full">
+            <div class="panel-card-header">
+                <div>
+                    <p class="eyebrow">Permissoes</p>
+                    <h2>Solicitacoes de aumento de nivel</h2>
+                    <p class="admin-subtitle">Revise pedidos para Pesquisador Academico ou Pesquisador Pleno e promova a conta quando fizer sentido.</p>
+                </div>
+            </div>
+
+            <?php foreach ($roleRequestErrors as $error): ?>
+                <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8'); ?></div>
+            <?php endforeach; ?>
+
+            <?php if (empty($pendingRoleRequests)): ?>
+                <p class="admin-empty">Nenhuma solicitacao de nivel pendente.</p>
+            <?php else: ?>
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Nivel solicitado</th>
+                                <th>Data</th>
+                                <th>Revisao</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($pendingRoleRequests as $roleRequest): ?>
+                                <?php $requestUser = $userMap[(int) ($roleRequest['user_id'] ?? 0)] ?? null; ?>
+                                <tr>
+                                    <td>
+                                        <strong><?php echo htmlspecialchars((string) ($requestUser['fullname'] ?? $requestUser['username'] ?? 'Usuario'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                                        <div class="admin-meta"><?php echo htmlspecialchars((string) ($requestUser['email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></div>
+                                    </td>
+                                    <td><?php echo htmlspecialchars($profileExtrasManager->getRoleRequestLabel((string) ($roleRequest['requested_role'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars(admin_format_datetime($roleRequest['created_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td>
+                                        <form method="POST" class="admin-review-form">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <input type="hidden" name="action" value="review_role_request">
+                                            <input type="hidden" name="request_id" value="<?php echo htmlspecialchars((string) ($roleRequest['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                            <textarea name="review_notes" rows="2" placeholder="Observacao opcional"></textarea>
+                                            <div class="table-actions">
+                                                <button type="submit" name="decision" value="approved" class="dashboard-btn admin-btn-small">Aprovar</button>
+                                                <button type="submit" name="decision" value="rejected" class="dashboard-btn admin-btn-danger">Rejeitar</button>
+                                            </div>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </article>
     </section>
 

@@ -6,16 +6,41 @@ $regulationUrl = 'https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Nor
 require_once 'models/ContentBlock.php';
 require_once 'models/Partner.php';
 require_once 'models/Project.php';
+require_once 'models/UserProfileExtras.php';
+require_once 'controllers/AuthController.php';
 
 $contentManager = new ContentBlockManager();
 $partnerManager = new PartnerManager();
 $projectManager = new ProjectManager();
+$profileExtrasManager = new UserProfileExtrasManager();
+$homeAuth = new AuthController();
 
 $homepageProjects = $projectManager->getAllProjects();
 $homepageProjectTags = $projectManager->getProjectTags($homepageProjects);
 $aboutHomeBlocks = $contentManager->getPageBlocks('about');
 $contactHomeBlocks = $contentManager->getPageBlocks('contact');
 $homepagePartners = $partnerManager->listPartners();
+$homepageUsers = $homeAuth->listUsers();
+$homepageProfiles = $profileExtrasManager->getProfilesByUserId();
+$homepageResearchUsers = array_values(array_filter($homepageUsers, static function (array $user): bool {
+    $role = strtolower(trim((string) ($user['role'] ?? '')));
+    $username = strtolower(trim((string) ($user['username'] ?? '')));
+    $fullname = strtolower(trim((string) ($user['fullname'] ?? '')));
+
+    if (!in_array($role, ['academic_researcher', 'associate_researcher', 'full_researcher', 'admin'], true)) {
+        return false;
+    }
+
+    if (in_array($username, ['admin', 'pleno1'], true)) {
+        return false;
+    }
+
+    if (in_array($fullname, ['administrador', 'pleno'], true)) {
+        return false;
+    }
+
+    return true;
+}));
 
 $implementationHighlights = [
     [
@@ -352,19 +377,66 @@ include_once 'includes/header.php';
                         </div>
                     </article>
 
-                    <article class="panel-card public-image-card public-image-card--banner">
-                        <img
-                            class="public-image-card__asset public-image-card__asset--light"
-                            src="<?php echo htmlspecialchars((string) ($homeAboutMediaBlock['media_url'] ?? './img/banner.png'), ENT_QUOTES, 'UTF-8'); ?>"
-                            alt="<?php echo htmlspecialchars((string) ($homeAboutMediaBlock['media_alt'] ?? 'Logo CEPIN-CIS'), ENT_QUOTES, 'UTF-8'); ?>"
-                        >
-                        <?php if ((string) ($homeAboutMediaBlock['media_dark_url'] ?? '') !== ''): ?>
-                            <img
-                                class="public-image-card__asset public-image-card__asset--dark"
-                                src="<?php echo htmlspecialchars((string) $homeAboutMediaBlock['media_dark_url'], ENT_QUOTES, 'UTF-8'); ?>"
-                                alt=""
-                                aria-hidden="true"
-                            >
+                    <article class="panel-card public-researchers-panel">
+                        <div class="panel-card-header">
+                            <div>
+                                <p class="eyebrow">Equipe vinculada</p>
+                                <h2>Pesquisadores e administradores</h2>
+                            </div>
+                        </div>
+
+                        <div class="banner-source-chip">
+                            <span>Origem do banner</span>
+                            <a href="<?php echo htmlspecialchars((string) ($homeAboutMediaBlock['media_url'] ?? './img/banner.png'), ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
+                                <?php echo htmlspecialchars((string) ($homeAboutMediaBlock['media_alt'] ?? 'Imagem institucional'), ENT_QUOTES, 'UTF-8'); ?>
+                            </a>
+                        </div>
+
+                        <?php if (empty($homepageResearchUsers)): ?>
+                            <p class="admin-empty">Nenhum pesquisador ou administrador publico cadastrado ainda.</p>
+                        <?php else: ?>
+                            <div class="researcher-directory">
+                                <?php foreach ($homepageResearchUsers as $researchUser): ?>
+                                    <?php
+                                    $researchUserId = (int) ($researchUser['id'] ?? 0);
+                                    $researchProfile = $homepageProfiles[$researchUserId] ?? [];
+                                    $researchPhoto = trim((string) ($researchProfile['photo_path'] ?? ''));
+                                    $researchBio = trim((string) ($researchProfile['bio'] ?? ''));
+                                    $researchName = trim((string) ($researchUser['fullname'] ?? $researchUser['username'] ?? 'Pesquisador'));
+                                    ?>
+                                    <details class="researcher-directory-item">
+                                        <summary>
+                                            <span><?php echo htmlspecialchars($researchName, ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <small><?php echo htmlspecialchars($homeAuth->getRoleLabel($researchUser), ENT_QUOTES, 'UTF-8'); ?></small>
+                                        </summary>
+
+                                        <div class="researcher-directory-profile">
+                                            <?php if ($researchPhoto !== ''): ?>
+                                                <img src="<?php echo htmlspecialchars($researchPhoto, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($researchName, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <?php else: ?>
+                                                <span class="researcher-directory-initial"><?php echo htmlspecialchars(strtoupper(substr($researchName, 0, 1)), ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <?php endif; ?>
+
+                                            <div>
+                                                <h3><?php echo htmlspecialchars($researchName, ENT_QUOTES, 'UTF-8'); ?></h3>
+                                                <p><?php echo htmlspecialchars($researchBio !== '' ? $researchBio : 'Biografia ainda nao cadastrada.', ENT_QUOTES, 'UTF-8'); ?></p>
+
+                                                <div class="profile-public-links profile-public-links--compact">
+                                                    <?php if (!empty($researchProfile['linkedin_url'])): ?>
+                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['linkedin_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">LinkedIn</a>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($researchProfile['integra_ifsp_url'])): ?>
+                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['integra_ifsp_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">Integra IFSP</a>
+                                                    <?php endif; ?>
+                                                    <?php if (!empty($researchProfile['lattes_url'])): ?>
+                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['lattes_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">Lattes CNPq</a>
+                                                    <?php endif; ?>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </details>
+                                <?php endforeach; ?>
+                            </div>
                         <?php endif; ?>
                     </article>
                 </section>

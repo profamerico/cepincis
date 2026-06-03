@@ -115,7 +115,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <i class="fa-brands fa-github"></i>
                 </a>
             </div>
-                        
+
+            <p class="auth-link-copy"><a href="./forgot-password.php">Esqueci minha senha</a></p>
             <p class="auth-link-copy">Nao tem uma conta? <a href="./register.php">Criar cadastro</a></p>
         </section>
     </section>

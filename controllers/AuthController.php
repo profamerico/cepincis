@@ -460,6 +460,68 @@ class AuthController
         return $user ?: null;
     }
 
+    public function findUserByUsernameOrEmail(string $identifier): ?array
+    {
+        $identifier = trim($identifier);
+
+        if ($identifier === '') {
+            return null;
+        }
+
+        $stmt = $this->db->prepare("
+            SELECT *
+            FROM users
+            WHERE username = :identifier
+               OR email = :identifier
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            'identifier' => $identifier
+        ]);
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $user ?: null;
+    }
+
+    public function resetPasswordForUserId(int $userId, string $password, string $passwordConfirm): array
+    {
+        $errors = [];
+
+        if (strlen($password) < 6) {
+            $errors[] = 'A nova senha deve ter ao menos 6 caracteres.';
+        }
+
+        if ($password !== $passwordConfirm) {
+            $errors[] = 'As senhas nao coincidem.';
+        }
+
+        if ($errors) {
+            return [
+                'success' => false,
+                'errors' => $errors
+            ];
+        }
+
+        $stmt = $this->db->prepare("
+            UPDATE users
+            SET
+                password_hash = :password_hash,
+                updated_at = NOW()
+            WHERE id = :id
+        ");
+
+        $stmt->execute([
+            'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+            'id' => $userId
+        ]);
+
+        return [
+            'success' => true
+        ];
+    }
+
     private function normalizeUser(array $user): array
     {
         return [
