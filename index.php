@@ -385,13 +385,6 @@ include_once 'includes/header.php';
                             </div>
                         </div>
 
-                        <div class="banner-source-chip">
-                            <span>Origem do banner</span>
-                            <a href="<?php echo htmlspecialchars((string) ($homeAboutMediaBlock['media_url'] ?? './img/banner.png'), ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
-                                <?php echo htmlspecialchars((string) ($homeAboutMediaBlock['media_alt'] ?? 'Imagem institucional'), ENT_QUOTES, 'UTF-8'); ?>
-                            </a>
-                        </div>
-
                         <?php if (empty($homepageResearchUsers)): ?>
                             <p class="admin-empty">Nenhum pesquisador ou administrador publico cadastrado ainda.</p>
                         <?php else: ?>
