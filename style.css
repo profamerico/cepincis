@@ -1435,26 +1435,6 @@ footer {
 
 /* ===== bolinha do cursor ===== */
 
-.ball {
-       background: #ff00bf;
-       width: 48px;
-       height: 48px;
-       border-radius: 50%;
-       position: absolute;
-       top: 0;
-       left: 0;
-       transform: translate(-50%, -50%);
-       mix-blend-mode: difference;
-       z-index: 0;
-       text-align: center;
-       font-family: Chivo;
-       color: black;
-       align-items: center;
-
-       /* animação de "respiração" */
-       animation: breathing 3s ease-in-out infinite;
-}
-
 @keyframes breathing {
        0% {
               transform: translate(-50%, -50%) scale(1);
