@@ -215,8 +215,6 @@ include_once 'includes/header.php';
 <div class="js-cont">
     <div class="js-scroll">
         <div class="full-screen">
-            <div class="ball"></div>
-
             <section class="hero">
                 <h1>CEPIN-CIS</h1>
                 <h2>Centro de Pesquisa e Inovacao em Cidades Inteligentes</h2>
@@ -241,8 +239,7 @@ include_once 'includes/header.php';
                         id="campoPesquisa"
                         aria-label="Pesquisar projetos"
                         placeholder="<?php echo empty($homepageProjects) ? 'Nenhum projeto publicado no momento.' : 'Pesquisar projetos por nome, categoria ou tag'; ?>"
-                        <?php echo empty($homepageProjects) ? 'disabled' : ''; ?>
-                    >
+                        <?php echo empty($homepageProjects) ? 'disabled' : ''; ?>>
                 </div>
 
                 <div class="filtros-tags">
@@ -275,8 +272,7 @@ include_once 'includes/header.php';
                                     data-category="<?php echo htmlspecialchars((string) ($project['category'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
                                     data-status="<?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>"
                                     data-tag-list="<?php echo htmlspecialchars(implode('||', $projectTags), ENT_QUOTES, 'UTF-8'); ?>"
-                                    data-tags="<?php echo htmlspecialchars($searchTags, ENT_QUOTES, 'UTF-8'); ?>"
-                                >
+                                    data-tags="<?php echo htmlspecialchars($searchTags, ENT_QUOTES, 'UTF-8'); ?>">
                                     <div class="topo-card-publicacao">
                                         <h3 class="categoria-card-publicacao"><?php echo htmlspecialchars((string) ($project['category'] ?? 'Geral'), ENT_QUOTES, 'UTF-8'); ?></h3>
                                         <span class="status-card-publicacao status-card-publicacao--<?php echo htmlspecialchars($statusKey, ENT_QUOTES, 'UTF-8'); ?>">
@@ -333,8 +329,7 @@ include_once 'includes/header.php';
                             class="botao-seta-carrossel"
                             data-carousel-prev
                             aria-label="Projeto anterior"
-                            <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>
-                        >
+                            <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>>
                             &#8592;
                         </button>
                         <button
@@ -342,8 +337,7 @@ include_once 'includes/header.php';
                             class="botao-seta-carrossel"
                             data-carousel-next
                             aria-label="Proximo projeto"
-                            <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>
-                        >
+                            <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>>
                             &#8594;
                         </button>
                     </div>
@@ -486,12 +480,10 @@ include_once 'includes/header.php';
                                             data-index="<?php echo (int) $index; ?>"
                                             data-partner-card
                                             data-partner-name="<?php echo htmlspecialchars((string) ($partner['name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                            data-partner-description="<?php echo htmlspecialchars((string) ($partner['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                        >
+                                            data-partner-description="<?php echo htmlspecialchars((string) ($partner['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
                                             <img
                                                 src="<?php echo htmlspecialchars((string) ($partner['image_path'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                                alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES, 'UTF-8'); ?>"
-                                            >
+                                                alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES, 'UTF-8'); ?>">
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
@@ -590,8 +582,7 @@ include_once 'includes/header.php';
                             loading="lazy"
                             referrerpolicy="no-referrer-when-downgrade"
                             allowfullscreen=""
-                            title="<?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa do IFSP Campus Caraguatatuba'), ENT_QUOTES, 'UTF-8'); ?>"
-                        ></iframe>
+                            title="<?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa do IFSP Campus Caraguatatuba'), ENT_QUOTES, 'UTF-8'); ?>"></iframe>
                     </article>
                 </section>
             </main>
