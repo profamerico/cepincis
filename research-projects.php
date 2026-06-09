@@ -32,7 +32,7 @@ function research_projects_status_label(string $status): string
         case 'completed':
             return 'Concluido';
         case 'pending':
-            return 'Pendente';
+            return 'Pausado';
         default:
             return 'Ativo';
     }
