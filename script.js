@@ -368,35 +368,6 @@ function animateActiveTab(panel) {
           });
 }
 
-function initCursorOrb() {
-          const ball = document.querySelector('.ball');
-          if (!ball) {
-                    return;
-          }
-
-          let mouseX = window.innerWidth / 2;
-          let mouseY = window.innerHeight / 2;
-          let ballX = mouseX;
-          let ballY = mouseY;
-          const easing = 0.067;
-
-          function animate() {
-                    ballX += (mouseX - ballX) * easing;
-                    ballY += (mouseY - ballY) * easing;
-
-                    ball.style.left = `${ballX}px`;
-                    ball.style.top = `${ballY}px`;
-
-                    requestAnimationFrame(animate);
-          }
-
-          document.addEventListener('mousemove', (event) => {
-                    mouseX = event.pageX;
-                    mouseY = event.pageY;
-          });
-
-          animate();
-}
 
 function initExpandableText() {
           const btn = document.querySelector('.btn-ver-mais');
