@@ -28,7 +28,6 @@ if ($isLoggedIn) {
 
 $mobileAccountLinks = $isLoggedIn
     ? [
-        ['href' => './index.php', 'label' => 'Home', 'icon' => 'fa-house'],
         ['href' => './dashboard.php', 'label' => 'Dashboard', 'icon' => 'fa-table-columns'],
         ['href' => './notifications.php', 'label' => 'Avisos', 'icon' => 'fa-bell'],
         ['href' => './project-workspace.php', 'label' => 'Workspaces', 'icon' => 'fa-users-gear'],
