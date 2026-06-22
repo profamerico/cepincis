@@ -711,6 +711,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         (int) ($currentUser['id'] ?? 0)
                     );
 
+                    
                     if (is_array($project) && (int) ($project['user_id'] ?? 0) !== (int) ($document['uploaded_by_user_id'] ?? 0)) {
                         $workspaceManager->createNotification(
                             (int) ($project['user_id'] ?? 0),
