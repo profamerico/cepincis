@@ -250,6 +250,15 @@ $displayParticipationText = $participationInfo !== ''
 
         <div class="project-detail-hero__veil" aria-hidden="true"></div>
 
+        <?php if ($bannerPath !== ''): ?>
+            <div class="project-banner-source-chip">
+                <span>Origem da imagem</span>
+                <a href="<?php echo htmlspecialchars($bannerPath, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
+                    <?php echo htmlspecialchars($isFallbackBanner ? 'Imagem institucional CEPIN-CIS' : 'Banner do projeto', ENT_QUOTES, 'UTF-8'); ?>
+                </a>
+            </div>
+        <?php endif; ?>
+
         <div class="project-detail-hero__grid">
             <div class="project-detail-hero__content">
                 <p class="eyebrow">Projeto CEPIN-CIS</p>
@@ -272,15 +281,6 @@ $displayParticipationText = $participationInfo !== ''
 
                 <?php if ($isFallbackBanner): ?>
                     <p class="project-detail-hero__note">Este projeto ainda nao recebeu um banner proprio, entao o portal esta usando um dos fundos editoriais do CEPIN-CIS como capa temporaria.</p>
-                <?php endif; ?>
-
-                <?php if ($bannerPath !== ''): ?>
-                    <div class="project-banner-source-chip">
-                        <span>Origem da imagem</span>
-                        <a href="<?php echo htmlspecialchars($bannerPath, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
-                            <?php echo htmlspecialchars($isFallbackBanner ? 'Imagem institucional CEPIN-CIS' : 'Banner do projeto', ENT_QUOTES, 'UTF-8'); ?>
-                        </a>
-                    </div>
                 <?php endif; ?>
 
                 <div class="hero-actions">

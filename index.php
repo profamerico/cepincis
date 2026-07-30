@@ -410,13 +410,19 @@ include_once 'includes/header.php';
 
                                                 <div class="profile-public-links profile-public-links--compact">
                                                     <?php if (!empty($researchProfile['linkedin_url'])): ?>
-                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['linkedin_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">LinkedIn</a>
+                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['linkedin_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></a>
+                                                    <?php else: ?>
+                                                        <span class="profile-public-link-disabled"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></span>
                                                     <?php endif; ?>
                                                     <?php if (!empty($researchProfile['integra_ifsp_url'])): ?>
-                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['integra_ifsp_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">Integra IFSP</a>
+                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['integra_ifsp_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></a>
+                                                    <?php else: ?>
+                                                        <span class="profile-public-link-disabled"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></span>
                                                     <?php endif; ?>
                                                     <?php if (!empty($researchProfile['lattes_url'])): ?>
-                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['lattes_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">Lattes CNPq</a>
+                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['lattes_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></a>
+                                                    <?php else: ?>
+                                                        <span class="profile-public-link-disabled"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></span>
                                                     <?php endif; ?>
                                                 </div>
                                             </div>
