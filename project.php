@@ -21,7 +21,7 @@ function project_detail_status_label(?string $status): string
 {
     switch (project_detail_status_key($status)) {
         case 'completed':
-            return 'Concluido';
+            return 'Concluído';
         case 'pending':
             return 'Pendente';
         default:
@@ -102,11 +102,11 @@ function project_detail_build_participation_text(array $project, ?array $owner):
 
     $lines = [
         'Escreva para ' . $ownerName . ' e para o CEPIN-CIS apresentando seu interesse em participar de ' . $projectTitle . '.',
-        'No email, vale informar sua vinculação academica ou profissional, disponibilidade, experiência anterior e de que forma você imagina contribuir com o projeto.',
+        'No email, vale informar sua vinculação acadêmica ou profissional, disponibilidade, experiência anterior e de que forma você imagina contribuir com o projeto.',
     ];
 
     if ($category !== '') {
-        $lines[] = 'Como este projeto está ligado a ' . $category . ', mencionar afinidade com essa área temática ajuda a equipe a encaminhar melhor a conversa.';
+        $lines[] = 'Como este projeto está ligado à ' . $category . ', mencionar afinidade com essa área temática ajuda a equipe a encaminhar melhor a conversa.';
     }
 
     return implode("\n\n", $lines);
@@ -120,11 +120,11 @@ function project_detail_build_mailto(array $project, ?array $owner, string $cepi
 
     $subject = 'Interesse em participar do projeto: ' . $projectTitle;
     $bodyLines = [
-        'Ola,',
+        'Olá,',
         '',
         'tenho interesse em participar do projeto "' . $projectTitle . '".',
         '',
-        'Meu nome e:',
+        'Meu nome é:',
         'Minha vinculação / área de atuação:',
         'Minha disponibilidade estimada:',
         'Como acredito que posso contribuir:',
@@ -135,7 +135,7 @@ function project_detail_build_mailto(array $project, ?array $owner, string $cepi
     }
 
     $bodyLines[] = '';
-    $bodyLines[] = 'Agradeco e fico a disposição.';
+    $bodyLines[] = 'Agradeço e fico a disposição.';
 
     $query = [
         'subject' => $subject,
