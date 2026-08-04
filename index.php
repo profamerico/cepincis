@@ -49,7 +49,7 @@ $implementationHighlights = [
         'description' => 'Desenvolvimento de recursos humanos e métodos ágeis de capacitação para impulsionar a inovação em Cidades Inteligentes e Sustentáveis.',
     ],
     [
-        'title' => 'Novos matériais e economia circular',
+        'title' => 'Novos materiais e economia circular',
         'description' => 'Investigar materiais sustentáveis e promover economia circular, reduzindo o impacto ambiental.',
     ],
     [
@@ -57,11 +57,11 @@ $implementationHighlights = [
         'description' => 'Desenvolver tecnologias avançadas e soluções de conectividade para criar ambientes urbanos mais inteligentes, eficientes e sustentáveis.',
     ],
     [
-        'title' => 'Descarbonizacao do ambiente construido',
-        'description' => 'Promover a reducao das emissoes de carbono em edificios, infraestrutura, mobilidade urbana, fontes de energia e saneamento ambiental.',
+        'title' => 'Descarbonização do ambiente construído',
+        'description' => 'Promover a redução das emissões de carbono em edifícios, infraestrutura, mobilidade urbana, fontes de energia e saneamento ambiental.',
     ],
     [
-        'title' => 'Monitoramento e operacoes urbanas inteligentes',
+        'title' => 'Monitoramento e operações urbanas inteligentes',
         'description' => 'Desenvolver soluções para monitorar e gerenciar a infraestrutura urbana com plataformas digitais, sistemas autônomos e drones.',
     ],
 ];
@@ -80,7 +80,7 @@ function home_project_status_label(string $status): string
 {
     switch ($status) {
         case 'completed':
-            return 'Concluido';
+            return 'Concluído';
         case 'pending':
             return 'Pendente';
         default:
@@ -167,7 +167,7 @@ $defaultAboutTextBlock = [
 $defaultAboutMediaBlock = [
     'media_url' => './img/banner.png',
     'media_dark_url' => './img/bannerescuro.png',
-    'media_alt' => 'Logo CEPIN-CIS', //é aqui que quero mexer
+    'media_alt' => 'Logo CEPIN-CIS', 
 ];
 $defaultContactInfoBlock = [
     'title' => 'Contato',
@@ -179,7 +179,7 @@ $defaultContactInfoBlock = [
             'url' => 'mailto:cepin.cis@ifspcaraguatatuba.edu.br',
         ],
         [
-            'label' => 'Endereco',
+            'label' => 'Endereço',
             'value' => 'IFSP Campus Caraguatatuba, sala 107B.',
             'url' => '',
         ],
@@ -231,7 +231,7 @@ include_once 'includes/header.php';
                         <h3 class="titulo-categoria-publicações">do CEPIN-CIS:</h3>
                         <h2 class="titulo-principal-publicações">Projetos</h2>
                     </div>
-                    <p class="subtitulo-publicações-home">Um recorte dos projetos reais cadastrados no portal, com busca por termo e filtros por tags para facilitar a exploracao.</p>
+                    <p class="subtitulo-publicações-home">Um recorte dos projetos reais cadastrados no portal, com busca por termo e filtros por tags para facilitar a exploração.</p>
                 </div>
 
                 <div class="barra-pesquisa">
@@ -282,8 +282,7 @@ include_once 'includes/header.php';
                                     </div>
 
                                     <div class="conteudo-card-publicacao">
-                                        <h2 class="titulo-card-publicacao"><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto sem titulo'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
-                                        <p class="descricao-card-publicacao"><?php echo htmlspecialchars(home_project_excerpt((string) ($project['description'] ?? '')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+                                    <h2 class="titulo-card-publicacao"><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto sem título'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>                                        <p class="descricao-card-publicacao"><?php echo htmlspecialchars(home_project_excerpt((string) ($project['description'] ?? '')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
                                     </div>
 
                                     <div class="rodape-card-publicacao">
@@ -337,7 +336,7 @@ include_once 'includes/header.php';
                             type="button"
                             class="botao-seta-carrossel"
                             data-carousel-next
-                            aria-label="Proximo projeto"
+                            aria-label="Próximo projeto"
                             <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>>
                             &#8594;
                         </button>
@@ -444,7 +443,7 @@ include_once 'includes/header.php';
                         <a class="dashboard-btn dashboard-btn--ghost" href="./implement.php">Ver todas as áreas</a>
                     </div>
 
-                    <p class="panel-copy">As Áreas Temáticas, nas quais seráo alinhados os projetos, foram definidas para orientar as atividades do CEPIN-CIS e compreendem:</p>
+                    <p class="panel-copy">As Áreas Temáticas, nas quais serão alinhados os projetos, foram definidas para orientar as atividades do CEPIN-CIS e compreendem:</p>
 
                     <div class="public-topic-grid public-topic-grid--home">
                         <?php foreach ($implementationHighlights as $highlight): ?>
@@ -494,7 +493,7 @@ include_once 'includes/header.php';
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
-                                <button class="nav-arrow right" type="button" aria-label="Proximo parceiro" data-partner-next <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>&#8250;</button>
+                                <button class="nav-arrow right" type="button" aria-label="Próximo parceiro" data-partner-next <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>&#8250;</button>
                             </div>
 
                             <div class="member-info">
@@ -510,7 +509,7 @@ include_once 'includes/header.php';
                         </div>
                     <?php else: ?>
                         <div class="public-partners-empty">
-                            <p>Nenhum parceiro foi publicado no carrossel ainda. Assim que a equipe cadastrar novas instituicoes no painel mestre, elas aparecerao aqui automaticamente.</p>
+                            <p>Nenhum parceiro foi publicado no carrossel ainda. Assim que a equipe cadastrar novas instituições no painel mestre, elas aparecerão aqui automaticamente.</p>
                         </div>
                     <?php endif; ?>
                 </section>
@@ -526,8 +525,7 @@ include_once 'includes/header.php';
 
                         <div class="mobile-collapse-content" data-mobile-collapse-content>
                             <div class="mobile-collapse-inner" data-mobile-collapse-inner>
-                                <p>O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento a pesquisa aplicada, a inovação tecnológica e a reflexão crítica sobre os desafios contemporâneos das cidades.</p>
-
+                            <p>O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento à pesquisa aplicada, à inovação tecnológica e à reflexão crítica sobre os desafios contemporâneos das cidades.</p>
                                 <p>O regulamento estabelece as diretrizes para a participação de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensão que dialoguem com as áreas temáticas do Centro, além de abrir espaço para a colaboração de pesquisadores externos.</p>
                             </div>
                         </div>
