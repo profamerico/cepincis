@@ -85,7 +85,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
         <div class="panel-hero-main">
             <p class="eyebrow">Perfil</p>
             <h1><?php echo htmlspecialchars((string) ($user['fullname'] ?? $user['username']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h1>
-            <p class="hero-copy">Atualize seus dados principais e mantenha a conta pronta para contato, acompanhamento e administracao do portal.</p>
+            <p class="hero-copy">Atualize seus dados principais e mantenha a conta pronta para contato, acompanhamento e administrçãao do portal.</p>
         </div>
 
         <aside class="panel-hero-aside profile-summary-card">
@@ -101,8 +101,8 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
 
     <section class="profile-cta-panel panel-card">
         <div>
-            <p class="eyebrow">Acesso rapido</p>
-            <h2>Projetos, workspaces e evolucao de nível</h2>
+            <p class="eyebrow">Acesso rápido</p>
+            <h2>Projetos, workspaces e evolução de nível</h2>
             <p class="panel-copy">Entre direto nas áreas de pesquisa ou solicite uma permissão maior para participar do fluxo acadêmico.</p>
         </div>
 
@@ -246,7 +246,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                     <input type="password" id="password_confirm" name="password_confirm">
                 </div>
 
-                <button type="submit" class="dashboard-btn">Salvar alteracoes</button>
+                <button type="submit" class="dashboard-btn">Salvar alterações</button>
             </form>
         </article>
 
@@ -315,7 +315,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                     </div>
                 </div>
 
-                <p class="panel-copy">Se você terminou as alteracoes, pode voltar para o dashboard principal e seguir para configuracoes ou administracao.</p>
+                <p class="panel-copy">Se você terminou as alterações, pode voltar para o dashboard principal e seguir para configurações ou administração.</p>
                 <a class="dashboard-btn dashboard-btn--ghost" href="dashboard.php">Ir para o dashboard</a>
             </article>
         </div>
