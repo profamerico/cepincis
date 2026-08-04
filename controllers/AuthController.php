@@ -982,6 +982,24 @@ class AuthController
         ];
     }
 
+    public function updateUserProfile(int $userId, array $data): bool
+    {
+        // Validação básica dos dados
+        if (empty($data['email']) || empty($data['full_name'])) {
+            return false;
+        }
+
+        // Atualizar o perfil no banco de dados
+        $query = "UPDATE users SET email = :email, full_name = :full_name, bio = :bio WHERE id = :id";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(':email', $data['email']);
+        $stmt->bindParam(':full_name', $data['full_name']);
+        $stmt->bindParam(':bio', $data['bio']);
+        $stmt->bindParam(':id', $userId, PDO::PARAM_INT);
+
+        return $stmt->execute();
+    }
+
     public function deleteUser(int $id): array
     {
         $this->requireAdmin();
@@ -1000,12 +1018,16 @@ class AuthController
             ];
         }
 
+        
+
         $stmt = $this->db->prepare("
         SELECT *
         FROM users
         WHERE id = :id
         LIMIT 1
     ");
+
+
 
         $stmt->execute([
             'id' => $id
