@@ -445,7 +445,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
             <article class="metric-card">
                 <span class="metric-label">Documentos</span>
                 <strong class="metric-value"><?php echo count($documents); ?></strong>
-                <p>Arquivos enviados para válidacao.</p>
+                <p>Arquivos enviados para validação.</p>
             </article>
             <article class="metric-card">
                 <span class="metric-label">Colaboradores</span>
@@ -455,7 +455,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
             <article class="metric-card">
                 <span class="metric-label">Timeline</span>
                 <strong class="metric-value"><?php echo count($timelineEvents); ?></strong>
-                <p>Eventos publicados na evolucao.</p>
+                <p>Eventos publicados na evolução.</p>
             </article>
             <article class="metric-card">
                 <span class="metric-label">Convites</span>
