@@ -10,7 +10,7 @@
     {
         "id": "partner_roma3",
         "name": "Universidade de Roma 3",
-        "description": "Roma, Italia",
+        "description": "Roma, Itália",
         "image_path": "./img/Roma 3.png",
         "created_at": "2026-05-06 00:00:00",
         "updated_at": "2026-05-06 00:00:00"
@@ -18,7 +18,7 @@
     {
         "id": "partner_fuzhou",
         "name": "Universidade de Fuzhou",
-        "description": "Instituicao publica de ensino superior localizada em Fuzhou, capital da provincia de Fujian, na China.",
+        "description": "Instituição pública de ensino superior localizada em Fuzhou, capital da província de Fujian, na China.",
         "image_path": "./img/Fuhzou.png",
         "created_at": "2026-05-06 00:00:00",
         "updated_at": "2026-05-06 00:00:00"
@@ -26,7 +26,7 @@
     {
         "id": "partner_getis",
         "name": "GETIS",
-        "description": "Grupo de Pesquisa em Engenharia, Tecnologia, Inovacao e Sustentabilidade (GETIS) - IFSP-CAR",
+        "description": "Grupo de Pesquisa em Engenharia, Tecnologia, Inovação e Sustentabilidade (GETIS) - IFSP-CAR",
         "image_path": "./img/Getis.png",
         "created_at": "2026-05-06 00:00:00",
         "updated_at": "2026-05-06 00:00:00"
@@ -42,7 +42,7 @@
     {
         "id": "partner_enasa",
         "name": "ENASA",
-        "description": "Grupo de pesquisa em Energia, Agua e Saneamento (ENASA) - IFSP-SP",
+        "description": "Grupo de pesquisa em Energia, Água e Saneamento (ENASA) - IFSP-SP",
         "image_path": "./img/enasa.png",
         "created_at": "2026-05-06 00:00:00",
         "updated_at": "2026-05-06 00:00:00"
