@@ -18,8 +18,8 @@ class User {
 
         $stmt = $this->conn->prepare($query);
 
-        $this->username = htmlspecialchars(strip_tags($this->username));
-        $this->password = htmlspecialchars(strip_tags($this->password));
+        $this->username = htmlspecialchars(strip_tags($this->username), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $this->password = htmlspecialchars(strip_tags($this->password), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         $hashed_password = password_hash($this->password, PASSWORD_DEFAULT);
 

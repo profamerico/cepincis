@@ -70,7 +70,7 @@ foreach ($tables as $table) {
                     $value = "<i>NULL</i>";
                 }
 
-                $value = htmlspecialchars((string)$value);
+                $value = htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
                 echo "<td>{$value}</td>";
             }
@@ -82,7 +82,7 @@ foreach ($tables as $table) {
 
     } catch (Exception $e) {
 
-        echo "<p class='error'>Erro: " . htmlspecialchars($e->getMessage()) . "</p>";
+        echo "<p class='error'>Erro: " . htmlspecialchars($e->getMessage(), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . "</p>";
 
     }
 

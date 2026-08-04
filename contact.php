@@ -41,7 +41,7 @@ function contact_render_body(string $text): string
             continue;
         }
 
-        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES, 'UTF-8')) . '</p>';
+        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . '</p>';
     }
 
     return implode(PHP_EOL, $markup);
@@ -85,15 +85,15 @@ function contact_render_block(array $block, string $headingTag, bool $hasContext
     $blockType = (string) ($block['type'] ?? 'text_card');
     ?>
     <article
-        class="<?php echo htmlspecialchars(contact_block_classes($block), ENT_QUOTES, 'UTF-8'); ?>"
-        style="<?php echo htmlspecialchars(contact_block_style($block, $contentManager, $layout), ENT_QUOTES, 'UTF-8'); ?>"
+        class="<?php echo htmlspecialchars(contact_block_classes($block), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+        style="<?php echo htmlspecialchars(contact_block_style($block, $contentManager, $layout), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
     >
         <?php if (($block['eyebrow'] ?? '') !== ''): ?>
-            <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></p>
+            <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
         <?php endif; ?>
 
         <<?php echo $headingTag; ?>>
-            <?php echo htmlspecialchars((string) ($block['title'] ?? 'Bloco'), ENT_QUOTES, 'UTF-8'); ?>
+            <?php echo htmlspecialchars((string) ($block['title'] ?? 'Bloco'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
         </<?php echo $headingTag; ?>>
 
         <?php echo contact_render_body((string) ($block['body'] ?? '')); ?>
@@ -101,11 +101,11 @@ function contact_render_block(array $block, string $headingTag, bool $hasContext
         <?php if (!empty($block['show_context_note']) && $hasContext): ?>
             <div class="public-context-note">
                 <?php if ($projectInterest !== ''): ?>
-                    <p><strong>Projeto:</strong> <?php echo htmlspecialchars($projectInterest, ENT_QUOTES, 'UTF-8'); ?></p>
+                    <p><strong>Projeto:</strong> <?php echo htmlspecialchars($projectInterest, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
                 <?php endif; ?>
 
                 <?php if ($categoryInterest !== ''): ?>
-                    <p><strong>Categoria:</strong> <?php echo htmlspecialchars($categoryInterest, ENT_QUOTES, 'UTF-8'); ?></p>
+                    <p><strong>Categoria:</strong> <?php echo htmlspecialchars($categoryInterest, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
@@ -123,15 +123,15 @@ function contact_render_block(array $block, string $headingTag, bool $hasContext
                     ?>
                     <div class="public-contact-item">
                         <?php if ($itemLabel !== ''): ?>
-                            <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                            <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                         <?php endif; ?>
 
                         <?php if ($itemUrl !== ''): ?>
-                            <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES, 'UTF-8'); ?>">
-                                <?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?>
+                            <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                <?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </a>
                         <?php else: ?>
-                            <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?></span>
+                            <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
@@ -141,18 +141,18 @@ function contact_render_block(array $block, string $headingTag, bool $hasContext
         <?php if ($blockType === 'map_embed' && (string) ($block['embed_url'] ?? '') !== ''): ?>
             <iframe
                 class="public-map-frame"
-                src="<?php echo htmlspecialchars((string) $block['embed_url'], ENT_QUOTES, 'UTF-8'); ?>"
+                src="<?php echo htmlspecialchars((string) $block['embed_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                 loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade"
                 allowfullscreen=""
-                title="<?php echo htmlspecialchars((string) ($block['title'] ?? 'Mapa do CEPIN-CIS'), ENT_QUOTES, 'UTF-8'); ?>"
+                title="<?php echo htmlspecialchars((string) ($block['title'] ?? 'Mapa do CEPIN-CIS'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
             ></iframe>
         <?php endif; ?>
 
         <?php if ($blockType !== 'map_embed' && (string) ($block['cta_label'] ?? '') !== '' && (string) ($block['cta_url'] ?? '') !== ''): ?>
             <div class="hero-actions">
-                <a class="dashboard-btn" href="<?php echo htmlspecialchars((string) $block['cta_url'], ENT_QUOTES, 'UTF-8'); ?>">
-                    <?php echo htmlspecialchars((string) $block['cta_label'], ENT_QUOTES, 'UTF-8'); ?>
+                <a class="dashboard-btn" href="<?php echo htmlspecialchars((string) $block['cta_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                    <?php echo htmlspecialchars((string) $block['cta_label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                 </a>
             </div>
         <?php endif; ?>
@@ -180,13 +180,13 @@ include_once 'includes/header.php';
 <div class="ball"></div>
 
 <main class="page-shell public-shell">
-    <section id="contato" class="content-layout-shell" style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES, 'UTF-8'); ?>">
+    <section id="contato" class="content-layout-shell" style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
         <div class="content-block-reveal-root" data-content-block-reveal-root>
-            <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES, 'UTF-8'); ?>">
+            <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                 <?php if (empty($contactBlocks)): ?>
                     <article class="panel-card public-copy-card public-copy-card--featured content-block content-block--height-regular" style="grid-column: 1 / -1;">
-                        <h1>Contato em atualizacao</h1>
-                        <p>Os blocos desta pagina ainda nao foram publicados no painel mestre.</p>
+                        <h1>Contato em atualização</h1>
+                        <p>Os blocos desta página ainda não foram publicados no painel mestre.</p>
                     </article>
                 <?php else: ?>
                     <?php $pageHeadingUsed = false; ?>
@@ -214,7 +214,7 @@ include_once 'includes/header.php';
             <?php if ($hasOverflowContactBlocks): ?>
                 <div class="content-block-reveal" id="contactOverflowBlocks" data-content-block-reveal>
                     <div class="content-block-reveal__inner" data-content-block-reveal-inner>
-                        <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES, 'UTF-8'); ?>">
+                        <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                             <?php foreach ($overflowContactBlocks as $block): ?>
                                 <?php contact_render_block($block, contact_next_heading_tag($pageHeadingUsed), $hasContext, $projectInterest, $categoryInterest, $contentManager, $contactLayout); ?>
                             <?php endforeach; ?>

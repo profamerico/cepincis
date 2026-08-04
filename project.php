@@ -59,7 +59,7 @@ function project_detail_render_body(string $text): string
             continue;
         }
 
-        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES, 'UTF-8')) . '</p>';
+        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . '</p>';
     }
 
     return implode(PHP_EOL, $markup);
@@ -101,11 +101,11 @@ function project_detail_build_participation_text(array $project, ?array $owner):
 
     $lines = [
         'Escreva para ' . $ownerName . ' e para o CEPIN-CIS apresentando seu interesse em participar de ' . $projectTitle . '.',
-        'No email, vale informar sua vinculacao academica ou profissional, disponibilidade, experiencia anterior e de que forma voce imagina contribuir com o projeto.',
+        'No email, vale informar sua vinculação academica ou profissional, disponibilidade, experiência anterior e de que forma você imagina contribuir com o projeto.',
     ];
 
     if ($category !== '') {
-        $lines[] = 'Como este projeto esta ligado a ' . $category . ', mencionar afinidade com essa area tematica ajuda a equipe a encaminhar melhor a conversa.';
+        $lines[] = 'Como este projeto está ligado a ' . $category . ', mencionar afinidade com essa área temática ajuda a equipe a encaminhar melhor a conversa.';
     }
 
     return implode("\n\n", $lines);
@@ -124,17 +124,17 @@ function project_detail_build_mailto(array $project, ?array $owner, string $cepi
         'tenho interesse em participar do projeto "' . $projectTitle . '".',
         '',
         'Meu nome e:',
-        'Minha vinculacao / area de atuacao:',
+        'Minha vinculação / área de atuação:',
         'Minha disponibilidade estimada:',
         'Como acredito que posso contribuir:',
     ];
 
     if ($category !== '') {
-        $bodyLines[] = 'Area tematica de maior afinidade: ' . $category;
+        $bodyLines[] = 'Área temática de maior afinidade: ' . $category;
     }
 
     $bodyLines[] = '';
-    $bodyLines[] = 'Agradeco e fico a disposicao.';
+    $bodyLines[] = 'Agradeco e fico a disposição.';
 
     $query = [
         'subject' => $subject,
@@ -160,7 +160,7 @@ function project_detail_resolve_banner(array $project): array
     }
 
     $fallbackPaths = [
-        './img/AreasTematicasBG.jpg',
+        './img/ÁreasTemáticasBG.jpg',
         './img/RegulamentoBG.jpg',
         './img/ProjetosBG.jpg',
     ];
@@ -199,8 +199,8 @@ include_once 'includes/header.php';
     <main class="page-shell public-shell project-detail-shell">
         <section class="panel-card public-copy-card public-copy-card--featured project-detail-empty">
             <p class="eyebrow">Projeto</p>
-            <h1>Projeto nao encontrado</h1>
-            <p>Esse link pode ter expirado ou o projeto pode ter sido removido da base publica.</p>
+            <h1>Projeto não encontrado</h1>
+            <p>Esse link pode ter expirado ou o projeto pode ter sido removido da base pública.</p>
             <div class="hero-actions">
                 <a class="dashboard-btn" href="./index.php#projetos">Voltar aos projetos</a>
                 <a class="dashboard-btn dashboard-btn--ghost" href="./contact.php">Entrar em contato</a>
@@ -242,7 +242,7 @@ $displayParticipationText = $participationInfo !== ''
         <?php if ($bannerPath !== ''): ?>
             <img
                 class="project-detail-hero__background"
-                src="<?php echo htmlspecialchars($bannerPath, ENT_QUOTES, 'UTF-8'); ?>"
+                src="<?php echo htmlspecialchars($bannerPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                 alt=""
                 aria-hidden="true"
             >
@@ -253,8 +253,8 @@ $displayParticipationText = $participationInfo !== ''
         <?php if ($bannerPath !== ''): ?>
             <div class="project-banner-source-chip">
                 <span>Origem da imagem</span>
-                <a href="<?php echo htmlspecialchars($bannerPath, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">
-                    <?php echo htmlspecialchars($isFallbackBanner ? 'Imagem institucional CEPIN-CIS' : 'Banner do projeto', ENT_QUOTES, 'UTF-8'); ?>
+                <a href="<?php echo htmlspecialchars($bannerPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener">
+                    <?php echo htmlspecialchars($isFallbackBanner ? 'Imagem institucional CEPIN-CIS' : 'Banner do projeto', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                 </a>
             </div>
         <?php endif; ?>
@@ -264,27 +264,27 @@ $displayParticipationText = $participationInfo !== ''
                 <p class="eyebrow">Projeto CEPIN-CIS</p>
 
                 <div class="project-detail-badge-row">
-                    <span class="project-detail-badge"><?php echo htmlspecialchars((string) ($project['category'] ?? 'Projeto'), ENT_QUOTES, 'UTF-8'); ?></span>
-                    <span class="project-detail-badge project-detail-badge--status project-detail-badge--<?php echo htmlspecialchars($statusKey, ENT_QUOTES, 'UTF-8'); ?>">
-                        <?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>
+                    <span class="project-detail-badge"><?php echo htmlspecialchars((string) ($project['category'] ?? 'Projeto'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                    <span class="project-detail-badge project-detail-badge--status project-detail-badge--<?php echo htmlspecialchars($statusKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                        <?php echo htmlspecialchars($statusLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                     </span>
-                    <span class="project-detail-badge project-detail-badge--auth project-detail-badge--<?php echo htmlspecialchars((string) ($authentication['status'] ?? 'missing'), ENT_QUOTES, 'UTF-8'); ?>">
-                        <?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentacao'), ENT_QUOTES, 'UTF-8'); ?>
+                    <span class="project-detail-badge project-detail-badge--auth project-detail-badge--<?php echo htmlspecialchars((string) ($authentication['status'] ?? 'missing'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                        <?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentação'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                     </span>
                     <?php foreach ($projectTags as $tag): ?>
-                        <span class="project-detail-badge project-detail-badge--tag"><?php echo htmlspecialchars($tag, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <span class="project-detail-badge project-detail-badge--tag"><?php echo htmlspecialchars($tag, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                     <?php endforeach; ?>
                 </div>
 
-                <h1><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto'), ENT_QUOTES, 'UTF-8'); ?></h1>
-                <p class="project-detail-hero__lede"><?php echo htmlspecialchars(project_detail_excerpt($projectDescription), ENT_QUOTES, 'UTF-8'); ?></p>
+                <h1><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h1>
+                <p class="project-detail-hero__lede"><?php echo htmlspecialchars(project_detail_excerpt($projectDescription), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
 
                 <?php if ($isFallbackBanner): ?>
-                    <p class="project-detail-hero__note">Este projeto ainda nao recebeu um banner proprio, entao o portal esta usando um dos fundos editoriais do CEPIN-CIS como capa temporaria.</p>
+                    <p class="project-detail-hero__note">Este projeto ainda não recebeu um banner próprio, então o portal está usando um dos fundos editoriais do CEPIN-CIS como capa temporária.</p>
                 <?php endif; ?>
 
                 <div class="hero-actions">
-                    <a class="dashboard-btn" href="<?php echo htmlspecialchars($participationMailto, ENT_QUOTES, 'UTF-8'); ?>">Quero participar</a>
+                    <a class="dashboard-btn" href="<?php echo htmlspecialchars($participationMailto, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">Quero participar</a>
                     <?php if ($canOpenWorkspace): ?>
                         <a class="dashboard-btn dashboard-btn--ghost" href="project-workspace.php?id=<?php echo urlencode((string) ($project['id'] ?? '')); ?>">Abrir workspace</a>
                     <?php endif; ?>
@@ -295,19 +295,19 @@ $displayParticipationText = $participationInfo !== ''
             <aside class="project-detail-hero__aside">
                 <p class="project-detail-kicker">Contato de entrada</p>
                 <h2>Como esse convite funciona</h2>
-                <p>Ao clicar no CTA, seu cliente de email sera aberto com mensagem pronta para falar com o responsavel pelo projeto e com o CEPIN-CIS.</p>
+                <p>Ao clicar no CTA, seu cliente de email será aberto com mensagem pronta para falar com o responsável pelo projeto e com o CEPIN-CIS.</p>
 
                 <div class="project-detail-contact-stack">
                     <div class="project-detail-contact-item">
-                        <span>Responsavel</span>
-                        <strong><?php echo htmlspecialchars($ownerName, ENT_QUOTES, 'UTF-8'); ?></strong>
-                        <small><?php echo htmlspecialchars($ownerRole, ENT_QUOTES, 'UTF-8'); ?></small>
+                        <span>Responsável</span>
+                        <strong><?php echo htmlspecialchars($ownerName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                        <small><?php echo htmlspecialchars($ownerRole, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
                     </div>
 
                     <div class="project-detail-contact-item">
-                        <span>Email do responsavel</span>
+                        <span>Email do responsável</span>
                         <?php if ($ownerEmail !== ''): ?>
-                            <a href="mailto:<?php echo htmlspecialchars($ownerEmail, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($ownerEmail, ENT_QUOTES, 'UTF-8'); ?></a>
+                            <a href="mailto:<?php echo htmlspecialchars($ownerEmail, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"><?php echo htmlspecialchars($ownerEmail, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></a>
                         <?php else: ?>
                             <strong>Contato centralizado pelo CEPIN-CIS</strong>
                         <?php endif; ?>
@@ -315,7 +315,7 @@ $displayParticipationText = $participationInfo !== ''
 
                     <div class="project-detail-contact-item">
                         <span>Email do CEPIN-CIS</span>
-                        <a href="mailto:<?php echo htmlspecialchars($cepinEmail, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($cepinEmail, ENT_QUOTES, 'UTF-8'); ?></a>
+                        <a href="mailto:<?php echo htmlspecialchars($cepinEmail, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"><?php echo htmlspecialchars($cepinEmail, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></a>
                     </div>
                 </div>
             </aside>
@@ -324,51 +324,51 @@ $displayParticipationText = $participationInfo !== ''
 
     <section class="project-detail-grid">
         <article class="panel-card public-copy-card project-detail-section-card">
-            <p class="eyebrow">Visao geral</p>
+            <p class="eyebrow">Visão geral</p>
             <h2>Sobre o projeto</h2>
             <?php
             echo project_detail_render_body(
                 $projectDescription !== ''
                     ? $projectDescription
-                    : 'Os detalhes completos deste projeto ainda estao sendo publicados pela equipe responsavel.'
+                    : 'Os detalhes completos deste projeto ainda estão sendo publicados pela equipe responsável.'
             );
             ?>
         </article>
 
         <aside class="panel-card project-detail-sidebar">
-            <p class="eyebrow">Ficha rapida</p>
+            <p class="eyebrow">Ficha rápida</p>
             <h2>Resumo do projeto</h2>
 
             <dl class="project-detail-facts">
                 <div>
-                    <dt>Area tematica</dt>
-                    <dd><?php echo htmlspecialchars((string) ($project['category'] ?? 'Projeto'), ENT_QUOTES, 'UTF-8'); ?></dd>
+                    <dt>Área temática</dt>
+                    <dd><?php echo htmlspecialchars((string) ($project['category'] ?? 'Projeto'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></dd>
                 </div>
                 <div>
                     <dt>Status</dt>
-                    <dd><?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?></dd>
+                    <dd><?php echo htmlspecialchars($statusLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></dd>
                 </div>
                 <div>
-                    <dt>Autenticacao</dt>
-                    <dd><?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentacao'), ENT_QUOTES, 'UTF-8'); ?></dd>
+                    <dt>Autenticação</dt>
+                    <dd><?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentação'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></dd>
                 </div>
                 <div>
-                    <dt>Responsavel</dt>
-                    <dd><?php echo htmlspecialchars($ownerName, ENT_QUOTES, 'UTF-8'); ?></dd>
+                    <dt>Responsável</dt>
+                    <dd><?php echo htmlspecialchars($ownerName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></dd>
                 </div>
                 <div>
                     <dt>Criado em</dt>
-                    <dd><?php echo htmlspecialchars(project_detail_format_datetime($project['created_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></dd>
+                    <dd><?php echo htmlspecialchars(project_detail_format_datetime($project['created_at'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></dd>
                 </div>
                 <div>
-                    <dt>Ultima atualizacao</dt>
-                    <dd><?php echo htmlspecialchars(project_detail_format_datetime($project['updated_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></dd>
+                    <dt>Última atualização</dt>
+                    <dd><?php echo htmlspecialchars(project_detail_format_datetime($project['updated_at'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></dd>
                 </div>
             </dl>
 
             <div class="project-detail-sidebar__actions">
-                <a class="dashboard-btn" href="<?php echo htmlspecialchars($participationMailto, ENT_QUOTES, 'UTF-8'); ?>">Enviar manifestacao de interesse</a>
-                <a class="dashboard-btn dashboard-btn--ghost" href="mailto:<?php echo htmlspecialchars($cepinEmail, ENT_QUOTES, 'UTF-8'); ?>">Falar com o CEPIN-CIS</a>
+                <a class="dashboard-btn" href="<?php echo htmlspecialchars($participationMailto, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">Enviar manifestacao de interesse</a>
+                <a class="dashboard-btn dashboard-btn--ghost" href="mailto:<?php echo htmlspecialchars($cepinEmail, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">Falar com o CEPIN-CIS</a>
             </div>
         </aside>
     </section>
@@ -378,17 +378,17 @@ $displayParticipationText = $participationInfo !== ''
             <p class="eyebrow">Timeline</p>
             <h2>Evolucao do projeto</h2>
             <?php if (empty($timelineEvents)): ?>
-                <p>A equipe ainda nao publicou eventos na timeline deste projeto.</p>
+                <p>A equipe ainda não publicou eventos na timeline deste projeto.</p>
             <?php else: ?>
                 <div class="project-timeline project-timeline--public">
                     <?php foreach ($timelineEvents as $event): ?>
-                        <article class="project-timeline-item project-timeline-item--<?php echo htmlspecialchars((string) ($event['event_type'] ?? 'update'), ENT_QUOTES, 'UTF-8'); ?>">
-                            <span class="project-timeline-date"><?php echo htmlspecialchars(project_detail_format_datetime($event['event_date'] ?? null), ENT_QUOTES, 'UTF-8'); ?></span>
+                        <article class="project-timeline-item project-timeline-item--<?php echo htmlspecialchars((string) ($event['event_type'] ?? 'update'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                            <span class="project-timeline-date"><?php echo htmlspecialchars(project_detail_format_datetime($event['event_date'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                             <div class="project-timeline-card">
                                 <div class="project-timeline-card__header">
-                                    <span><?php echo htmlspecialchars($workspaceManager->getTimelineTypeLabel((string) ($event['event_type'] ?? 'update')), ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <span><?php echo htmlspecialchars($workspaceManager->getTimelineTypeLabel((string) ($event['event_type'] ?? 'update')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                 </div>
-                                <h3><?php echo htmlspecialchars((string) ($event['title'] ?? 'Atualizacao'), ENT_QUOTES, 'UTF-8'); ?></h3>
+                                <h3><?php echo htmlspecialchars((string) ($event['title'] ?? 'Atualização'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
                                 <?php echo project_detail_render_body((string) ($event['description'] ?? '')); ?>
                                 <?php if (!empty($event['attachment_path'])): ?>
                                     <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-file.php?kind=timeline&id=<?php echo urlencode((string) ($event['id'] ?? '')); ?>">Baixar anexo</a>
@@ -405,14 +405,14 @@ $displayParticipationText = $participationInfo !== ''
             <h2>Colaboradores</h2>
             <div class="project-detail-contact-stack project-detail-contact-stack--compact">
                 <div class="project-detail-contact-item">
-                    <span>Responsavel</span>
-                    <strong><?php echo htmlspecialchars($ownerName, ENT_QUOTES, 'UTF-8'); ?></strong>
+                    <span>Responsável</span>
+                    <strong><?php echo htmlspecialchars($ownerName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                 </div>
                 <?php foreach ($collaborators as $collaborator): ?>
                     <?php $collaboratorUser = $auth->getUserById((int) ($collaborator['user_id'] ?? 0)); ?>
                     <div class="project-detail-contact-item">
                         <span><?php echo (string) ($collaborator['role'] ?? '') === 'project_admin' ? 'Admin do projeto' : 'Colaborador'; ?></span>
-                        <strong><?php echo htmlspecialchars(project_detail_owner_name($collaboratorUser), ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <strong><?php echo htmlspecialchars(project_detail_owner_name($collaboratorUser), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                     </div>
                 <?php endforeach; ?>
                 <?php if (empty($collaborators)): ?>
@@ -427,7 +427,7 @@ $displayParticipationText = $participationInfo !== ''
 
     <section class="project-detail-grid project-detail-grid--secondary">
         <article class="panel-card public-section-card project-detail-section-card">
-            <p class="eyebrow">Participacao</p>
+            <p class="eyebrow">Participação</p>
             <h2>Como participar</h2>
             <?php echo project_detail_render_body($displayParticipationText); ?>
         </article>
@@ -437,20 +437,20 @@ $displayParticipationText = $participationInfo !== ''
             <h2>O que enviar no primeiro contato</h2>
 
             <ol class="project-detail-steps">
-                <li>Apresente seu nome, vinculacao academica ou profissional e como conheceu o projeto.</li>
-                <li>Explique sua disponibilidade, sua afinidade com a area tematica e de que forma imagina contribuir.</li>
-                <li>Envie a mensagem para o responsavel pelo projeto e mantenha o CEPIN-CIS em copia para facilitar o acompanhamento institucional.</li>
+                <li>Apresente seu nome, vinculação academica ou profissional e como conheceu o projeto.</li>
+                <li>Explique sua disponibilidade, sua afinidade com a área temática e de que forma imagina contribuir.</li>
+                <li>Envie a mensagem para o responsável pelo projeto e mantenha o CEPIN-CIS em cópia para facilitar o acompanhamento institucional.</li>
             </ol>
 
             <div class="project-detail-contact-stack project-detail-contact-stack--compact">
                 <div class="project-detail-contact-item">
-                    <span>Responsavel do projeto</span>
-                    <strong><?php echo htmlspecialchars($ownerName, ENT_QUOTES, 'UTF-8'); ?></strong>
+                    <span>Responsável do projeto</span>
+                    <strong><?php echo htmlspecialchars($ownerName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                 </div>
 
                 <div class="project-detail-contact-item">
                     <span>Canal institucional</span>
-                    <a href="mailto:<?php echo htmlspecialchars($cepinEmail, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($cepinEmail, ENT_QUOTES, 'UTF-8'); ?></a>
+                    <a href="mailto:<?php echo htmlspecialchars($cepinEmail, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"><?php echo htmlspecialchars($cepinEmail, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></a>
                 </div>
             </div>
         </article>

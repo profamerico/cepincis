@@ -46,11 +46,11 @@ class ContentBlockManager
         ],
         'thematic_intro' => [
             'label' => 'Intro de áreas',
-            'description' => 'Bloco de abertura da pagina de Areas Tematicas.',
+            'description' => 'Bloco de abertura da página de Áreas Temáticas.',
         ],
         'thematic_topic' => [
             'label' => 'Área temática',
-            'description' => 'Card com tag, titulo e descricao de uma area tematica.',
+            'description' => 'Card com tag, titulo e descrição de uma área temática.',
         ],
         'thematic_cta' => [
             'label' => 'CTA temático',
@@ -58,11 +58,11 @@ class ContentBlockManager
         ],
         'about_text' => [
             'label' => 'Texto sobre',
-            'description' => 'Card textual para missao, historia ou apresentacao institucional.',
+            'description' => 'Card textual para missão, historia ou apresentacao institucional.',
         ],
         'about_media' => [
             'label' => 'Midia sobre',
-            'description' => 'Card visual com imagem clara e opcionalmente imagem para o tema escuro.',
+            'description' => 'Card visual com imagem clara é opcionalmente imagem para o tema escuro.',
         ],
         'about_list' => [
             'label' => 'Lista sobre',
@@ -252,7 +252,7 @@ class ContentBlockManager
     {
         $pageKey = $this->normalizePageKey($pageKey);
 
-        return self::PAGE_DEFINITIONS[$pageKey]['label'] ?? 'Pagina';
+        return self::PAGE_DEFINITIONS[$pageKey]['label'] ?? 'Página';
     }
 
     public function getTypeLabel(string $type): string
@@ -433,7 +433,7 @@ class ContentBlockManager
         $pageKey = $this->normalizePageKey($pageKey);
 
         if (!$this->pageSupportsLayoutBuilder($pageKey)) {
-            return ['success' => false, 'errors' => ['Essa pagina ainda nao possui um builder estrutural.']];
+            return ['success' => false, 'errors' => ['Essa página ainda não possui um builder estrutural.']];
         }
 
         $layoutData = [
@@ -451,7 +451,7 @@ class ContentBlockManager
         $errors = [];
 
         if ($normalizedLayout['columns'] < $normalizedLayout['mobile_columns']) {
-            $errors[] = 'A grade mobile nao pode ter mais colunas que a grade desktop.';
+            $errors[] = 'A grade mobile não pode ter mais colunas que a grade desktop.';
         }
 
         if ($errors) {
@@ -472,11 +472,11 @@ class ContentBlockManager
         $layouts[$pageKey] = $normalizedLayout;
 
         if (!$this->saveLayouts($layouts)) {
-            return ['success' => false, 'errors' => ['Nao foi possivel salvar a estrutura visual da pagina.']];
+            return ['success' => false, 'errors' => ['Não foi possível salvar a estrutura visual da página.']];
         }
 
         if (!empty($blockStates) && !$this->saveBlocks($blocks)) {
-            return ['success' => false, 'errors' => ['Nao foi possivel salvar o arranjo visual dos blocos.']];
+            return ['success' => false, 'errors' => ['Não foi possível salvar o arranjo visual dos blocos.']];
         }
 
         return ['success' => true, 'layout' => $normalizedLayout];
@@ -489,7 +489,7 @@ class ContentBlockManager
         $blockIndex = $isCreate ? null : $this->findBlockIndex($blocks, $blockId);
 
         if (!$isCreate && $blockIndex === null) {
-            return ['success' => false, 'errors' => ['Bloco nao encontrado.']];
+            return ['success' => false, 'errors' => ['Bloco não encontrado.']];
         }
 
         $pageKey = $this->normalizePageKey((string) ($data['page_key'] ?? 'contact'));
@@ -517,27 +517,27 @@ class ContentBlockManager
         $errors = [];
 
         if ($name === '') {
-            $errors[] = 'Nome interno do bloco e obrigatorio.';
+            $errors[] = 'Nome interno do bloco é obrigatório.';
         }
 
         if ($title === '' && $type !== 'about_media') {
-            $errors[] = 'Titulo do bloco e obrigatorio.';
+            $errors[] = 'Título do bloco é obrigatório.';
         }
 
         if (!$this->isTypeAllowedForPage($pageKey, $type)) {
-            $errors[] = 'Esse tipo de bloco nao esta disponivel para a pagina selecionada.';
+            $errors[] = 'Esse tipo de bloco não está disponível para a página selecionada.';
         }
 
         if (!$this->isWidthAllowedForPage($pageKey, $width)) {
-            $errors[] = 'Esse tamanho horizontal nao esta disponivel para a pagina selecionada.';
+            $errors[] = 'Esse tamanho horizontal não está disponível para a página selecionada.';
         }
 
         if ($type === 'map_embed' && $embedUrl === '') {
-            $errors[] = 'URL de embed e obrigatoria para blocos de mapa.';
+            $errors[] = 'URL de embed é obrigatória para blocos de mapa.';
         }
 
         if ($type === 'about_media' && $mediaUrl === '') {
-            $errors[] = 'Imagem principal e obrigatoria para blocos de midia da pagina Sobre.';
+            $errors[] = 'Imagem principal é obrigatória para blocos de mídia da página Sobre.';
         }
 
         if ($ctaLabel !== '' && $ctaUrl === '') {
@@ -545,7 +545,7 @@ class ContentBlockManager
         }
 
         if ($mediaDarkUrl !== '' && $mediaAlt === '') {
-            $errors[] = 'Informe o texto alternativo quando houver imagem configurada para a pagina Sobre.';
+            $errors[] = 'Informe o texto alternativo quando houver imagem configurada para a página Sobre.';
         }
 
         if ($errors) {
@@ -642,7 +642,7 @@ class ContentBlockManager
 
         $expectedCount = count($pageBlockIds);
         if ($expectedCount !== count($blockStates)) {
-            $errors[] = 'O editor visual da pagina Sobre recebeu uma quantidade inesperada de blocos. Recarregue a pagina e tente novamente.';
+            $errors[] = 'O editor visual da página Sobre recebeu uma quantidade inesperada de blocos. Recarregue a página e tente novamente.';
             return $blocks;
         }
 
@@ -652,7 +652,7 @@ class ContentBlockManager
 
         foreach (array_values($blockStates) as $index => $state) {
             if (!is_array($state)) {
-                $errors[] = 'Um dos blocos enviados pelo editor visual esta em formato invalido.';
+                $errors[] = 'Um dos blocos enviados pelo editor visual está em formato inválido.';
                 continue;
             }
 
@@ -663,12 +663,12 @@ class ContentBlockManager
             }
 
             if (!isset($pageBlockLookup[$blockId])) {
-                $errors[] = 'Um bloco da pagina Sobre nao foi encontrado durante a atualizacao visual.';
+                $errors[] = 'Um bloco da página Sobre não foi encontrado durante a atualização visual.';
                 continue;
             }
 
             if (isset($seenIds[$blockId])) {
-                $errors[] = 'O editor visual duplicou um bloco da pagina Sobre.';
+                $errors[] = 'O editor visual duplicou um bloco da página Sobre.';
                 continue;
             }
 
@@ -677,7 +677,7 @@ class ContentBlockManager
             $status = $this->normalizeStatus((string) ($state['status'] ?? 'published'));
 
             if (!$this->isWidthAllowedForPage($pageKey, $width)) {
-                $errors[] = 'Um bloco recebeu uma largura que nao e valida para a pagina Sobre.';
+                $errors[] = 'Um bloco recebeu uma largura que não e válida para a página Sobre.';
                 continue;
             }
 
@@ -691,7 +691,7 @@ class ContentBlockManager
         }
 
         if (count($seenIds) !== $expectedCount) {
-            $errors[] = 'Nem todos os blocos da pagina Sobre foram enviados pelo editor visual.';
+            $errors[] = 'Nem todos os blocos da página Sobre foram enviados pelo editor visual.';
             return $blocks;
         }
 
@@ -820,10 +820,10 @@ class ContentBlockManager
                 'id' => 'blk_thematic_intro',
                 'page_key' => 'thematic_areas',
                 'type' => 'thematic_intro',
-                'name' => 'Intro Areas Tematicas',
+                'name' => 'Intro Áreas Temáticas',
                 'eyebrow' => 'CEPIN-CIS',
-                'title' => 'Areas tematicas',
-                'body' => 'As Areas Tematicas nas quais serao alinhadas as linhas de pesquisa foram definidas para orientar as atividades do CEPIN-CIS e compreendem:',
+                'title' => 'Áreas temáticas',
+                'body' => 'As Áreas Temáticas nas quais serão alinhadas as linhas de pesquisa foram definidas para orientar as atividades do CEPIN-CIS e compreendem:',
                 'items' => [],
                 'cta_label' => '',
                 'cta_url' => '',
@@ -843,10 +843,10 @@ class ContentBlockManager
                 'id' => 'blk_thematic_educis',
                 'page_key' => 'thematic_areas',
                 'type' => 'thematic_topic',
-                'name' => 'Area Tematica EduCIS',
+                'name' => 'Área Temática EduCIS',
                 'eyebrow' => 'EduCIS',
-                'title' => 'Formacao de recursos humanos para cidades inteligentes e sustentaveis',
-                'body' => 'Desenvolvimento de recursos humanos e metodos ageis de capacitacao para impulsionar a inovacao em Cidades Inteligentes e Sustentaveis.',
+                'title' => 'Formação de recursos humanos para cidades inteligentes e sustentáveis',
+                'body' => 'Desenvolvimento de recursos humanos e métodos ágeis de capacitação para impulsionar a inovação em Cidades Inteligentes e Sustentáveis.',
                 'items' => [],
                 'cta_label' => '',
                 'cta_url' => '',
@@ -866,10 +866,10 @@ class ContentBlockManager
                 'id' => 'blk_thematic_ecomat',
                 'page_key' => 'thematic_areas',
                 'type' => 'thematic_topic',
-                'name' => 'Area Tematica EcoMat',
+                'name' => 'Área Temática EcoMat',
                 'eyebrow' => 'EcoMat',
-                'title' => 'Novos materiais e economia circular',
-                'body' => 'Investigar materiais sustentaveis e promover economia circular, reduzindo o impacto ambiental.',
+                'title' => 'Novos matériais e economia circular',
+                'body' => 'Investigar materiais sustentáveis e promover economia circular, reduzindo o impacto ambiental.',
                 'items' => [],
                 'cta_label' => '',
                 'cta_url' => '',
@@ -889,10 +889,10 @@ class ContentBlockManager
                 'id' => 'blk_thematic_iot',
                 'page_key' => 'thematic_areas',
                 'type' => 'thematic_topic',
-                'name' => 'Area Tematica IoT',
+                'name' => 'Área Temática IoT',
                 'eyebrow' => 'IoT',
-                'title' => 'Desenvolvimento tecnologico e conectividade para cidades inteligentes e sustentaveis',
-                'body' => 'Desenvolver tecnologias avancadas e solucoes de conectividade para criar ambientes urbanos mais inteligentes, eficientes e sustentaveis.',
+                'title' => 'Desenvolvimento tecnológico e conectividade para cidades inteligentes e sustentáveis',
+                'body' => 'Desenvolver tecnologias avançadas e soluções de conectividade para criar ambientes urbanos mais inteligentes, eficientes e sustentáveis.',
                 'items' => [],
                 'cta_label' => '',
                 'cta_url' => '',
@@ -912,7 +912,7 @@ class ContentBlockManager
                 'id' => 'blk_thematic_carbonzero',
                 'page_key' => 'thematic_areas',
                 'type' => 'thematic_topic',
-                'name' => 'Area Tematica CarbonZero',
+                'name' => 'Área Temática CarbonZero',
                 'eyebrow' => 'CarbonZero',
                 'title' => 'Descarbonizacao do ambiente construido',
                 'body' => 'Promover a reducao das emissoes de carbono em edificios, infraestrutura, mobilidade urbana, fontes de energia e saneamento ambiental.',
@@ -935,10 +935,10 @@ class ContentBlockManager
                 'id' => 'blk_thematic_urbansmart',
                 'page_key' => 'thematic_areas',
                 'type' => 'thematic_topic',
-                'name' => 'Area Tematica UrbanSmart',
+                'name' => 'Área Temática UrbanSmart',
                 'eyebrow' => 'UrbanSmart',
                 'title' => 'Monitoramento e operacoes urbanas inteligentes',
-                'body' => 'Desenvolver solucoes para monitorar e gerenciar a infraestrutura urbana com gemeos digitais, plataformas digitais, sistemas autonomos e drones, ampliando a resiliencia climatica.',
+                'body' => 'Desenvolver soluções para monitorar e gerenciar a infraestrutura urbana com gêmeos digitais, plataformas digitais, sistemas autônomos e drones, ampliando a resiliência climática.',
                 'items' => [],
                 'cta_label' => '',
                 'cta_url' => '',
@@ -961,7 +961,7 @@ class ContentBlockManager
                 'name' => 'Regulamento CEPIN-CIS',
                 'eyebrow' => '',
                 'title' => 'Regulamento',
-                'body' => 'O regulamento do Centro de Pesquisa e Inovacao em Cidades Inteligentes e Sustentaveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missao do CEPIN-CIS como espaco de fomento a pesquisa aplicada, a inovacao tecnologica e a reflexao critica sobre os desafios contemporaneos das cidades.' . PHP_EOL . PHP_EOL . 'O regulamento estabelece as diretrizes para a participacao de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensao que dialoguem com as areas tematicas do Centro, alem de abrir espaco para a colaboracao de pesquisadores externos.',
+                'body' => 'O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento a pesquisa aplicada, a inovação tecnológica e a reflexão crítica sobre os desafios contemporâneos das cidades.' . PHP_EOL . PHP_EOL . 'O regulamento estabelece as diretrizes para a participação de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensão que dialoguem com as áreas temáticas do Centro, além de abrir espaço para a colaboração de pesquisadores externos.',
                 'items' => [],
                 'cta_label' => 'Clique aqui para ver o regulamento',
                 'cta_url' => 'https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf',
@@ -981,7 +981,7 @@ class ContentBlockManager
                 'id' => 'blk_thematic_contact',
                 'page_key' => 'thematic_areas',
                 'type' => 'thematic_cta',
-                'name' => 'Contato Areas Tematicas',
+                'name' => 'Contato Áreas Temáticas',
                 'eyebrow' => '',
                 'title' => 'Contato',
                 'body' => 'Quer saber mais ou colaborar com o CEPIN-CIS? Entre em contato com nossa equipe de pesquisa.',
@@ -1013,7 +1013,7 @@ class ContentBlockManager
                 'name' => 'Sobre CEPIN-CIS',
                 'eyebrow' => 'CEPIN-CIS',
                 'title' => 'Sobre nos',
-                'body' => 'O Centro de Pesquisa e Inovacao em Cidades Inteligentes e Sustentaveis (CEPIN-CIS), implementado no IFSP campus Caraguatatuba, tem como missao fomentar o desenvolvimento de cidades inteligentes e sustentaveis. Para isso, atua como um repositorio de tecnologias, um espaco dedicado a experimentacao pratica e um agente de interlocucao capaz de estabelecer conexoes produtivas entre os setores publico e privado.' . PHP_EOL . PHP_EOL . 'Sua atuacao se estrutura de maneira a promover, de forma inclusiva, colaborativa e equitativa, o debate e a construcao de solucoes que contemplem as dimensoes ambientais, economicas, sociais e culturais da sustentabilidade.' . PHP_EOL . PHP_EOL . 'Nesse sentido, o CEPIN-CIS direciona seus esforcos para desenvolver investigacao fundamental ou aplicada voltada ao campo das cidades inteligentes e sustentaveis, aproximando pesquisa, transferencia de tecnologia e aplicacao pratica.',
+                'body' => 'O Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS), implementado no IFSP campus Caraguatatuba, tem como missão fomentar o desenvolvimento de cidades inteligentes e sustentáveis. Para isso, atua como um repositório de tecnologias, um espaço dedicado a experimentação prática e um agente de interlocução capaz de estabelecer conexões produtivas entre os setores público e privado.' . PHP_EOL . PHP_EOL . 'Sua atuação se estrutura de maneira a promover, de forma inclusiva, colaborativa e equitativa, o debaté e a construção de soluções que contemplem as dimensões ambientais, econômicas, sociais e culturais da sustentabilidade.' . PHP_EOL . PHP_EOL . 'Nesse sentido, o CEPIN-CIS direciona seus esforços para desenvolver investigação fundamental ou aplicada voltada ao campo das cidades inteligentes e sustentáveis, aproximando pesquisa, transferência de tecnologia e aplicação pratica.',
                 'items' => [],
                 'cta_label' => '',
                 'cta_url' => '',
@@ -1089,7 +1089,7 @@ class ContentBlockManager
                 'name' => 'Regulamento sobre',
                 'eyebrow' => '',
                 'title' => 'Regulamento',
-                'body' => 'O regulamento do Centro de Pesquisa e Inovacao em Cidades Inteligentes e Sustentaveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missao do CEPIN-CIS como espaco de fomento a pesquisa aplicada, a inovacao tecnologica e a reflexao critica sobre os desafios contemporaneos das cidades.' . PHP_EOL . PHP_EOL . 'O regulamento estabelece as diretrizes para a participacao de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensao que dialoguem com as areas tematicas do Centro, alem de abrir espaco para a colaboracao de pesquisadores externos.',
+                'body' => 'O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento a pesquisa aplicada, a inovação tecnológica e a reflexão crítica sobre os desafios contemporâneos das cidades.' . PHP_EOL . PHP_EOL . 'O regulamento estabelece as diretrizes para a participação de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensão que dialoguem com as áreas temáticas do Centro, além de abrir espaço para a colaboração de pesquisadores externos.',
                 'items' => [],
                 'cta_label' => 'Clique aqui para ver o regulamento',
                 'cta_url' => 'https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf',

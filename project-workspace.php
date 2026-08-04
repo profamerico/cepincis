@@ -69,7 +69,7 @@ function workspace_render_body(string $text): string
     foreach ($paragraphs as $paragraph) {
         $paragraph = trim((string) $paragraph);
         if ($paragraph !== '') {
-            $html[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES, 'UTF-8')) . '</p>';
+            $html[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . '</p>';
         }
     }
 
@@ -80,10 +80,10 @@ function workspace_user_name(array $userMap, int $userId): string
 {
     $user = $userMap[$userId] ?? null;
     if (!is_array($user)) {
-        return 'Usuario #' . $userId;
+        return 'Usuário #' . $userId;
     }
 
-    return trim((string) ($user['fullname'] ?? $user['username'] ?? ('Usuario #' . $userId))) ?: 'Usuario #' . $userId;
+    return trim((string) ($user['fullname'] ?? $user['username'] ?? ('Usuário #' . $userId))) ?: 'Usuário #' . $userId;
 }
 
 function workspace_project_role_label(string $role): string
@@ -121,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postedToken = (string) ($_POST['csrf_token'] ?? '');
 
     if (!hash_equals($csrfToken, $postedToken)) {
-        $flash = ['type' => 'erro', 'message' => 'Sessao expirada. Recarregue a pagina e tente novamente.'];
+        $flash = ['type' => 'erro', 'message' => 'Sessão expirada. Recarregue a página e tente novamente.'];
     } else {
         $action = (string) ($_POST['action'] ?? '');
         $postedProjectId = trim((string) ($_POST['project_id'] ?? $projectId));
@@ -139,12 +139,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     workspace_redirect((string) ($invite['project_id'] ?? ''));
                 }
 
-                $flash = ['type' => 'erro', 'message' => $result['errors'][0] ?? 'Nao foi possivel responder ao convite.'];
+                $flash = ['type' => 'erro', 'message' => $result['errors'][0] ?? 'Não foi possível responder ao convite.'];
                 break;
 
             case 'upload_document':
                 if (!is_array($postedProject) || !$workspaceManager->canManageProject($postedProject, $currentUser)) {
-                    $flash = ['type' => 'erro', 'message' => 'Voce nao pode enviar documentacao para este projeto.'];
+                    $flash = ['type' => 'erro', 'message' => 'Você não pode enviar documentação para este projeto.'];
                     break;
                 }
 
@@ -158,22 +158,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $workspaceManager->notifyAdministrators(
                         $allUsers,
                         'document_pending',
-                        'Documento aguardando aprovacao',
-                        'O projeto "' . (string) ($postedProject['title'] ?? 'Projeto') . '" recebeu uma nova documentacao.',
+                        'Documento aguardando aprovação',
+                        'O projeto "' . (string) ($postedProject['title'] ?? 'Projeto') . '" recebeu uma nova documentação.',
                         $postedProjectId,
                         'admin.php#document-authentication',
                         (int) ($currentUser['id'] ?? 0)
                     );
-                    workspace_set_flash('sucesso', 'Documento enviado para avaliacao administrativa.');
+                    workspace_set_flash('sucesso', 'Documento enviado para avaliação administrativa.');
                     workspace_redirect($postedProjectId, 'documents');
                 }
 
-                $formErrors = [$result['error'] ?? ($result['errors'][0] ?? 'Nao foi possivel enviar o documento.')];
+                $formErrors = [$result['error'] ?? ($result['errors'][0] ?? 'Não foi possível enviar o documento.')];
                 break;
 
             case 'invite_collaborator':
                 if (!is_array($postedProject)) {
-                    $flash = ['type' => 'erro', 'message' => 'Projeto nao encontrado.'];
+                    $flash = ['type' => 'erro', 'message' => 'Projeto não encontrado.'];
                     break;
                 }
 
@@ -185,16 +185,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 );
 
                 if ($result['success']) {
-                    workspace_set_flash('sucesso', 'Convite enviado ao usuario selecionado.');
+                    workspace_set_flash('sucesso', 'Convite enviado ao usuário selecionado.');
                     workspace_redirect($postedProjectId, 'collaborators');
                 }
 
-                $formErrors = $result['errors'] ?? ['Nao foi possivel enviar o convite.'];
+                $formErrors = $result['errors'] ?? ['Não foi possível enviar o convite.'];
                 break;
 
             case 'remove_collaborator':
                 if (!is_array($postedProject)) {
-                    $flash = ['type' => 'erro', 'message' => 'Projeto nao encontrado.'];
+                    $flash = ['type' => 'erro', 'message' => 'Projeto não encontrado.'];
                     break;
                 }
 
@@ -205,12 +205,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     workspace_redirect($postedProjectId, 'collaborators');
                 }
 
-                $formErrors = $result['errors'] ?? ['Nao foi possivel remover o colaborador.'];
+                $formErrors = $result['errors'] ?? ['Não foi possível remover o colaborador.'];
                 break;
 
             case 'add_timeline_event':
                 if (!is_array($postedProject)) {
-                    $flash = ['type' => 'erro', 'message' => 'Projeto nao encontrado.'];
+                    $flash = ['type' => 'erro', 'message' => 'Projeto não encontrado.'];
                     break;
                 }
 
@@ -231,12 +231,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     workspace_redirect($postedProjectId, 'timeline');
                 }
 
-                $formErrors = $result['errors'] ?? ['Nao foi possivel adicionar o evento.'];
+                $formErrors = $result['errors'] ?? ['Não foi possível adicionar o evento.'];
                 break;
 
             case 'update_timeline_event':
                 if (!is_array($postedProject)) {
-                    $flash = ['type' => 'erro', 'message' => 'Projeto nao encontrado.'];
+                    $flash = ['type' => 'erro', 'message' => 'Projeto não encontrado.'];
                     break;
                 }
 
@@ -258,12 +258,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     workspace_redirect($postedProjectId, 'timeline');
                 }
 
-                $formErrors = $result['errors'] ?? ['Nao foi possivel atualizar o evento.'];
+                $formErrors = $result['errors'] ?? ['Não foi possível atualizar o evento.'];
                 break;
 
             case 'delete_timeline_event':
                 if (!is_array($postedProject)) {
-                    $flash = ['type' => 'erro', 'message' => 'Projeto nao encontrado.'];
+                    $flash = ['type' => 'erro', 'message' => 'Projeto não encontrado.'];
                     break;
                 }
 
@@ -278,14 +278,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     workspace_redirect($postedProjectId, 'timeline');
                 }
 
-                $formErrors = $result['errors'] ?? ['Nao foi possivel remover o evento.'];
+                $formErrors = $result['errors'] ?? ['Não foi possível remover o evento.'];
                 break;
         }
     }
 }
 
 if ($projectId !== '' && !is_array($currentProject)) {
-    $pageTitle = 'Projeto nao encontrado | CEPIN-CIS';
+    $pageTitle = 'Projeto não encontrado | CEPIN-CIS';
 }
 ?>
 
@@ -293,13 +293,13 @@ if ($projectId !== '' && !is_array($currentProject)) {
 
 <main class="page-shell app-shell project-workspace-shell">
     <?php if ($flash): ?>
-        <div class="mensagem <?php echo htmlspecialchars((string) ($flash['type'] ?? 'sucesso'), ENT_QUOTES, 'UTF-8'); ?>">
-            <?php echo htmlspecialchars((string) ($flash['message'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
+        <div class="mensagem <?php echo htmlspecialchars((string) ($flash['type'] ?? 'sucesso'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+            <?php echo htmlspecialchars((string) ($flash['message'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
         </div>
     <?php endif; ?>
 
     <?php foreach ($formErrors as $error): ?>
-        <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8'); ?></div>
+        <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
     <?php endforeach; ?>
 
     <?php if ($projectId === ''): ?>
@@ -310,14 +310,14 @@ if ($projectId !== '' && !is_array($currentProject)) {
 
         <section class="panel-hero">
             <div class="panel-hero-main">
-                <p class="eyebrow">Colaboracao</p>
+                <p class="eyebrow">Colaboração</p>
                 <h1>Workspace dos projetos</h1>
-                <p class="hero-copy">Acompanhe convites, documentacao, colaboradores e timeline dos projetos em que voce participa.</p>
+                <p class="hero-copy">Acompanhe convites, documentação, colaboradores e timeline dos projetos em que você participa.</p>
             </div>
             <aside class="panel-hero-aside">
                 <span class="dashboard-badge"><?php echo count($pendingInvites); ?> convite(s)</span>
                 <h2>Seu acesso</h2>
-                <p>Projetos aparecem aqui quando voce e responsavel, colaborador ativo ou administrador da plataforma.</p>
+                <p>Projetos aparecem aqui quando você é responsável, colaborador ativo ou administrador da plataforma.</p>
             </aside>
         </section>
 
@@ -331,15 +331,15 @@ if ($projectId !== '' && !is_array($currentProject)) {
                 </div>
 
                 <?php if (empty($accessibleProjects)): ?>
-                    <p class="admin-empty">Voce ainda nao possui projetos com workspace liberado.</p>
+                    <p class="admin-empty">Você ainda não possui projetos com workspace liberado.</p>
                 <?php else: ?>
                     <div class="project-workspace-list">
                         <?php foreach ($accessibleProjects as $project): ?>
                             <?php $authentication = $workspaceManager->getAuthenticationStatus($project); ?>
                             <a class="project-workspace-card" href="project-workspace.php?id=<?php echo urlencode((string) ($project['id'] ?? '')); ?>">
-                                <span><?php echo htmlspecialchars((string) ($project['category'] ?? 'Projeto'), ENT_QUOTES, 'UTF-8'); ?></span>
-                                <strong><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto'), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                <small><?php echo htmlspecialchars((string) $authentication['label'], ENT_QUOTES, 'UTF-8'); ?></small>
+                                <span><?php echo htmlspecialchars((string) ($project['category'] ?? 'Projeto'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                <strong><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                                <small><?php echo htmlspecialchars((string) $authentication['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
                             </a>
                         <?php endforeach; ?>
                     </div>
@@ -362,20 +362,20 @@ if ($projectId !== '' && !is_array($currentProject)) {
                             <?php foreach ($pendingInvites as $invite): ?>
                                 <?php $inviteProject = $projectManager->getProject((string) ($invite['project_id'] ?? '')); ?>
                                 <article class="notification-item">
-                                    <strong><?php echo htmlspecialchars(is_array($inviteProject) ? (string) ($inviteProject['title'] ?? 'Projeto') : 'Projeto', ENT_QUOTES, 'UTF-8'); ?></strong>
-                                    <span><?php echo htmlspecialchars(workspace_project_role_label((string) ($invite['role'] ?? 'collaborator')), ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <strong><?php echo htmlspecialchars(is_array($inviteProject) ? (string) ($inviteProject['title'] ?? 'Projeto') : 'Projeto', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                                    <span><?php echo htmlspecialchars(workspace_project_role_label((string) ($invite['role'] ?? 'collaborator')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                     <div class="table-actions">
                                         <form method="POST">
-                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                             <input type="hidden" name="action" value="respond_invite">
-                                            <input type="hidden" name="invite_id" value="<?php echo htmlspecialchars((string) ($invite['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                            <input type="hidden" name="invite_id" value="<?php echo htmlspecialchars((string) ($invite['id'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                             <input type="hidden" name="response" value="accepted">
                                             <button class="dashboard-btn admin-btn-small" type="submit">Aceitar</button>
                                         </form>
                                         <form method="POST">
-                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                             <input type="hidden" name="action" value="respond_invite">
-                                            <input type="hidden" name="invite_id" value="<?php echo htmlspecialchars((string) ($invite['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                            <input type="hidden" name="invite_id" value="<?php echo htmlspecialchars((string) ($invite['id'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                             <input type="hidden" name="response" value="rejected">
                                             <button class="dashboard-btn admin-btn-danger" type="submit">Recusar</button>
                                         </form>
@@ -390,15 +390,15 @@ if ($projectId !== '' && !is_array($currentProject)) {
     <?php elseif (!is_array($currentProject)): ?>
         <section class="panel-card project-detail-empty">
             <p class="eyebrow">Workspace</p>
-            <h1>Projeto nao encontrado</h1>
-            <p>O workspace solicitado nao existe ou foi removido.</p>
+            <h1>Projeto não encontrado</h1>
+            <p>O workspace solicitado não existe ou foi removido.</p>
             <a class="dashboard-btn" href="project-workspace.php">Voltar aos workspaces</a>
         </section>
     <?php elseif (!$workspaceManager->canViewWorkspace($currentProject, $currentUser)): ?>
         <section class="panel-card project-detail-empty">
             <p class="eyebrow">Acesso restrito</p>
-            <h1>Voce nao participa deste projeto</h1>
-            <p>Somente responsaveis, colaboradores e administradores podem abrir este workspace.</p>
+            <h1>Você não participa deste projeto</h1>
+            <p>Somente responsáveis, colaboradores e administradores podem abrir este workspace.</p>
             <a class="dashboard-btn" href="dashboard.php">Voltar ao dashboard</a>
         </section>
     <?php else: ?>
@@ -424,19 +424,19 @@ if ($projectId !== '' && !is_array($currentProject)) {
         <section class="panel-hero">
             <div class="panel-hero-main">
                 <p class="eyebrow">Workspace do projeto</p>
-                <h1><?php echo htmlspecialchars((string) ($currentProject['title'] ?? 'Projeto'), ENT_QUOTES, 'UTF-8'); ?></h1>
-                <p class="hero-copy"><?php echo htmlspecialchars((string) ($currentProject['description'] ?? 'Mantenha a documentacao, colaboradores e timeline atualizados.'), ENT_QUOTES, 'UTF-8'); ?></p>
+                <h1><?php echo htmlspecialchars((string) ($currentProject['title'] ?? 'Projeto'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h1>
+                <p class="hero-copy"><?php echo htmlspecialchars((string) ($currentProject['description'] ?? 'Mantenha a documentação, colaboradores e timeline atualizados.'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
                 <div class="hero-actions">
                     <a class="dashboard-btn" href="#timeline">Atualizar timeline</a>
-                    <a class="dashboard-btn dashboard-btn--ghost" href="project.php?id=<?php echo urlencode($projectId); ?>">Ver pagina publica</a>
+                    <a class="dashboard-btn dashboard-btn--ghost" href="project.php?id=<?php echo urlencode($projectId); ?>">Ver página pública</a>
                 </div>
             </div>
             <aside class="panel-hero-aside">
-                <span class="dashboard-badge dashboard-badge--<?php echo htmlspecialchars((string) $authentication['status'], ENT_QUOTES, 'UTF-8'); ?>">
-                    <?php echo htmlspecialchars((string) $authentication['label'], ENT_QUOTES, 'UTF-8'); ?>
+                <span class="dashboard-badge dashboard-badge--<?php echo htmlspecialchars((string) $authentication['status'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                    <?php echo htmlspecialchars((string) $authentication['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                 </span>
                 <h2>Status documental</h2>
-                <p>Um projeto so e considerado autenticado quando algum documento PDF ou DOCX for aprovado por administrador.</p>
+                <p>Um projeto so é considerado autenticado quando algum documento PDF ou DOCX for aprovado por administrador.</p>
             </aside>
         </section>
 
@@ -444,7 +444,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
             <article class="metric-card">
                 <span class="metric-label">Documentos</span>
                 <strong class="metric-value"><?php echo count($documents); ?></strong>
-                <p>Arquivos enviados para validacao.</p>
+                <p>Arquivos enviados para válidacao.</p>
             </article>
             <article class="metric-card">
                 <span class="metric-label">Colaboradores</span>
@@ -459,7 +459,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
             <article class="metric-card">
                 <span class="metric-label">Convites</span>
                 <strong class="metric-value"><?php echo count($pendingProjectInvites); ?></strong>
-                <p>Solicitacoes aguardando resposta.</p>
+                <p>Solicitações aguardando resposta.</p>
             </article>
         </section>
 
@@ -468,25 +468,25 @@ if ($projectId !== '' && !is_array($currentProject)) {
                 <div class="panel-card-header">
                     <div>
                         <p class="eyebrow">Autenticador</p>
-                        <h2>Documentacao do projeto</h2>
-                        <p class="admin-subtitle">Envie PDF ou DOCX de ate 10 MB. O arquivo fica pendente ate avaliacao administrativa.</p>
+                        <h2>Documentação do projeto</h2>
+                        <p class="admin-subtitle">Envie PDF ou DOCX de até 10 MB. O arquivo fica pendente até avaliação administrativa.</p>
                     </div>
                 </div>
 
                 <?php if ($canManageProject): ?>
                     <form method="POST" enctype="multipart/form-data" class="stack-form">
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="upload_document">
-                        <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                         <div class="form-group">
-                            <label for="document_file">Arquivo de documentacao</label>
+                            <label for="document_file">Arquivo de documentação</label>
                             <input type="file" id="document_file" name="document_file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" required>
-                            <p class="form-help">O envio valida extensao, tamanho, MIME e assinatura basica do arquivo.</p>
+                            <p class="form-help">O envio válida extensão, tamanho, MIME e assinatura basica do arquivo.</p>
                         </div>
                         <button type="submit" class="dashboard-btn">Enviar documento</button>
                     </form>
                 <?php else: ?>
-                    <p class="admin-empty">Somente o responsavel, admin do projeto ou administrador global pode enviar documentacao.</p>
+                    <p class="admin-empty">Somente o responsável, admin do projeto ou administrador global pode enviar documentação.</p>
                 <?php endif; ?>
             </article>
 
@@ -494,7 +494,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
                 <article class="panel-card">
                     <div class="panel-card-header">
                         <div>
-                            <p class="eyebrow">Historico</p>
+                            <p class="eyebrow">Histórico</p>
                             <h2>Arquivos enviados</h2>
                         </div>
                     </div>
@@ -506,11 +506,11 @@ if ($projectId !== '' && !is_array($currentProject)) {
                             <?php foreach ($documents as $document): ?>
                                 <article class="document-row">
                                     <div>
-                                        <strong><?php echo htmlspecialchars((string) ($document['original_name'] ?? 'Documento'), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                        <span><?php echo htmlspecialchars(workspace_format_datetime($document['created_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?> por <?php echo htmlspecialchars(workspace_user_name($userMap, (int) ($document['uploaded_by_user_id'] ?? 0)), ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <strong><?php echo htmlspecialchars((string) ($document['original_name'] ?? 'Documento'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                                        <span><?php echo htmlspecialchars(workspace_format_datetime($document['created_at'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?> por <?php echo htmlspecialchars(workspace_user_name($userMap, (int) ($document['uploaded_by_user_id'] ?? 0)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                     </div>
                                     <div class="document-row__actions">
-                                        <span class="admin-pill admin-pill--<?php echo htmlspecialchars((string) ($document['status'] ?? 'pending'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($workspaceManager->getAuthenticationLabel((string) ($document['status'] ?? 'pending')), ENT_QUOTES, 'UTF-8'); ?></span>
+                                        <span class="admin-pill admin-pill--<?php echo htmlspecialchars((string) ($document['status'] ?? 'pending'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"><?php echo htmlspecialchars($workspaceManager->getAuthenticationLabel((string) ($document['status'] ?? 'pending')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                         <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-file.php?kind=document&id=<?php echo urlencode((string) ($document['id'] ?? '')); ?>">Baixar</a>
                                     </div>
                                 </article>
@@ -523,20 +523,20 @@ if ($projectId !== '' && !is_array($currentProject)) {
                     <div class="panel-card-header">
                         <div>
                             <p class="eyebrow">Auditoria</p>
-                            <h2>Historico de autenticacao</h2>
+                            <h2>Histórico de autenticação</h2>
                         </div>
                     </div>
 
                     <?php if (empty($authenticationHistory)): ?>
-                        <p class="admin-empty">Sem movimentacoes de autenticacao ate agora.</p>
+                        <p class="admin-empty">Sem movimentacoes de autenticação até agora.</p>
                     <?php else: ?>
                         <ul class="workspace-audit-list">
                             <?php foreach ($authenticationHistory as $entry): ?>
                                 <li>
-                                    <strong><?php echo htmlspecialchars((string) ($entry['action'] ?? 'evento'), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                    <span><?php echo htmlspecialchars(workspace_format_datetime($entry['created_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <strong><?php echo htmlspecialchars((string) ($entry['action'] ?? 'evento'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                                    <span><?php echo htmlspecialchars(workspace_format_datetime($entry['created_at'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                     <?php if (trim((string) ($entry['notes'] ?? '')) !== ''): ?>
-                                        <small><?php echo htmlspecialchars((string) $entry['notes'], ENT_QUOTES, 'UTF-8'); ?></small>
+                                        <small><?php echo htmlspecialchars((string) $entry['notes'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
                                     <?php endif; ?>
                                 </li>
                             <?php endforeach; ?>
@@ -558,22 +558,22 @@ if ($projectId !== '' && !is_array($currentProject)) {
                 <div class="collaborator-list">
                     <article class="collaborator-row">
                         <div>
-                            <strong><?php echo htmlspecialchars(workspace_user_name($userMap, $ownerId), ENT_QUOTES, 'UTF-8'); ?></strong>
-                            <span>Criador / responsavel</span>
+                            <strong><?php echo htmlspecialchars(workspace_user_name($userMap, $ownerId), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                            <span>Criador / responsável</span>
                         </div>
                     </article>
                     <?php foreach ($collaborators as $collaborator): ?>
                         <?php $collaboratorUserId = (int) ($collaborator['user_id'] ?? 0); ?>
                         <article class="collaborator-row">
                             <div>
-                                <strong><?php echo htmlspecialchars(workspace_user_name($userMap, $collaboratorUserId), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                <span><?php echo htmlspecialchars(workspace_project_role_label((string) ($collaborator['role'] ?? 'collaborator')), ENT_QUOTES, 'UTF-8'); ?></span>
+                                <strong><?php echo htmlspecialchars(workspace_user_name($userMap, $collaboratorUserId), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                                <span><?php echo htmlspecialchars(workspace_project_role_label((string) ($collaborator['role'] ?? 'collaborator')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                             </div>
                             <?php if ($canManageProject): ?>
-                                <form method="POST" onsubmit="return confirm('Remover este colaborador?');">
-                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                <form method="POST" onsubmit="return confirm('Remover esté colaborador?');">
+                                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                     <input type="hidden" name="action" value="remove_collaborator">
-                                    <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES, 'UTF-8'); ?>">
+                                    <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                     <input type="hidden" name="collaborator_user_id" value="<?php echo $collaboratorUserId; ?>">
                                     <button type="submit" class="dashboard-btn admin-btn-danger">Remover</button>
                                 </form>
@@ -594,11 +594,11 @@ if ($projectId !== '' && !is_array($currentProject)) {
 
                     <?php if ($canManageProject): ?>
                         <form method="POST" class="stack-form">
-                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                             <input type="hidden" name="action" value="invite_collaborator">
-                            <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES, 'UTF-8'); ?>">
+                            <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                             <div class="form-group">
-                                <label for="invited_user_id">Usuario</label>
+                                <label for="invited_user_id">Usuário</label>
                                 <select id="invited_user_id" name="invited_user_id" required>
                                     <option value="">Selecione</option>
                                     <?php foreach ($allUsers as $listedUser): ?>
@@ -606,7 +606,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
                                         <?php if (isset($blockedInviteUserIds[$listedUserId])) {
                                             continue;
                                         } ?>
-                                        <option value="<?php echo $listedUserId; ?>"><?php echo htmlspecialchars((string) ($listedUser['fullname'] ?? $listedUser['username']), ENT_QUOTES, 'UTF-8'); ?></option>
+                                        <option value="<?php echo $listedUserId; ?>"><?php echo htmlspecialchars((string) ($listedUser['fullname'] ?? $listedUser['username']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></option>
                                     <?php endforeach; ?>
                                 </select>
                             </div>
@@ -637,8 +637,8 @@ if ($projectId !== '' && !is_array($currentProject)) {
                         <ul class="workspace-audit-list">
                             <?php foreach ($pendingProjectInvites as $invite): ?>
                                 <li>
-                                    <strong><?php echo htmlspecialchars(workspace_user_name($userMap, (int) ($invite['invited_user_id'] ?? 0)), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                    <span><?php echo htmlspecialchars(workspace_project_role_label((string) ($invite['role'] ?? 'collaborator')), ENT_QUOTES, 'UTF-8'); ?></span>
+                                    <strong><?php echo htmlspecialchars(workspace_user_name($userMap, (int) ($invite['invited_user_id'] ?? 0)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                                    <span><?php echo htmlspecialchars(workspace_project_role_label((string) ($invite['role'] ?? 'collaborator')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                 </li>
                             <?php endforeach; ?>
                         </ul>
@@ -658,12 +658,12 @@ if ($projectId !== '' && !is_array($currentProject)) {
 
                 <?php if ($canEditTimeline): ?>
                     <form method="POST" enctype="multipart/form-data" class="stack-form">
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="add_timeline_event">
-                        <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                         <div class="form-grid-2">
                             <div class="form-group">
-                                <label for="timeline_title">Titulo</label>
+                                <label for="timeline_title">Título</label>
                                 <input type="text" id="timeline_title" name="timeline_title" required>
                             </div>
                             <div class="form-group">
@@ -675,23 +675,23 @@ if ($projectId !== '' && !is_array($currentProject)) {
                             <label for="timeline_event_type">Tipo</label>
                             <select id="timeline_event_type" name="timeline_event_type">
                                 <?php foreach ($workspaceManager->getTimelineTypeOptions() as $typeKey => $typeLabel): ?>
-                                    <option value="<?php echo htmlspecialchars((string) $typeKey, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars((string) $typeLabel, ENT_QUOTES, 'UTF-8'); ?></option>
+                                    <option value="<?php echo htmlspecialchars((string) $typeKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"><?php echo htmlspecialchars((string) $typeLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="timeline_description">Descricao</label>
+                            <label for="timeline_description">Descrição</label>
                             <textarea id="timeline_description" name="timeline_description" rows="5" required></textarea>
                         </div>
                         <div class="form-group">
                             <label for="timeline_attachment">Anexo opcional</label>
                             <input type="file" id="timeline_attachment" name="timeline_attachment" accept=".pdf,.docx,.jpg,.jpeg,.png,.webp,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png,image/webp">
-                            <p class="form-help">Anexos aceitos: PDF, DOCX, JPG, PNG ou WEBP ate 8 MB.</p>
+                            <p class="form-help">Anexos aceitos: PDF, DOCX, JPG, PNG ou WEBP até 8 MB.</p>
                         </div>
                         <button class="dashboard-btn" type="submit">Publicar evento</button>
                     </form>
                 <?php else: ?>
-                    <p class="admin-empty">Seu papel atual permite acompanhar, mas nao editar a timeline.</p>
+                    <p class="admin-empty">Seu papel atual permite acompanhar, mas não editar a timeline.</p>
                 <?php endif; ?>
             </article>
 
@@ -699,7 +699,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
                 <div class="panel-card-header">
                     <div>
                         <p class="eyebrow">Linha do tempo</p>
-                        <h2>Evolucao publica</h2>
+                        <h2>Evolução pública</h2>
                     </div>
                 </div>
 
@@ -709,14 +709,14 @@ if ($projectId !== '' && !is_array($currentProject)) {
                     <div class="project-timeline">
                         <?php foreach ($timelineEvents as $event): ?>
                             <?php $canEditEvent = $workspaceManager->canEditTimelineEvent($currentProject, $event, $currentUser); ?>
-                            <article class="project-timeline-item project-timeline-item--<?php echo htmlspecialchars((string) ($event['event_type'] ?? 'update'), ENT_QUOTES, 'UTF-8'); ?>">
-                                <span class="project-timeline-date"><?php echo htmlspecialchars(workspace_format_date($event['event_date'] ?? null), ENT_QUOTES, 'UTF-8'); ?></span>
+                            <article class="project-timeline-item project-timeline-item--<?php echo htmlspecialchars((string) ($event['event_type'] ?? 'update'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                <span class="project-timeline-date"><?php echo htmlspecialchars(workspace_format_date($event['event_date'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                 <div class="project-timeline-card">
                                     <div class="project-timeline-card__header">
-                                        <span><?php echo htmlspecialchars($workspaceManager->getTimelineTypeLabel((string) ($event['event_type'] ?? 'update')), ENT_QUOTES, 'UTF-8'); ?></span>
-                                        <small><?php echo htmlspecialchars(workspace_user_name($userMap, (int) ($event['author_user_id'] ?? 0)), ENT_QUOTES, 'UTF-8'); ?></small>
+                                        <span><?php echo htmlspecialchars($workspaceManager->getTimelineTypeLabel((string) ($event['event_type'] ?? 'update')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                        <small><?php echo htmlspecialchars(workspace_user_name($userMap, (int) ($event['author_user_id'] ?? 0)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
                                     </div>
-                                    <h3><?php echo htmlspecialchars((string) ($event['title'] ?? 'Evento'), ENT_QUOTES, 'UTF-8'); ?></h3>
+                                    <h3><?php echo htmlspecialchars((string) ($event['title'] ?? 'Evento'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
                                     <?php echo workspace_render_body((string) ($event['description'] ?? '')); ?>
                                     <?php if (!empty($event['attachment_path'])): ?>
                                         <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-file.php?kind=timeline&id=<?php echo urlencode((string) ($event['id'] ?? '')); ?>">Baixar anexo</a>
@@ -726,33 +726,33 @@ if ($projectId !== '' && !is_array($currentProject)) {
                                         <details class="timeline-edit-details">
                                             <summary>Editar evento</summary>
                                             <form method="POST" enctype="multipart/form-data" class="stack-form">
-                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                                 <input type="hidden" name="action" value="update_timeline_event">
-                                                <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES, 'UTF-8'); ?>">
-                                                <input type="hidden" name="timeline_event_id" value="<?php echo htmlspecialchars((string) ($event['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                                <input type="hidden" name="timeline_event_id" value="<?php echo htmlspecialchars((string) ($event['id'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                                 <div class="form-group">
-                                                    <label>Titulo</label>
-                                                    <input type="text" name="timeline_title" value="<?php echo htmlspecialchars((string) ($event['title'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" required>
+                                                    <label>Título</label>
+                                                    <input type="text" name="timeline_title" value="<?php echo htmlspecialchars((string) ($event['title'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" required>
                                                 </div>
                                                 <div class="form-grid-2">
                                                     <div class="form-group">
                                                         <label>Data</label>
-                                                        <input type="date" name="timeline_event_date" value="<?php echo htmlspecialchars((string) ($event['event_date'] ?? date('Y-m-d')), ENT_QUOTES, 'UTF-8'); ?>" required>
+                                                        <input type="date" name="timeline_event_date" value="<?php echo htmlspecialchars((string) ($event['event_date'] ?? date('Y-m-d')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" required>
                                                     </div>
                                                     <div class="form-group">
                                                         <label>Tipo</label>
                                                         <select name="timeline_event_type">
                                                             <?php foreach ($workspaceManager->getTimelineTypeOptions() as $typeKey => $typeLabel): ?>
-                                                                <option value="<?php echo htmlspecialchars((string) $typeKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) ($event['event_type'] ?? '') === (string) $typeKey ? 'selected' : ''; ?>>
-                                                                    <?php echo htmlspecialchars((string) $typeLabel, ENT_QUOTES, 'UTF-8'); ?>
+                                                                <option value="<?php echo htmlspecialchars((string) $typeKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo (string) ($event['event_type'] ?? '') === (string) $typeKey ? 'selected' : ''; ?>>
+                                                                    <?php echo htmlspecialchars((string) $typeLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                                                 </option>
                                                             <?php endforeach; ?>
                                                         </select>
                                                     </div>
                                                 </div>
                                                 <div class="form-group">
-                                                    <label>Descricao</label>
-                                                    <textarea name="timeline_description" rows="4" required><?php echo htmlspecialchars((string) ($event['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                                                    <label>Descrição</label>
+                                                    <textarea name="timeline_description" rows="4" required><?php echo htmlspecialchars((string) ($event['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></textarea>
                                                 </div>
                                                 <div class="form-group">
                                                     <label>Substituir anexo</label>
@@ -763,10 +763,10 @@ if ($projectId !== '' && !is_array($currentProject)) {
                                                 </div>
                                             </form>
                                             <form method="POST" onsubmit="return confirm('Remover este evento da timeline?');">
-                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                                 <input type="hidden" name="action" value="delete_timeline_event">
-                                                <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES, 'UTF-8'); ?>">
-                                                <input type="hidden" name="timeline_event_id" value="<?php echo htmlspecialchars((string) ($event['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                                <input type="hidden" name="timeline_event_id" value="<?php echo htmlspecialchars((string) ($event['id'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                                 <button class="dashboard-btn admin-btn-danger" type="submit">Remover evento</button>
                                             </form>
                                         </details>

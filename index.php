@@ -2,6 +2,7 @@
 $pageTitle = 'CEPIN-CIS';
 $bodyClass = 'smooth-scroll-page home-page public-page';
 $regulationUrl = 'https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf';
+header('Content-Type: text/html; charset=UTF-8');
 
 require_once 'models/ContentBlock.php';
 require_once 'models/Partner.php';
@@ -44,16 +45,16 @@ $homepageResearchUsers = array_values(array_filter($homepageUsers, static functi
 
 $implementationHighlights = [
     [
-        'title' => 'Formacao de recursos humanos para cidades inteligentes e sustentaveis',
-        'description' => 'Desenvolvimento de recursos humanos e metodos ageis de capacitacao para impulsionar a inovacao em Cidades Inteligentes e Sustentaveis.',
+        'title' => 'Formação de recursos humanos para cidades inteligentes e sustentáveis',
+        'description' => 'Desenvolvimento de recursos humanos e métodos ágeis de capacitação para impulsionar a inovação em Cidades Inteligentes e Sustentáveis.',
     ],
     [
-        'title' => 'Novos materiais e economia circular',
-        'description' => 'Investigar materiais sustentaveis e promover economia circular, reduzindo o impacto ambiental.',
+        'title' => 'Novos matériais e economia circular',
+        'description' => 'Investigar materiais sustentáveis e promover economia circular, reduzindo o impacto ambiental.',
     ],
     [
-        'title' => 'Desenvolvimento tecnologico e conectividade para cidades inteligentes e sustentaveis',
-        'description' => 'Desenvolver tecnologias avancadas e solucoes de conectividade para criar ambientes urbanos mais inteligentes, eficientes e sustentaveis.',
+        'title' => 'Desenvolvimento tecnológico e conectividade para cidades inteligentes e sustentáveis',
+        'description' => 'Desenvolver tecnologias avançadas e soluções de conectividade para criar ambientes urbanos mais inteligentes, eficientes e sustentáveis.',
     ],
     [
         'title' => 'Descarbonizacao do ambiente construido',
@@ -61,7 +62,7 @@ $implementationHighlights = [
     ],
     [
         'title' => 'Monitoramento e operacoes urbanas inteligentes',
-        'description' => 'Desenvolver solucoes para monitorar e gerenciar a infraestrutura urbana com plataformas digitais, sistemas autonomos e drones.',
+        'description' => 'Desenvolver soluções para monitorar e gerenciar a infraestrutura urbana com plataformas digitais, sistemas autônomos e drones.',
     ],
 ];
 
@@ -151,7 +152,7 @@ function home_render_body(string $text): string
             continue;
         }
 
-        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES, 'UTF-8')) . '</p>';
+        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . '</p>';
     }
 
     return implode(PHP_EOL, $markup);
@@ -159,7 +160,7 @@ function home_render_body(string $text): string
 
 $defaultAboutTextBlock = [
     'title' => 'Sobre',
-    'body' => "Os principais objetivos do CEPIN-CIS sao desenvolver investigacao fundamental ou aplicada focada em cidades inteligentes e sustentaveis, contribuir ativamente para a inovacao por meio da transferencia de tecnologia e oferecer atividades de extensao.\n\nO Centro de Pesquisa e Inovacao em Cidades Inteligentes e Sustentaveis (CEPIN-CIS), implementado no IFSP campus Caraguatatuba, tem como missao fomentar o desenvolvimento de cidades inteligentes e sustentaveis, funcionando como um repositorio de tecnologias, laboratorio de aplicacao e agente de interlocucao entre os setores publico e privado.",
+    'body' => "Os principais objetivos do CEPIN-CIS são desenvolver investigação fundamental ou aplicada focada em cidades inteligentes e sustentáveis, contribuir ativamente para a inovação por meio da transferência de tecnologia e oferecer atividades de extensão.\n\nO Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS), implementado no IFSP campus Caraguatatuba, tem como missão fomentar o desenvolvimento de cidades inteligentes e sustentáveis, funcionando como um repositório de tecnologias, laboratório de aplicação e agente de interlocução entre os setores público e privado.",
     'cta_label' => 'Saiba mais',
     'cta_url' => './about.php#sobre',
 ];
@@ -217,20 +218,20 @@ include_once 'includes/header.php';
         <div class="full-screen">
             <section class="hero">
                 <h1>CEPIN-CIS</h1>
-                <h2>Centro de Pesquisa e Inovacao em Cidades Inteligentes</h2>
+                <h2>Centro de Pesquisa e Inovação em Cidades Inteligentes</h2>
                 <div class="hero-buttons">
                     <a href="./about.php#sobre" class="btn big">Saiba Mais</a>
                     <a href="./contact.php" class="btn big">Entre em Contato</a>
                 </div>
             </section>
 
-            <section class="secao-publicacoes-recentes">
-                <div class="cabecalho-publicacoes cabecalho-publicacoes--home">
+            <section class="seção-publicações-recentes">
+                <div class="cabecalho-publicações cabecalho-publicações--home">
                     <div>
-                        <h3 class="titulo-categoria-publicacoes">do CEPIN-CIS:</h3>
-                        <h2 class="titulo-principal-publicacoes">Projetos</h2>
+                        <h3 class="titulo-categoria-publicações">do CEPIN-CIS:</h3>
+                        <h2 class="titulo-principal-publicações">Projetos</h2>
                     </div>
-                    <p class="subtitulo-publicacoes-home">Um recorte dos projetos reais cadastrados no portal, com busca por termo e filtros por tags para facilitar a exploracao.</p>
+                    <p class="subtitulo-publicações-home">Um recorte dos projetos reais cadastrados no portal, com busca por termo e filtros por tags para facilitar a exploracao.</p>
                 </div>
 
                 <div class="barra-pesquisa">
@@ -245,16 +246,16 @@ include_once 'includes/header.php';
                 <div class="filtros-tags">
                     <button type="button" data-tag="todos" class="active">Todas</button>
                     <?php foreach ($homepageProjectTags as $tag): ?>
-                        <button type="button" data-tag="<?php echo htmlspecialchars($tag, ENT_QUOTES, 'UTF-8'); ?>">
-                            <?php echo htmlspecialchars($tag, ENT_QUOTES, 'UTF-8'); ?>
+                        <button type="button" data-tag="<?php echo htmlspecialchars($tag, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                            <?php echo htmlspecialchars($tag, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                         </button>
                     <?php endforeach; ?>
                 </div>
 
                 <p class="mensagem-projetos-home" data-carousel-empty-message hidden>Nenhum projeto encontrado para esse filtro.</p>
 
-                <div class="wrapper-carrossel-publicacoes">
-                    <div class="container-carrossel-publicacoes" id="carrosselPublicacoes">
+                <div class="wrapper-carrossel-publicações">
+                    <div class="container-carrossel-publicações" id="carrosselPúblicacoes">
                         <?php if (!empty($homepageProjects)): ?>
                             <?php foreach ($homepageProjects as $project): ?>
                                 <?php
@@ -267,28 +268,28 @@ include_once 'includes/header.php';
                                 <article
                                     class="card-publicacao-carrossel"
                                     data-project-card="true"
-                                    data-project-id="<?php echo htmlspecialchars((string) ($project['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                    data-title="<?php echo htmlspecialchars((string) ($project['title'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                    data-category="<?php echo htmlspecialchars((string) ($project['category'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                    data-status="<?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>"
-                                    data-tag-list="<?php echo htmlspecialchars(implode('||', $projectTags), ENT_QUOTES, 'UTF-8'); ?>"
-                                    data-tags="<?php echo htmlspecialchars($searchTags, ENT_QUOTES, 'UTF-8'); ?>">
+                                    data-project-id="<?php echo htmlspecialchars((string) ($project['id'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                                    data-title="<?php echo htmlspecialchars((string) ($project['title'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                                    data-category="<?php echo htmlspecialchars((string) ($project['category'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                                    data-status="<?php echo htmlspecialchars($statusLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                                    data-tag-list="<?php echo htmlspecialchars(implode('||', $projectTags), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                                    data-tags="<?php echo htmlspecialchars($searchTags, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                     <div class="topo-card-publicacao">
-                                        <h3 class="categoria-card-publicacao"><?php echo htmlspecialchars((string) ($project['category'] ?? 'Geral'), ENT_QUOTES, 'UTF-8'); ?></h3>
-                                        <span class="status-card-publicacao status-card-publicacao--<?php echo htmlspecialchars($statusKey, ENT_QUOTES, 'UTF-8'); ?>">
-                                            <?php echo htmlspecialchars($statusLabel, ENT_QUOTES, 'UTF-8'); ?>
+                                        <h3 class="categoria-card-publicacao"><?php echo htmlspecialchars((string) ($project['category'] ?? 'Geral'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
+                                        <span class="status-card-publicacao status-card-publicacao--<?php echo htmlspecialchars($statusKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                            <?php echo htmlspecialchars($statusLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                         </span>
                                     </div>
 
                                     <div class="conteudo-card-publicacao">
-                                        <h2 class="titulo-card-publicacao"><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto sem titulo'), ENT_QUOTES, 'UTF-8'); ?></h2>
-                                        <p class="descricao-card-publicacao"><?php echo htmlspecialchars(home_project_excerpt((string) ($project['description'] ?? '')), ENT_QUOTES, 'UTF-8'); ?></p>
+                                        <h2 class="titulo-card-publicacao"><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto sem titulo'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+                                        <p class="descricao-card-publicacao"><?php echo htmlspecialchars(home_project_excerpt((string) ($project['description'] ?? '')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
                                     </div>
 
                                     <div class="rodape-card-publicacao">
                                         <div class="lista-tags-projeto-home">
                                             <?php foreach ($displayTags ?: [(string) ($project['category'] ?? 'Geral')] as $tag): ?>
-                                                <span class="tag-projeto-home"><?php echo htmlspecialchars($tag, ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span class="tag-projeto-home"><?php echo htmlspecialchars($tag, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                             <?php endforeach; ?>
                                         </div>
 
@@ -302,12 +303,12 @@ include_once 'includes/header.php';
                             <article class="card-publicacao-carrossel card-publicacao-carrossel--empty" data-project-card="true" data-empty-state="true">
                                 <div class="topo-card-publicacao">
                                     <h3 class="categoria-card-publicacao">Projetos</h3>
-                                    <span class="status-card-publicacao status-card-publicacao--pending">Aguardando publicacao</span>
+                                    <span class="status-card-publicacao status-card-publicacao--pending">Aguardando publicação</span>
                                 </div>
 
                                 <div class="conteudo-card-publicacao">
                                     <h2 class="titulo-card-publicacao">Nenhum projeto cadastrado ainda</h2>
-                                    <p class="descricao-card-publicacao">Assim que os projetos forem adicionados no painel administrativo, este carrossel sera preenchido automaticamente com os dados reais do portal.</p>
+                                    <p class="descricao-card-publicacao">Assim que os projetos forem adicionados no painel administrativo, este carrossel será preenchido automaticamente com os dados reais do portal.</p>
                                 </div>
 
                                 <div class="rodape-card-publicacao">
@@ -323,7 +324,7 @@ include_once 'includes/header.php';
                         <?php endif; ?>
                     </div>
 
-                    <div class="navegacao-carrossel-publicacoes">
+                    <div class="navegacao-carrossel-publicações">
                         <button
                             type="button"
                             class="botao-seta-carrossel"
@@ -349,7 +350,7 @@ include_once 'includes/header.php';
             <main class="page-shell public-home-sections">
                 <section id="sobre" class="public-story-grid">
                     <article class="panel-card public-copy-card">
-                        <h2><?php echo htmlspecialchars((string) ($homeAboutTextBlock['title'] ?? 'Sobre'), ENT_QUOTES, 'UTF-8'); ?></h2>
+                        <h2><?php echo htmlspecialchars((string) ($homeAboutTextBlock['title'] ?? 'Sobre'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
 
                         <div class="mobile-collapse-card" data-mobile-collapse>
                             <button type="button" class="mobile-collapse-toggle" data-mobile-collapse-toggle aria-expanded="false">
@@ -365,8 +366,8 @@ include_once 'includes/header.php';
                         </div>
 
                         <div class="hero-actions">
-                            <a class="dashboard-btn" href="<?php echo htmlspecialchars($homeAboutButtonUrl, ENT_QUOTES, 'UTF-8'); ?>">
-                                <?php echo htmlspecialchars($homeAboutButtonLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            <a class="dashboard-btn" href="<?php echo htmlspecialchars($homeAboutButtonUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                <?php echo htmlspecialchars($homeAboutButtonLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </a>
                         </div>
                     </article>
@@ -380,7 +381,7 @@ include_once 'includes/header.php';
                         </div>
 
                         <?php if (empty($homepageResearchUsers)): ?>
-                            <p class="admin-empty">Nenhum pesquisador ou administrador publico cadastrado ainda.</p>
+                            <p class="admin-empty">Nenhum pesquisador ou administrador público cadastrado ainda.</p>
                         <?php else: ?>
                             <div class="researcher-directory">
                                 <?php foreach ($homepageResearchUsers as $researchUser): ?>
@@ -393,34 +394,34 @@ include_once 'includes/header.php';
                                     ?>
                                     <details class="researcher-directory-item">
                                         <summary>
-                                            <span><?php echo htmlspecialchars($researchName, ENT_QUOTES, 'UTF-8'); ?></span>
-                                            <small><?php echo htmlspecialchars($homeAuth->getRoleLabel($researchUser), ENT_QUOTES, 'UTF-8'); ?></small>
+                                            <span><?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                            <small><?php echo htmlspecialchars($homeAuth->getRoleLabel($researchUser), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
                                         </summary>
 
                                         <div class="researcher-directory-profile">
                                             <?php if ($researchPhoto !== ''): ?>
-                                                <img src="<?php echo htmlspecialchars($researchPhoto, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($researchName, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <img src="<?php echo htmlspecialchars($researchPhoto, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                             <?php else: ?>
-                                                <span class="researcher-directory-initial"><?php echo htmlspecialchars(strtoupper(substr($researchName, 0, 1)), ENT_QUOTES, 'UTF-8'); ?></span>
+                                                <span class="researcher-directory-initial"><?php echo htmlspecialchars(strtoupper(substr($researchName, 0, 1)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                             <?php endif; ?>
 
                                             <div>
-                                                <h3><?php echo htmlspecialchars($researchName, ENT_QUOTES, 'UTF-8'); ?></h3>
-                                                <p><?php echo htmlspecialchars($researchBio !== '' ? $researchBio : 'Biografia ainda nao cadastrada.', ENT_QUOTES, 'UTF-8'); ?></p>
+                                                <h3><?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
+                                                <p><?php echo htmlspecialchars($researchBio !== '' ? $researchBio : 'Biografia ainda não cadastrada.', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
 
                                                 <div class="profile-public-links profile-public-links--compact">
                                                     <?php if (!empty($researchProfile['linkedin_url'])): ?>
-                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['linkedin_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></a>
+                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['linkedin_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></a>
                                                     <?php else: ?>
                                                         <span class="profile-public-link-disabled"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></span>
                                                     <?php endif; ?>
                                                     <?php if (!empty($researchProfile['integra_ifsp_url'])): ?>
-                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['integra_ifsp_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></a>
+                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['integra_ifsp_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></a>
                                                     <?php else: ?>
                                                         <span class="profile-public-link-disabled"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></span>
                                                     <?php endif; ?>
                                                     <?php if (!empty($researchProfile['lattes_url'])): ?>
-                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['lattes_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></a>
+                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['lattes_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></a>
                                                     <?php else: ?>
                                                         <span class="profile-public-link-disabled"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></span>
                                                     <?php endif; ?>
@@ -437,19 +438,19 @@ include_once 'includes/header.php';
                 <section id="implementacao" class="panel-card public-section-card">
                     <div class="panel-card-header">
                         <div>
-                            <h2>Areas Tematicas</h2>
+                            <h2>Áreas Temáticas</h2>
                         </div>
 
-                        <a class="dashboard-btn dashboard-btn--ghost" href="./implement.php">Ver todas as areas</a>
+                        <a class="dashboard-btn dashboard-btn--ghost" href="./implement.php">Ver todas as áreas</a>
                     </div>
 
-                    <p class="panel-copy">As Areas Tematicas, nas quais serao alinhados os projetos, foram definidas para orientar as atividades do CEPIN-CIS e compreendem:</p>
+                    <p class="panel-copy">As Áreas Temáticas, nas quais seráo alinhados os projetos, foram definidas para orientar as atividades do CEPIN-CIS e compreendem:</p>
 
                     <div class="public-topic-grid public-topic-grid--home">
                         <?php foreach ($implementationHighlights as $highlight): ?>
                             <article class="public-topic-card">
-                                <span class="public-topic-tag"><?php echo htmlspecialchars((string) ($highlight['tag'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></span>
-                                <h3><?php echo htmlspecialchars($highlight['title'], ENT_QUOTES, 'UTF-8'); ?></h3>
+                                <span class="public-topic-tag"><?php echo htmlspecialchars((string) ($highlight['tag'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                <h3><?php echo htmlspecialchars($highlight['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
 
                                 <div class="mobile-collapse-card mobile-collapse-card--compact" data-mobile-collapse>
                                     <button type="button" class="mobile-collapse-toggle mobile-collapse-toggle--compact" data-mobile-collapse-toggle aria-expanded="false">
@@ -459,7 +460,7 @@ include_once 'includes/header.php';
 
                                     <div class="mobile-collapse-content mobile-collapse-content--compact" data-mobile-collapse-content>
                                         <div class="mobile-collapse-inner" data-mobile-collapse-inner>
-                                            <p><?php echo htmlspecialchars($highlight['description'], ENT_QUOTES, 'UTF-8'); ?></p>
+                                            <p><?php echo htmlspecialchars($highlight['description'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
                                         </div>
                                     </div>
                                 </div>
@@ -485,11 +486,11 @@ include_once 'includes/header.php';
                                             class="card"
                                             data-index="<?php echo (int) $index; ?>"
                                             data-partner-card
-                                            data-partner-name="<?php echo htmlspecialchars((string) ($partner['name'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                            data-partner-description="<?php echo htmlspecialchars((string) ($partner['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                            data-partner-name="<?php echo htmlspecialchars((string) ($partner['name'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                                            data-partner-description="<?php echo htmlspecialchars((string) ($partner['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                             <img
-                                                src="<?php echo htmlspecialchars((string) ($partner['image_path'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
-                                                alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES, 'UTF-8'); ?>">
+                                                src="<?php echo htmlspecialchars((string) ($partner['image_path'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                                                alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                         </div>
                                     <?php endforeach; ?>
                                 </div>
@@ -497,8 +498,8 @@ include_once 'includes/header.php';
                             </div>
 
                             <div class="member-info">
-                                <h2 class="member-name" data-partner-display-name><?php echo htmlspecialchars((string) ($homepagePartners[0]['name'] ?? 'Parceiro'), ENT_QUOTES, 'UTF-8'); ?></h2>
-                                <p class="member-role" data-partner-display-description><?php echo htmlspecialchars((string) ($homepagePartners[0]['description'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></p>
+                                <h2 class="member-name" data-partner-display-name><?php echo htmlspecialchars((string) ($homepagePartners[0]['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+                                <p class="member-role" data-partner-display-description><?php echo htmlspecialchars((string) ($homepagePartners[0]['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
                             </div>
 
                             <div class="dots">
@@ -525,21 +526,21 @@ include_once 'includes/header.php';
 
                         <div class="mobile-collapse-content" data-mobile-collapse-content>
                             <div class="mobile-collapse-inner" data-mobile-collapse-inner>
-                                <p>O regulamento do Centro de Pesquisa e Inovacao em Cidades Inteligentes e Sustentaveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missao do CEPIN-CIS como espaco de fomento a pesquisa aplicada, a inovacao tecnologica e a reflexao critica sobre os desafios contemporaneos das cidades.</p>
+                                <p>O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento a pesquisa aplicada, a inovação tecnológica e a reflexão crítica sobre os desafios contemporâneos das cidades.</p>
 
-                                <p>O regulamento estabelece as diretrizes para a participacao de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensao que dialoguem com as areas tematicas do Centro, alem de abrir espaco para a colaboracao de pesquisadores externos.</p>
+                                <p>O regulamento estabelece as diretrizes para a participação de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensão que dialoguem com as áreas temáticas do Centro, além de abrir espaço para a colaboração de pesquisadores externos.</p>
                             </div>
                         </div>
                     </div>
 
                     <div class="hero-actions">
-                        <a class="dashboard-btn" href="<?php echo htmlspecialchars($regulationUrl, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener">Clique aqui para ver o regulamento</a>
+                        <a class="dashboard-btn" href="<?php echo htmlspecialchars($regulationUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener">Clique aqui para ver o regulamento</a>
                     </div>
                 </section>
 
                 <section id="contato" class="public-contact-grid">
                     <article class="panel-card public-copy-card">
-                        <h2><?php echo htmlspecialchars((string) ($homeContactInfoBlock['title'] ?? 'Contato'), ENT_QUOTES, 'UTF-8'); ?></h2>
+                        <h2><?php echo htmlspecialchars((string) ($homeContactInfoBlock['title'] ?? 'Contato'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
 
                         <?php echo home_render_body((string) ($homeContactInfoBlock['body'] ?? '')); ?>
 
@@ -556,15 +557,15 @@ include_once 'includes/header.php';
                                     ?>
                                     <div class="public-contact-item">
                                         <?php if ($itemLabel !== ''): ?>
-                                            <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                                            <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                                         <?php endif; ?>
 
                                         <?php if ($itemUrl !== ''): ?>
-                                            <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES, 'UTF-8'); ?>">
-                                                <?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?>
+                                            <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                                <?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                             </a>
                                         <?php else: ?>
-                                            <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?></span>
+                                            <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                         <?php endif; ?>
                                     </div>
                                 <?php endforeach; ?>
@@ -573,22 +574,22 @@ include_once 'includes/header.php';
 
                         <div class="hero-actions">
                             <a class="dashboard-btn" href="./contact.php">Abrir contato</a>
-                            <a class="dashboard-btn dashboard-btn--ghost" href="<?php echo htmlspecialchars($homeContactSecondaryUrl, ENT_QUOTES, 'UTF-8'); ?>">
-                                <?php echo htmlspecialchars($homeContactSecondaryLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            <a class="dashboard-btn dashboard-btn--ghost" href="<?php echo htmlspecialchars($homeContactSecondaryUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                <?php echo htmlspecialchars($homeContactSecondaryLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </a>
                         </div>
                     </article>
 
                     <article class="panel-card public-map-card">
-                        <h2><?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa'), ENT_QUOTES, 'UTF-8'); ?></h2>
+                        <h2><?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
 
                         <iframe
                             class="public-map-frame"
-                            src="<?php echo htmlspecialchars((string) ($homeContactMapBlock['embed_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                            src="<?php echo htmlspecialchars((string) ($homeContactMapBlock['embed_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                             loading="lazy"
                             referrerpolicy="no-referrer-when-downgrade"
                             allowfullscreen=""
-                            title="<?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa do IFSP Campus Caraguatatuba'), ENT_QUOTES, 'UTF-8'); ?>"></iframe>
+                            title="<?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa do IFSP Campus Caraguatatuba'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"></iframe>
                     </article>
                 </section>
             </main>

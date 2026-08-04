@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Areas tematicas | CEPIN-CIS';
+$pageTitle = 'Áreas temáticas | CEPIN-CIS';
 $bodyClass = 'public-page';
 
 require_once 'models/ContentBlock.php';
@@ -25,7 +25,7 @@ function thematic_render_body(string $text): string
             continue;
         }
 
-        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES, 'UTF-8')) . '</p>';
+        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . '</p>';
     }
 
     return implode(PHP_EOL, $markup);
@@ -63,15 +63,15 @@ function thematic_render_contact_items(array $items): void
             ?>
             <div class="public-contact-item">
                 <?php if ($itemLabel !== ''): ?>
-                    <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                    <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                 <?php endif; ?>
 
                 <?php if ($itemUrl !== ''): ?>
-                    <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES, 'UTF-8'); ?>">
-                        <?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?>
+                    <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                        <?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                     </a>
                 <?php else: ?>
-                    <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
@@ -118,20 +118,20 @@ function thematic_render_block(array $block, ?string $headingTag, ContentBlockMa
     $type = (string) ($block['type'] ?? 'thematic_topic');
     ?>
     <article
-        class="<?php echo htmlspecialchars(thematic_block_classes($block), ENT_QUOTES, 'UTF-8'); ?>"
-        style="<?php echo htmlspecialchars(thematic_block_style($block, $contentManager, $layout), ENT_QUOTES, 'UTF-8'); ?>"
+        class="<?php echo htmlspecialchars(thematic_block_classes($block), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+        style="<?php echo htmlspecialchars(thematic_block_style($block, $contentManager, $layout), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
     >
         <?php if (($block['eyebrow'] ?? '') !== ''): ?>
             <?php if ($type === 'thematic_topic'): ?>
-                <span class="public-topic-tag"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></span>
+                <span class="public-topic-tag"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
             <?php else: ?>
-                <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></p>
+                <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
             <?php endif; ?>
         <?php endif; ?>
 
         <?php if ($headingTag !== null): ?>
             <<?php echo $headingTag; ?>>
-                <?php echo htmlspecialchars((string) ($block['title'] ?? 'Bloco tematico'), ENT_QUOTES, 'UTF-8'); ?>
+                <?php echo htmlspecialchars((string) ($block['title'] ?? 'Bloco tematico'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
             </<?php echo $headingTag; ?>>
         <?php endif; ?>
 
@@ -143,8 +143,8 @@ function thematic_render_block(array $block, ?string $headingTag, ContentBlockMa
 
         <?php if ((string) ($block['cta_label'] ?? '') !== '' && (string) ($block['cta_url'] ?? '') !== ''): ?>
             <div class="hero-actions">
-                <a class="dashboard-btn" href="<?php echo htmlspecialchars((string) $block['cta_url'], ENT_QUOTES, 'UTF-8'); ?>">
-                    <?php echo htmlspecialchars((string) $block['cta_label'], ENT_QUOTES, 'UTF-8'); ?>
+                <a class="dashboard-btn" href="<?php echo htmlspecialchars((string) $block['cta_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                    <?php echo htmlspecialchars((string) $block['cta_label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                 </a>
             </div>
         <?php endif; ?>
@@ -171,12 +171,12 @@ include_once 'includes/header.php';
 <div class="ball"></div>
 
 <main class="page-shell public-shell">
-    <section id="areas" class="content-layout-shell" style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES, 'UTF-8'); ?>">
-        <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES, 'UTF-8'); ?>">
+    <section id="areas" class="content-layout-shell" style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+        <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
             <?php if (empty($thematicBlocks)): ?>
                 <article class="panel-card public-copy-card public-copy-card--featured thematic-block content-block content-block--height-regular" style="grid-column: 1 / -1;">
-                    <h1>Areas tematicas em atualizacao</h1>
-                    <p>Os blocos desta pagina ainda nao foram publicados no painel mestre.</p>
+                    <h1>Áreas temáticas em atualização</h1>
+                    <p>Os blocos desta página ainda não foram publicados no painel mestre.</p>
                 </article>
             <?php else: ?>
                 <?php $pageHeadingUsed = false; ?>

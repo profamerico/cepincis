@@ -30,7 +30,7 @@ class Database {
             }
 
             if ($db === '') {
-                throw new PDOException('Nome do banco de dados nao configurado.');
+                throw new PDOException('Nome do banco de dados não configurado.');
             }
 
             $this->conn = new PDO(

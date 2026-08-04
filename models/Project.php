@@ -152,7 +152,7 @@ class ProjectManager
         $projectIndex = $isCreate ? null : $this->findProjectIndex($projects, (string) $projectId);
 
         if (!$isCreate && $projectIndex === null) {
-            return ['success' => false, 'errors' => ['Projeto nao encontrado.']];
+            return ['success' => false, 'errors' => ['Projeto não encontrado.']];
         }
 
         $title = trim((string) ($data['title'] ?? ''));
@@ -168,20 +168,20 @@ class ProjectManager
         $errors = [];
 
         if ($title === '') {
-            $errors[] = 'Titulo e obrigatorio.';
+            $errors[] = 'Título é obrigatório.';
         }
         if ($description === '') {
-            $errors[] = 'Descricao do projeto e obrigatoria.';
+            $errors[] = 'Descrição do projeto é obrigatória.';
         }
         if ($categoryInput === '') {
-            $errors[] = 'Area tematica e obrigatoria.';
+            $errors[] = 'Área temática é obrigatória.';
         } elseif (!$this->isValidThematicArea($categoryInput)) {
-            $errors[] = 'Area tematica invalida. Escolha uma das 5 siglas oficiais.';
+            $errors[] = 'Área temática inválida. Escolha uma das 5 siglas oficiais.';
         }
 
         $invalidTags = $this->findInvalidTags($tagsInput);
         if (!empty($invalidTags)) {
-            $errors[] = 'As tags devem usar apenas as 5 siglas oficiais das Areas Tematicas.';
+            $errors[] = 'As tags devem usar apenas as 5 siglas oficiais das Áreas Temáticas.';
         }
 
         $hasUpload = $this->hasUploadedFile($uploadedImage);
@@ -256,7 +256,7 @@ class ProjectManager
                 $this->deleteManagedImage($nextImagePath);
             }
 
-            return ['success' => false, 'errors' => ['Nao foi possivel salvar o projeto.']];
+            return ['success' => false, 'errors' => ['Não foi possível salvar o projeto.']];
         }
 
         if ($hasUpload && $previousImagePath !== '' && $previousImagePath !== $nextImagePath) {
@@ -494,9 +494,9 @@ class ProjectManager
 
     private function normalizeCategory(string $category): string
     {
-        $canonicalArea = $this->canonicalizeThematicArea($category);
+        $canonicalÁrea = $this->canonicalizeThematicArea($category);
 
-        return $canonicalArea ?? $this->getDefaultThematicArea();
+        return $canonicalÁrea ?? $this->getDefaultThematicArea();
     }
 
     private function isValidThematicArea(string $value): bool
@@ -607,21 +607,21 @@ class ProjectManager
         }
 
         if ((int) ($uploadedImage['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-            return ['success' => false, 'error' => 'Nao foi possivel processar a imagem enviada.'];
+            return ['success' => false, 'error' => 'Não foi possível processar a imagem enviada.'];
         }
 
         $tmpName = (string) ($uploadedImage['tmp_name'] ?? '');
         if ($tmpName === '' || !is_uploaded_file($tmpName)) {
-            return ['success' => false, 'error' => 'O upload da imagem nao foi reconhecido pelo servidor.'];
+            return ['success' => false, 'error' => 'O upload da imagem não foi reconhecido pelo servidor.'];
         }
 
         $imageFormat = $this->resolveUploadedImageFormat($uploadedImage, $tmpName);
         if (!$imageFormat['success']) {
-            return ['success' => false, 'error' => 'Formato de imagem nao suportado. Envie JPG, PNG, WEBP ou GIF.'];
+            return ['success' => false, 'error' => 'Formato de imagem não suportado. Envie JPG, PNG, WEBP ou GIF.'];
         }
 
         if ((int) ($uploadedImage['size'] ?? 0) > 6 * 1024 * 1024) {
-            return ['success' => false, 'error' => 'A imagem do projeto deve ter no maximo 6 MB.'];
+            return ['success' => false, 'error' => 'A imagem do projeto deve ter no máximo 6 MB.'];
         }
 
         return [
@@ -648,7 +648,7 @@ class ProjectManager
         }
 
         if (!move_uploaded_file($tmpName, $destination)) {
-            return ['success' => false, 'error' => 'Nao foi possivel salvar a imagem do projeto no servidor.'];
+            return ['success' => false, 'error' => 'Não foi possível salvar a imagem do projeto no servidor.'];
         }
 
         return ['success' => true, 'path' => './uploads/projects/' . $filename];
@@ -734,7 +734,7 @@ class ProjectManager
     {
         $imagePath = trim($imagePath);
         if ($imagePath === '') {
-            return ['success' => false, 'error' => 'A imagem do projeto nao pode ficar vazia.'];
+            return ['success' => false, 'error' => 'A imagem do projeto não pode ficar vazia.'];
         }
 
         $url = filter_var($imagePath, FILTER_VALIDATE_URL);
@@ -753,7 +753,7 @@ class ProjectManager
         }
 
         if (!file_exists($candidatePath)) {
-            return ['success' => false, 'error' => 'O caminho informado para a imagem do projeto nao foi encontrado no projeto.'];
+            return ['success' => false, 'error' => 'O caminho informado para a imagem do projeto não foi encontrado no projeto.'];
         }
 
         return ['success' => true];

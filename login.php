@@ -55,8 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <section class="auth-grid">
         <aside class="auth-aside">
             <p class="eyebrow">Portal interno</p>
-            <h1>Acesse sua area de trabalho</h1>
-            <p class="auth-copy">Entre para acompanhar projetos, editar seu perfil e, se voce for administrador, controlar usuarios e publicacoes da plataforma.</p>
+            <h1>Acesse sua área de trabalho</h1>
+            <p class="auth-copy">Entre para acompanhar projetos, editar seu perfil e, se você for administrador, controlar usuários e publicações da plataforma.</p>
 
             <div class="auth-highlights">
                 <div class="auth-highlight">
@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span>Conta, perfil e administracao no mesmo fluxo.</span>
                 </div>
                 <div class="auth-highlight">
-                    <strong>Experiencia mais limpa</strong>
+                    <strong>Experiência mais limpa</strong>
                     <span>Sem o scroll especial da home atrapalhando formularios.</span>
                 </div>
                 <div class="auth-highlight">
@@ -80,19 +80,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <?php if ($result && !$result['success']): ?>
                 <?php foreach ($result['errors'] as $error): ?>
-                    <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
+                    <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                 <?php endforeach; ?>
             <?php endif; ?>
 
             <form action="login.php" method="POST" class="stack-form">
                 <div class="form-group">
-                    <label for="username">Usuario</label>
+                    <label for="username">Usuário</label>
                     <input
                         type="text"
                         id="username"
                         name="username"
-                        value="<?php echo htmlspecialchars($username_preenchido, ENT_QUOTES, 'UTF-8'); ?>"
-                        placeholder="Seu usuario"
+                        value="<?php echo htmlspecialchars($username_preenchido, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        placeholder="Seu usuário"
                         required
                     >
                 </div>
@@ -108,16 +108,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="auth-divider"><span>ou continue com</span></div>
 
             <div class="social-icons auth-socials">
-                <a href="<?php echo htmlspecialchars($google_auth_url, ENT_QUOTES, 'UTF-8'); ?>" title="Google">
+                <a href="<?php echo htmlspecialchars($google_auth_url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" title="Google">
                     <i class="fa-brands fa-google-plus-g"></i>
                 </a>
-                <a href="<?php echo htmlspecialchars($github_auth_url, ENT_QUOTES, 'UTF-8'); ?>" title="GitHub">
+                <a href="<?php echo htmlspecialchars($github_auth_url, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" title="GitHub">
                     <i class="fa-brands fa-github"></i>
                 </a>
             </div>
 
             <p class="auth-link-copy"><a href="./forgot-password.php">Esqueci minha senha</a></p>
-            <p class="auth-link-copy">Nao tem uma conta? <a href="./register.php">Criar cadastro</a></p>
+            <p class="auth-link-copy">Não tem uma conta? <a href="./register.php">Criar cadastro</a></p>
         </section>
     </section>
 </main>

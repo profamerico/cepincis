@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$resetRecord) {
         $result = [
             'success' => false,
-            'errors' => ['Link de redefinicao invalido ou expirado.'],
+            'errors' => ['Link de redefinição inválido ou expirado.'],
         ];
     } else {
         $result = $auth->resetPasswordForUserId(
@@ -53,19 +53,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <?php if ($result && !$result['success']): ?>
                 <?php foreach ($result['errors'] as $error): ?>
-                    <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8'); ?></div>
+                    <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                 <?php endforeach; ?>
             <?php elseif ($result && $result['success']): ?>
-                <div class="mensagem sucesso">Senha atualizada com sucesso. Voce ja pode entrar novamente.</div>
+                <div class="mensagem sucesso">Senha atualizada com sucesso. Você já pode entrar novamente.</div>
                 <p class="auth-link-copy"><a href="./login.php">Ir para o login</a></p>
             <?php elseif (!$resetRecord): ?>
-                <div class="mensagem erro">Link de redefinicao invalido ou expirado.</div>
+                <div class="mensagem erro">Link de redefinição inválido ou expirado.</div>
                 <p class="auth-link-copy"><a href="./forgot-password.php">Gerar novo link</a></p>
             <?php endif; ?>
 
             <?php if ($resetRecord && (!$result || !$result['success'])): ?>
                 <form action="reset-password.php" method="POST" class="stack-form">
-                    <input type="hidden" name="token" value="<?php echo htmlspecialchars($token, ENT_QUOTES, 'UTF-8'); ?>">
+                    <input type="hidden" name="token" value="<?php echo htmlspecialchars($token, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
 
                     <div class="form-group">
                         <label for="password">Nova senha</label>

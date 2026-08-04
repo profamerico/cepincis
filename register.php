@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password_confirm = $_POST['password_confirm'] ?? '';
 
     if ($password !== $password_confirm) {
-        $result = ['success' => false, 'errors' => ['As senhas nao coincidem.']];
+        $result = ['success' => false, 'errors' => ['As senhas não coincidem.']];
     } else {
         $result = $auth->register($username, $password, $fullname, $email);
     }
@@ -52,8 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span>O auto-cadastro local aceita apenas dominios do IF e enderecos vinculados a `gov.br`.</span>
                 </div>
                 <div class="auth-highlight">
-                    <strong>Area autenticada renovada</strong>
-                    <span>Depois do login voce cai em um dashboard mais organizado.</span>
+                    <strong>Área autenticada renovada</strong>
+                    <span>Depois do login você cai em um dashboard mais organizado.</span>
                 </div>
                 <div class="auth-highlight">
                     <strong>Permissoes controladas</strong>
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <?php if ($result && !$result['success']): ?>
                 <?php foreach ($result['errors'] as $error): ?>
-                    <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES, 'UTF-8'); ?></div>
+                    <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                 <?php endforeach; ?>
             <?php endif; ?>
 
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         type="text"
                         id="fullname"
                         name="fullname"
-                        value="<?php echo htmlspecialchars($fullname, ENT_QUOTES, 'UTF-8'); ?>"
+                        value="<?php echo htmlspecialchars($fullname, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         required
                     >
                 </div>
@@ -90,19 +90,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         type="email"
                         id="email"
                         name="email"
-                        value="<?php echo htmlspecialchars($email, ENT_QUOTES, 'UTF-8'); ?>"
+                        value="<?php echo htmlspecialchars($email, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         required
                     >
                     <p class="form-help">Exemplos aceitos: `@ifsp.edu.br`, `@aluno.ifsp.edu.br`, `@campus.ifce.edu.br`, `@sp.gov.br`, `@educacao.sp.gov.br` e outros dominios `gov.br`.</p>
                 </div>
 
                 <div class="form-group">
-                    <label for="username">Usuario</label>
+                    <label for="username">Usuário</label>
                     <input
                         type="text"
                         id="username"
                         name="username"
-                        value="<?php echo htmlspecialchars($username, ENT_QUOTES, 'UTF-8'); ?>"
+                        value="<?php echo htmlspecialchars($username, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         required
                     >
                 </div>
@@ -120,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <button type="submit" class="dashboard-btn auth-submit">Registrar</button>
             </form>
 
-            <p class="auth-link-copy">Ja tem conta? <a href="./login.php">Entrar</a></p>
+            <p class="auth-link-copy">Já tem conta? <a href="./login.php">Entrar</a></p>
         </section>
     </section>
 </main>

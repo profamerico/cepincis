@@ -10,7 +10,7 @@ $id = trim((string) ($_GET['id'] ?? ''));
 
 if ($id === '' || !in_array($kind, ['document', 'timeline'], true)) {
     http_response_code(404);
-    echo 'Arquivo nao encontrado.';
+    echo 'Arquivo não encontrado.';
     exit();
 }
 
@@ -24,7 +24,7 @@ if ($kind === 'document') {
 
     if (!$fileInfo) {
         http_response_code(404);
-        echo 'Documento nao encontrado.';
+        echo 'Documento não encontrado.';
         exit();
     }
 
@@ -41,7 +41,7 @@ if ($kind === 'document') {
 
     if (!$fileInfo) {
         http_response_code(404);
-        echo 'Anexo nao encontrado.';
+        echo 'Anexo não encontrado.';
         exit();
     }
 }
@@ -49,7 +49,7 @@ if ($kind === 'document') {
 $path = (string) ($fileInfo['absolute_path'] ?? '');
 if ($path === '' || !is_file($path)) {
     http_response_code(404);
-    echo 'Arquivo nao encontrado.';
+    echo 'Arquivo não encontrado.';
     exit();
 }
 

@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Notificacoes | CEPIN-CIS';
+$pageTitle = 'Notificações | CEPIN-CIS';
 $bodyClass = 'app-page notifications-page';
 
 require_once 'controllers/AuthController.php';
@@ -54,19 +54,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postedToken = (string) ($_POST['csrf_token'] ?? '');
 
     if (!hash_equals($csrfToken, $postedToken)) {
-        $flash = ['type' => 'erro', 'message' => 'Sessao expirada. Recarregue a pagina e tente novamente.'];
+        $flash = ['type' => 'erro', 'message' => 'Sessão expirada. Recarregue a página e tente novamente.'];
     } else {
         $action = (string) ($_POST['action'] ?? '');
 
         if ($action === 'mark_read') {
             $workspaceManager->markNotificationRead((string) ($_POST['notification_id'] ?? ''), $currentUserId);
-            notifications_set_flash('sucesso', 'Notificacao marcada como lida.');
+            notifications_set_flash('sucesso', 'Notificação marcada como lida.');
             notifications_redirect();
         }
 
         if ($action === 'mark_all_read') {
             $count = $workspaceManager->markAllNotificationsRead($currentUserId);
-            notifications_set_flash('sucesso', $count . ' notificacao(oes) marcada(s) como lida(s).');
+            notifications_set_flash('sucesso', $count . ' notificação(oes) marcada(s) como lida(s).');
             notifications_redirect();
         }
 
@@ -79,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 notifications_redirect();
             }
 
-            $flash = ['type' => 'erro', 'message' => $result['errors'][0] ?? 'Nao foi possivel responder ao convite.'];
+            $flash = ['type' => 'erro', 'message' => $result['errors'][0] ?? 'Não foi possível responder ao convite.'];
         }
     }
 }
@@ -95,19 +95,19 @@ $pendingInvites = $workspaceManager->getUserInvites($currentUserId);
     <section class="panel-hero">
         <div class="panel-hero-main">
             <p class="eyebrow">Central</p>
-            <h1>Notificacoes</h1>
-            <p class="hero-copy">Acompanhe autenticacoes, convites de colaboracao, respostas e novas atualizacoes nas timelines dos projetos.</p>
+            <h1>Notificações</h1>
+            <p class="hero-copy">Acompanhe autenticações, convites de colaboração, respostas e novas atualizações nas timelines dos projetos.</p>
         </div>
         <aside class="panel-hero-aside">
             <span class="dashboard-badge" data-notification-count><?php echo $unreadCount; ?></span>
-            <h2>Itens nao lidos</h2>
-            <p>O contador tambem aparece no topo e e atualizado por polling enquanto voce navega autenticado.</p>
+            <h2>Itens não lidos</h2>
+            <p>O contador também aparece no topo e é atualizado por polling enquanto você navega autenticado.</p>
         </aside>
     </section>
 
     <?php if ($flash): ?>
-        <div class="mensagem <?php echo htmlspecialchars((string) ($flash['type'] ?? 'sucesso'), ENT_QUOTES, 'UTF-8'); ?>">
-            <?php echo htmlspecialchars((string) ($flash['message'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>
+        <div class="mensagem <?php echo htmlspecialchars((string) ($flash['type'] ?? 'sucesso'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+            <?php echo htmlspecialchars((string) ($flash['message'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
         </div>
     <?php endif; ?>
 
@@ -115,12 +115,12 @@ $pendingInvites = $workspaceManager->getUserInvites($currentUserId);
         <article class="panel-card">
             <div class="panel-card-header">
                 <div>
-                    <p class="eyebrow">Historico</p>
+                    <p class="eyebrow">Histórico</p>
                     <h2>Atividades recentes</h2>
                 </div>
                 <?php if ($unreadCount > 0): ?>
                     <form method="POST">
-                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                         <input type="hidden" name="action" value="mark_all_read">
                         <button class="dashboard-btn dashboard-btn--ghost" type="submit">Marcar todas como lidas</button>
                     </form>
@@ -128,7 +128,7 @@ $pendingInvites = $workspaceManager->getUserInvites($currentUserId);
             </div>
 
             <?php if (empty($notifications)): ?>
-                <p class="admin-empty">Nenhuma notificacao por enquanto.</p>
+                <p class="admin-empty">Nenhuma notificação por enquanto.</p>
             <?php else: ?>
                 <div class="notification-stack">
                     <?php foreach ($notifications as $notification): ?>
@@ -138,19 +138,19 @@ $pendingInvites = $workspaceManager->getUserInvites($currentUserId);
                         ?>
                         <article class="notification-item<?php echo $isUnread ? ' notification-item--unread' : ''; ?>">
                             <div class="notification-item__content">
-                                <span><?php echo htmlspecialchars(notifications_format_datetime($notification['created_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></span>
-                                <strong><?php echo htmlspecialchars((string) ($notification['title'] ?? 'Notificacao'), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                <p><?php echo htmlspecialchars((string) ($notification['body'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></p>
+                                <span><?php echo htmlspecialchars(notifications_format_datetime($notification['created_at'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                <strong><?php echo htmlspecialchars((string) ($notification['title'] ?? 'Notificação'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                                <p><?php echo htmlspecialchars((string) ($notification['body'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
                             </div>
                             <div class="notification-item__actions">
                                 <?php if ($targetUrl !== ''): ?>
-                                    <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="<?php echo htmlspecialchars($targetUrl, ENT_QUOTES, 'UTF-8'); ?>">Abrir</a>
+                                    <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="<?php echo htmlspecialchars($targetUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">Abrir</a>
                                 <?php endif; ?>
                                 <?php if ($isUnread): ?>
                                     <form method="POST">
-                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                         <input type="hidden" name="action" value="mark_read">
-                                        <input type="hidden" name="notification_id" value="<?php echo htmlspecialchars((string) ($notification['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                        <input type="hidden" name="notification_id" value="<?php echo htmlspecialchars((string) ($notification['id'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                         <button class="dashboard-btn admin-btn-small" type="submit">Lida</button>
                                     </form>
                                 <?php endif; ?>
@@ -178,22 +178,22 @@ $pendingInvites = $workspaceManager->getUserInvites($currentUserId);
                             <?php $project = $projectManager->getProject((string) ($invite['project_id'] ?? '')); ?>
                             <article class="notification-item notification-item--invite">
                                 <div class="notification-item__content">
-                                    <span><?php echo htmlspecialchars(notifications_format_datetime($invite['created_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></span>
-                                    <strong><?php echo htmlspecialchars(is_array($project) ? (string) ($project['title'] ?? 'Projeto') : 'Projeto', ENT_QUOTES, 'UTF-8'); ?></strong>
+                                    <span><?php echo htmlspecialchars(notifications_format_datetime($invite['created_at'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                    <strong><?php echo htmlspecialchars(is_array($project) ? (string) ($project['title'] ?? 'Projeto') : 'Projeto', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                                     <p><?php echo ((string) ($invite['role'] ?? '') === 'project_admin') ? 'Convite para administrar o projeto.' : 'Convite para colaborar na timeline do projeto.'; ?></p>
                                 </div>
                                 <div class="table-actions">
                                     <form method="POST">
-                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                         <input type="hidden" name="action" value="respond_invite">
-                                        <input type="hidden" name="invite_id" value="<?php echo htmlspecialchars((string) ($invite['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                        <input type="hidden" name="invite_id" value="<?php echo htmlspecialchars((string) ($invite['id'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                         <input type="hidden" name="response" value="accepted">
                                         <button class="dashboard-btn admin-btn-small" type="submit">Aceitar</button>
                                     </form>
                                     <form method="POST">
-                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                        <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                         <input type="hidden" name="action" value="respond_invite">
-                                        <input type="hidden" name="invite_id" value="<?php echo htmlspecialchars((string) ($invite['id'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>">
+                                        <input type="hidden" name="invite_id" value="<?php echo htmlspecialchars((string) ($invite['id'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                         <input type="hidden" name="response" value="rejected">
                                         <button class="dashboard-btn admin-btn-danger" type="submit">Recusar</button>
                                     </form>

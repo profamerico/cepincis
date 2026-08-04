@@ -25,7 +25,7 @@ function about_render_body(string $text): string
             continue;
         }
 
-        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES, 'UTF-8')) . '</p>';
+        $markup[] = '<p>' . nl2br(htmlspecialchars($paragraph, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')) . '</p>';
     }
 
     return implode(PHP_EOL, $markup);
@@ -51,8 +51,8 @@ function about_render_list(array $items): string
             continue;
         }
 
-        $line = $label !== '' ? '<strong>' . htmlspecialchars($label, ENT_QUOTES, 'UTF-8') . ':</strong> ' : '';
-        $line .= htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+        $line = $label !== '' ? '<strong>' . htmlspecialchars($label, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . ':</strong> ' : '';
+        $line .= htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
         $lines[] = '<li>' . $line . '</li>';
     }
 
@@ -81,15 +81,15 @@ function about_render_contact_items(array $items): void
             ?>
             <div class="public-contact-item">
                 <?php if ($itemLabel !== ''): ?>
-                    <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                    <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                 <?php endif; ?>
 
                 <?php if ($itemUrl !== ''): ?>
-                    <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES, 'UTF-8'); ?>">
-                        <?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?>
+                    <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                        <?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                     </a>
                 <?php else: ?>
-                    <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                 <?php endif; ?>
             </div>
         <?php endforeach; ?>
@@ -177,24 +177,24 @@ function about_render_block(array $block, ?string $headingTag, ContentBlockManag
         }
         ?>
         <section
-            class="<?php echo htmlspecialchars(about_block_classes($block), ENT_QUOTES, 'UTF-8'); ?>"
+            class="<?php echo htmlspecialchars(about_block_classes($block), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
             style="grid-column: span <?php echo $span; ?> / span <?php echo $span; ?>;"
         >
             <div class="infraestruturas-inner">
                 <<?php echo $headingTag; ?> class="titulo-infraestruturas-sobre">
-                    <?php echo htmlspecialchars((string) ($block['title'] ?? 'Infraestruturas'), ENT_QUOTES, 'UTF-8'); ?>
+                    <?php echo htmlspecialchars((string) ($block['title'] ?? 'Infraestruturas'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                 </<?php echo $headingTag; ?>>
 
                 <div class="infraestruturas-layout">
                     <img
-                        src="<?php echo htmlspecialchars($monitorImage, ENT_QUOTES, 'UTF-8'); ?>"
-                        alt="<?php echo htmlspecialchars($monitorAlt, ENT_QUOTES, 'UTF-8'); ?>"
+                        src="<?php echo htmlspecialchars($monitorImage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        alt="<?php echo htmlspecialchars($monitorAlt, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         class="monitor"
                     >
 
                     <div class="infraestruturas-copy">
                         <?php if ((string) ($block['body'] ?? '') !== ''): ?>
-                            <p class="descricao-infraestruturas"><?php echo nl2br(htmlspecialchars((string) $block['body'], ENT_QUOTES, 'UTF-8')); ?></p>
+                            <p class="descricao-infraestruturas"><?php echo nl2br(htmlspecialchars((string) $block['body'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8')); ?></p>
                         <?php endif; ?>
 
                         <?php if (!empty($block['items'])): ?>
@@ -213,9 +213,9 @@ function about_render_block(array $block, ?string $headingTag, ContentBlockManag
                                     ?>
                                     <p>
                                         <?php if ($itemLabel !== ''): ?>
-                                            <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES, 'UTF-8'); ?>:</strong>
+                                            <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>:</strong>
                                         <?php endif; ?>
-                                        <?php echo htmlspecialchars($itemValue, ENT_QUOTES, 'UTF-8'); ?>
+                                        <?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                     </p>
                                 <?php endforeach; ?>
                             </div>
@@ -230,32 +230,32 @@ function about_render_block(array $block, ?string $headingTag, ContentBlockManag
 
     ?>
     <article
-        class="<?php echo htmlspecialchars(about_block_classes($block), ENT_QUOTES, 'UTF-8'); ?>"
+        class="<?php echo htmlspecialchars(about_block_classes($block), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
         style="grid-column: span <?php echo $span; ?> / span <?php echo $span; ?>;"
     >
         <?php if ($type === 'about_media'): ?>
             <img
                 class="public-image-card__asset public-image-card__asset--light"
-                src="<?php echo htmlspecialchars((string) ($block['media_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
-                alt="<?php echo htmlspecialchars((string) ($block['media_alt'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                src="<?php echo htmlspecialchars((string) ($block['media_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                alt="<?php echo htmlspecialchars((string) ($block['media_alt'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
             >
 
             <?php if ((string) ($block['media_dark_url'] ?? '') !== ''): ?>
                 <img
                     class="public-image-card__asset public-image-card__asset--dark"
-                    src="<?php echo htmlspecialchars((string) ($block['media_dark_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                    src="<?php echo htmlspecialchars((string) ($block['media_dark_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                     alt=""
                     aria-hidden="true"
                 >
             <?php endif; ?>
         <?php else: ?>
             <?php if ((string) ($block['eyebrow'] ?? '') !== ''): ?>
-                <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES, 'UTF-8'); ?></p>
+                <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
             <?php endif; ?>
 
             <?php if ($headingTag !== null): ?>
                 <<?php echo $headingTag; ?>>
-                    <?php echo htmlspecialchars((string) ($block['title'] ?? 'Bloco'), ENT_QUOTES, 'UTF-8'); ?>
+                    <?php echo htmlspecialchars((string) ($block['title'] ?? 'Bloco'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                 </<?php echo $headingTag; ?>>
             <?php endif; ?>
 
@@ -269,8 +269,8 @@ function about_render_block(array $block, ?string $headingTag, ContentBlockManag
 
             <?php if ((string) ($block['cta_label'] ?? '') !== '' && (string) ($block['cta_url'] ?? '') !== ''): ?>
                 <div class="hero-actions">
-                    <a class="dashboard-btn" href="<?php echo htmlspecialchars((string) $block['cta_url'], ENT_QUOTES, 'UTF-8'); ?>">
-                        <?php echo htmlspecialchars((string) $block['cta_label'], ENT_QUOTES, 'UTF-8'); ?>
+                    <a class="dashboard-btn" href="<?php echo htmlspecialchars((string) $block['cta_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                        <?php echo htmlspecialchars((string) $block['cta_label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                     </a>
                 </div>
             <?php endif; ?>
@@ -298,12 +298,12 @@ include_once 'includes/header.php';
 <div class="ball"></div>
 
 <main class="page-shell public-shell">
-    <section id="sobre" class="about-layout-shell" style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES, 'UTF-8'); ?>">
-        <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES, 'UTF-8'); ?>">
+    <section id="sobre" class="about-layout-shell" style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+        <div class="<?php echo htmlspecialchars($gridStyleClass, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
             <?php if (empty($aboutBlocks)): ?>
                 <article class="panel-card public-copy-card about-block content-block content-block--height-regular" style="grid-column: 1 / -1;">
-                    <h1>Sobre em atualizacao</h1>
-                    <p>Os blocos da pagina Sobre ainda nao foram publicados no painel mestre.</p>
+                    <h1>Sobre em atualização</h1>
+                    <p>Os blocos da página Sobre ainda não foram publicados no painel mestre.</p>
                 </article>
             <?php else: ?>
                 <?php $pageHeadingUsed = false; ?>

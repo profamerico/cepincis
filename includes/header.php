@@ -10,7 +10,7 @@ $bodyClass = trim((string) ($bodyClass ?? ''));
 $currentUser = $_SESSION['user'] ?? null;
 $isLoggedIn = is_array($currentUser);
 $displayName = $isLoggedIn
-    ? trim((string) ($currentUser['fullname'] ?? $currentUser['username'] ?? 'Usuario'))
+    ? trim((string) ($currentUser['fullname'] ?? $currentUser['username'] ?? 'Usuário'))
     : '';
 $currentRole = strtolower(trim((string) ($currentUser['role'] ?? '')));
 $isAdmin = $isLoggedIn && ($currentRole === 'admin' || (int) ($currentUser['id'] ?? 0) === 1 || strtolower((string) ($currentUser['username'] ?? '')) === 'admin');
@@ -42,7 +42,7 @@ $mobileAccountLinks = $isLoggedIn
 if ($canAccessResearchWorkspace) {
     array_splice($mobileAccountLinks, 2, 0, [[
         'href' => './orientations.php',
-        'label' => 'Orientacoes',
+        'label' => 'Orientações',
         'icon' => 'fa-user-graduate',
     ]]);
 }
@@ -68,9 +68,9 @@ if ($isAdmin) {
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES, 'UTF-8'); ?></title>
-    <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($faviconPath, ENT_QUOTES, 'UTF-8'); ?>">
-    <link rel="apple-touch-icon" href="<?php echo htmlspecialchars($faviconPath, ENT_QUOTES, 'UTF-8'); ?>">
+    <title><?php echo htmlspecialchars($pageTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></title>
+    <link rel="icon" type="image/png" href="<?php echo htmlspecialchars($faviconPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+    <link rel="apple-touch-icon" href="<?php echo htmlspecialchars($faviconPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
     <script>
         document.documentElement.classList.add('js-enabled');
         (function () {
@@ -115,9 +115,9 @@ if ($isAdmin) {
         }
     </style>
 </head>
-<body<?php echo $bodyClass !== '' ? ' class="' . htmlspecialchars($bodyClass, ENT_QUOTES, 'UTF-8') . '"' : ''; ?>>
+<body<?php echo $bodyClass !== '' ? ' class="' . htmlspecialchars($bodyClass, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '"' : ''; ?>>
     <div class="page-loader" data-page-loader>
-        <div class="page-loader__inner" role="status" aria-live="polite" aria-label="Carregando pagina">
+        <div class="page-loader__inner" role="status" aria-live="polite" aria-label="Carregando página">
             <strong class="page-loader__brand">CEPIN-CIS</strong>
         </div>
     </div>
@@ -152,7 +152,7 @@ if ($isAdmin) {
         <nav class="site-nav">
             <div class="site-nav-links">
                 <a href="./about.php#sobre">Sobre</a>
-                <a href="./implement.php">Areas Temáticas</a>
+                <a href="./implement.php">Áreas Temáticas</a>
                 <a href="https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf">Regulamento</a>
                 <a href="./contact.php">Contato</a>
             </div>
@@ -170,13 +170,13 @@ if ($isAdmin) {
                 </button>
 
                 <?php if ($isLoggedIn): ?>
-                    <span class="header-user-badge"><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span>
+                    <span class="header-user-badge"><?php echo htmlspecialchars($displayName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
 
                     <a href="./dashboard.php" class="header-icon-link" aria-label="Dashboard" title="Dashboard">
                         <i class="fa-solid fa-table-columns"></i>
                     </a>
 
-                    <a href="./notifications.php" class="header-icon-link header-notification-link" aria-label="Notificacoes" title="Notificacoes">
+                    <a href="./notifications.php" class="header-icon-link header-notification-link" aria-label="Notificações" title="Notificações">
                         <i class="fa-solid fa-bell"></i>
                         <span class="header-notification-count<?php echo $notificationUnreadCount > 0 ? ' is-visible' : ''; ?>" data-notification-count>
                             <?php echo (int) $notificationUnreadCount; ?>
@@ -233,7 +233,7 @@ if ($isAdmin) {
             <?php if ($isLoggedIn): ?>
                 <div class="mobile-user-badge">
                     <span>Conectado como</span>
-                    <strong><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></strong>
+                    <strong><?php echo htmlspecialchars($displayName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                 </div>
             <?php endif; ?>
 
@@ -247,12 +247,12 @@ if ($isAdmin) {
                     $isMobileLinkActive = $mobileLinkScript !== '' && $mobileLinkScript === $currentScript;
                     ?>
                     <a
-                        href="<?php echo htmlspecialchars($mobileLinkHref, ENT_QUOTES, 'UTF-8'); ?>"
+                        href="<?php echo htmlspecialchars($mobileLinkHref, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         class="mobile-account-link<?php echo $isMobileLinkActive ? ' is-active' : ''; ?>"
                         <?php echo $isMobileLinkActive ? ' aria-current="page"' : ''; ?>
                     >
-                        <i class="fa-solid <?php echo htmlspecialchars($mobileLinkIcon, ENT_QUOTES, 'UTF-8'); ?>"></i>
-                        <span><?php echo htmlspecialchars($mobileLinkLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                        <i class="fa-solid <?php echo htmlspecialchars($mobileLinkIcon, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"></i>
+                        <span><?php echo htmlspecialchars($mobileLinkLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                     </a>
                 <?php endforeach; ?>
             </nav>
@@ -268,6 +268,6 @@ if ($isAdmin) {
                 <span data-theme-toggle-label>Modo escuro</span>
             </button>
 
-            <p class="mobile-nav-note">A navegacao institucional fica na barra inferior para voce trocar de area sem perder espaco no topo.</p>
+            <p class="mobile-nav-note">A navegação institucional fica na barra inferior para você trocar de área sem perder espaço no topo.</p>
         </div>
     </aside>

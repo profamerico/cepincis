@@ -111,7 +111,7 @@ class UserProfileExtrasManager
         if ($requestedRole === '') {
             return [
                 'success' => false,
-                'errors' => ['Selecione um nivel valido para solicitar.'],
+                'errors' => ['Selecione um nível válido para solicitar.'],
             ];
         }
 
@@ -119,7 +119,7 @@ class UserProfileExtrasManager
             if ((int) ($request['user_id'] ?? 0) === $userId) {
                 return [
                     'success' => false,
-                    'errors' => ['Voce ja possui uma solicitacao de nivel pendente.'],
+                    'errors' => ['Você já possui uma solicitação de nível pendente.'],
                 ];
             }
         }
@@ -181,7 +181,7 @@ class UserProfileExtrasManager
         if (!in_array($decision, ['approved', 'rejected'], true)) {
             return [
                 'success' => false,
-                'errors' => ['Decisao invalida para a solicitacao.'],
+                'errors' => ['Decisão inválida para a solicitação.'],
             ];
         }
 
@@ -198,14 +198,14 @@ class UserProfileExtrasManager
         if ($requestIndex === null) {
             return [
                 'success' => false,
-                'errors' => ['Solicitacao nao encontrada.'],
+                'errors' => ['Solicitação não encontrada.'],
             ];
         }
 
         if ((string) ($requests[$requestIndex]['status'] ?? '') !== 'pending') {
             return [
                 'success' => false,
-                'errors' => ['Esta solicitacao ja foi revisada.'],
+                'errors' => ['Esta solicitação já foi revisada.'],
             ];
         }
 
@@ -227,11 +227,11 @@ class UserProfileExtrasManager
     {
         switch ($this->normalizeRequestedRole($role)) {
             case 'academic_researcher':
-                return 'Pesquisador Academico';
+                return 'Pesquisador Acadêmico';
             case 'full_researcher':
                 return 'Pesquisador Pleno';
             default:
-                return 'Nivel solicitado';
+                return 'Nível solicitado';
         }
     }
 
@@ -277,16 +277,16 @@ class UserProfileExtrasManager
         }
 
         if ((int) ($photoFile['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-            return ['success' => false, 'error' => 'Nao foi possivel processar a foto enviada.'];
+            return ['success' => false, 'error' => 'Não foi possível processar a foto enviada.'];
         }
 
         $tmpName = (string) ($photoFile['tmp_name'] ?? '');
         if ($tmpName === '' || !is_uploaded_file($tmpName)) {
-            return ['success' => false, 'error' => 'A foto enviada nao foi reconhecida pelo servidor.'];
+            return ['success' => false, 'error' => 'A foto enviada não foi reconhecida pelo servidor.'];
         }
 
         if ((int) ($photoFile['size'] ?? 0) > self::PHOTO_MAX_BYTES) {
-            return ['success' => false, 'error' => 'A foto de perfil deve ter no maximo 3 MB.'];
+            return ['success' => false, 'error' => 'A foto de perfil deve ter no máximo 3 MB.'];
         }
 
         $mimeType = $this->detectMimeType($tmpName);
@@ -296,7 +296,7 @@ class UserProfileExtrasManager
 
         $imageInfo = @getimagesize($tmpName);
         if (!is_array($imageInfo)) {
-            return ['success' => false, 'error' => 'A imagem enviada nao parece ser uma foto valida.'];
+            return ['success' => false, 'error' => 'A imagem enviada não parece ser uma foto válida.'];
         }
 
         if (!is_dir($this->uploadDirectory)) {
@@ -308,7 +308,7 @@ class UserProfileExtrasManager
         $destination = $this->uploadDirectory . DIRECTORY_SEPARATOR . $filename;
 
         if (!move_uploaded_file($tmpName, $destination)) {
-            return ['success' => false, 'error' => 'Nao foi possivel salvar a foto no servidor.'];
+            return ['success' => false, 'error' => 'Não foi possível salvar a foto no servidor.'];
         }
 
         return [

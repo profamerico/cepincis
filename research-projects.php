@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $postedToken = (string) ($_POST['csrf_token'] ?? '');
 
     if (!hash_equals($csrfToken, $postedToken)) {
-        $flash = ['type' => 'erro', 'message' => 'Sessao expirada. Recarregue a pagina e tente novamente.'];
+        $flash = ['type' => 'erro', 'message' => 'Sessão expirada. Recarregue a página e tente novamente.'];
     } else {
         $action = (string) ($_POST['action'] ?? '');
 
@@ -132,12 +132,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $existingProject = $projectId !== '' ? $projectManager->getProject($projectId) : false;
 
                 if ($projectId !== '' && !is_array($existingProject)) {
-                    $flash = ['type' => 'erro', 'message' => 'Projeto nao encontrado.'];
+                    $flash = ['type' => 'erro', 'message' => 'Projeto não encontrado.'];
                     break;
                 }
 
                 if (!$isAdmin && is_array($existingProject) && (int) ($existingProject['user_id'] ?? 0) !== (int) $currentUser['id']) {
-                    $flash = ['type' => 'erro', 'message' => 'Voce so pode editar projetos criados na sua propria area.'];
+                    $flash = ['type' => 'erro', 'message' => 'Você so pode editar projetos criados na sua própria área.'];
                     break;
                 }
 
@@ -163,13 +163,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     && (int) ($uploadedProjectDocument['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
 
                 if ($isAdmin && $submittedProject['user_id'] !== '' && !isset($userMap[(int) $submittedProject['user_id']])) {
-                    $formErrors = ['Selecione um responsavel valido para o projeto.'];
+                    $formErrors = ['Selecione um responsável válido para o projeto.'];
                     $formOverrides = $submittedProject;
                     break;
                 }
 
                 if ($projectId === '' && !$hasProjectDocumentUpload) {
-                    $formErrors = ['Envie a documentacao obrigatoria em PDF ou DOCX para submeter o projeto.'];
+                    $formErrors = ['Envie a documentação obrigatoria em PDF ou DOCX para submeter o projeto.'];
                     $formOverrides = $submittedProject;
                     break;
                 }
@@ -177,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($hasProjectDocumentUpload) {
                     $documentValidation = $workspaceManager->validateProjectDocumentUpload($uploadedProjectDocument);
                     if (!$documentValidation['success']) {
-                        $formErrors = [$documentValidation['error'] ?? 'Documento invalido.'];
+                        $formErrors = [$documentValidation['error'] ?? 'Documento inválido.'];
                         $formOverrides = $submittedProject;
                         break;
                     }
@@ -204,7 +204,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 $projectManager->deleteProject((string) ($savedProject['id'] ?? ''));
                             }
 
-                            $formErrors = [$documentResult['error'] ?? ($documentResult['errors'][0] ?? 'Nao foi possivel anexar a documentacao.')];
+                            $formErrors = [$documentResult['error'] ?? ($documentResult['errors'][0] ?? 'Não foi possível anexar a documentação.')];
                             $formOverrides = $submittedProject;
                             break;
                         }
@@ -212,8 +212,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $workspaceManager->notifyAdministrators(
                             $allUsers,
                             'document_pending',
-                            'Documento aguardando aprovacao',
-                            'O projeto "' . (string) ($savedProject['title'] ?? 'Projeto') . '" recebeu uma nova documentacao.',
+                            'Documento aguardando aprovação',
+                            'O projeto "' . (string) ($savedProject['title'] ?? 'Projeto') . '" recebeu uma nova documentação.',
                             (string) ($savedProject['id'] ?? ''),
                             'admin.php#document-authentication',
                             (int) ($currentUser['id'] ?? 0)
@@ -222,12 +222,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     research_projects_set_flash(
                         'sucesso',
-                        !empty($result['created']) ? 'Projeto criado e documentacao enviada para avaliacao.' : 'Projeto atualizado com sucesso.'
+                        !empty($result['created']) ? 'Projeto criado e documentação enviada para avaliação.' : 'Projeto atualizado com sucesso.'
                     );
                     research_projects_redirect('#manage');
                 }
 
-                $formErrors = $result['errors'] ?? ['Nao foi possivel salvar o projeto.'];
+                $formErrors = $result['errors'] ?? ['Não foi possível salvar o projeto.'];
                 $formOverrides = $submittedProject;
                 break;
 
@@ -236,12 +236,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $existingProject = $projectId !== '' ? $projectManager->getProject($projectId) : false;
 
                 if (!is_array($existingProject)) {
-                    $flash = ['type' => 'erro', 'message' => 'Projeto nao encontrado.'];
+                    $flash = ['type' => 'erro', 'message' => 'Projeto não encontrado.'];
                     break;
                 }
 
                 if (!$isAdmin && (int) ($existingProject['user_id'] ?? 0) !== (int) $currentUser['id']) {
-                    $flash = ['type' => 'erro', 'message' => 'Voce so pode remover projetos que pertencem a sua conta.'];
+                    $flash = ['type' => 'erro', 'message' => 'Você so pode remover projetos que pertencem a sua conta.'];
                     break;
                 }
 
@@ -250,14 +250,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $clearedOrientations = $orientationManager->clearProjectReferences($projectId);
                     $message = 'Projeto removido com sucesso.';
                     if ($clearedOrientations > 0) {
-                        $message .= ' ' . $clearedOrientations . ' orientacao(oes) perderam o vinculo com este projeto.';
+                        $message .= ' ' . $clearedOrientations . ' orientação(oes) perderam o vínculo com este projeto.';
                     }
 
                     research_projects_set_flash('sucesso', $message);
                     research_projects_redirect('#list');
                 }
 
-                $flash = ['type' => 'erro', 'message' => 'Nao foi possivel remover o projeto.'];
+                $flash = ['type' => 'erro', 'message' => 'Não foi possível remover o projeto.'];
                 break;
         }
     }
@@ -334,8 +334,8 @@ if (is_array($formOverrides)) {
             <p class="hero-copy">
                 <?php echo htmlspecialchars(
                     $isAdmin
-                        ? 'Esta area oferece uma visao focada em projetos para complementar o painel mestre e o fluxo de orientacoes.'
-                        : 'Como Pesquisador Pleno, voce pode cadastrar projetos diretamente daqui. Eles entram na base principal do portal e passam a abastecer a home e as paginas relacionadas.',
+                        ? 'Esta área oferece uma visão focada em projetos para complementar o painel mestre e o fluxo de orientações.'
+                        : 'Como Pesquisador Pleno, você pode cadastrar projetos diretamente daqui. Eles entram na base principal do portal e passam a abastecer a home e as páginas relacionadas.',
                     ENT_QUOTES,
                     'UTF-8'
                 ); ?>
@@ -343,26 +343,26 @@ if (is_array($formOverrides)) {
 
             <div class="hero-actions">
                 <a class="dashboard-btn" href="dashboard.php">Voltar ao dashboard</a>
-                <a class="dashboard-btn dashboard-btn--ghost" href="#manage"><?php echo $projectForm['id'] !== '' ? 'Continuar edicao' : 'Novo projeto'; ?></a>
-                <a class="dashboard-btn dashboard-btn--ghost" href="orientations.php">Abrir orientacoes</a>
+                <a class="dashboard-btn dashboard-btn--ghost" href="#manage"><?php echo $projectForm['id'] !== '' ? 'Continuar edição' : 'Novo projeto'; ?></a>
+                <a class="dashboard-btn dashboard-btn--ghost" href="orientations.php">Abrir orientações</a>
             </div>
         </div>
 
         <aside class="panel-hero-aside">
-            <span class="dashboard-badge"><?php echo htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8'); ?></span>
-            <h2><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></h2>
-            <p><?php echo $isAdmin ? 'Voce pode revisar qualquer projeto por aqui, embora o painel admin continue sendo o ponto de governanca total.' : 'Tudo o que voce criar aqui ja nasce integrado ao restante do portal.'; ?></p>
+            <span class="dashboard-badge"><?php echo htmlspecialchars($roleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+            <h2><?php echo htmlspecialchars($displayName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+            <p><?php echo $isAdmin ? 'Você pode revisar qualquer projeto por aqui, embora o painel admin continue sendo o ponto de governança total.' : 'Tudo o que você criar aqui já nasce integrado ao restante do portal.'; ?></p>
             <ul class="hero-meta-list">
                 <li>Projetos totais: <?php echo (int) ($projectStats['total'] ?? 0); ?></li>
                 <li>Projetos ativos: <?php echo (int) ($projectStats['active'] ?? 0); ?></li>
-                <li>Orientacoes vinculadas: <?php echo $linkedOrientationCount; ?></li>
+                <li>Orientações vinculadas: <?php echo $linkedOrientationCount; ?></li>
             </ul>
         </aside>
     </section>
 
     <?php if ($flash): ?>
-        <div class="mensagem <?php echo htmlspecialchars((string) $flash['type'], ENT_QUOTES, 'UTF-8'); ?>">
-            <?php echo htmlspecialchars((string) $flash['message'], ENT_QUOTES, 'UTF-8'); ?>
+        <div class="mensagem <?php echo htmlspecialchars((string) $flash['type'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+            <?php echo htmlspecialchars((string) $flash['message'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
         </div>
     <?php endif; ?>
 
@@ -383,9 +383,9 @@ if (is_array($formOverrides)) {
             <p>Projetos aguardando algum passo seguinte.</p>
         </article>
         <article class="metric-card">
-            <span class="metric-label"><?php echo $isAdmin ? 'Sem responsavel' : 'Concluidos'; ?></span>
+            <span class="metric-label"><?php echo $isAdmin ? 'Sem responsável' : 'Concluidos'; ?></span>
             <strong class="metric-value"><?php echo $isAdmin ? (int) ($projectStats['without_owner'] ?? 0) : (int) ($projectStats['completed'] ?? 0); ?></strong>
-            <p><?php echo $isAdmin ? 'Projetos hoje sem responsavel definido.' : 'Projetos finalizados dentro do seu historico.'; ?></p>
+            <p><?php echo $isAdmin ? 'Projetos hoje sem responsável definido.' : 'Projetos finalizados dentro do seu histórico.'; ?></p>
         </article>
     </section>
 
@@ -393,52 +393,52 @@ if (is_array($formOverrides)) {
         <article id="manage" class="panel-card">
             <div class="panel-card-header">
                 <div>
-                    <p class="eyebrow">Publicacao</p>
+                    <p class="eyebrow">Publicação</p>
                     <h2><?php echo $projectForm['id'] !== '' ? 'Editar projeto' : 'Novo projeto'; ?></h2>
-                    <p class="admin-subtitle">Este formulario publica o projeto na mesma base usada pela home, pelo admin e pelos fluxos de orientacao.</p>
+                    <p class="admin-subtitle">Este formulário publica o projeto na mesma base usada pela home, pelo admin e pelos fluxos de orientação.</p>
                 </div>
             </div>
 
             <?php foreach ($formErrors as $error): ?>
-                <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8'); ?></div>
+                <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
             <?php endforeach; ?>
 
             <form method="POST" enctype="multipart/form-data" class="stack-form">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                 <input type="hidden" name="action" value="save_research_project">
-                <input type="hidden" name="project_id" value="<?php echo htmlspecialchars((string) $projectForm['id'], ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="project_id" value="<?php echo htmlspecialchars((string) $projectForm['id'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
 
                 <?php if ($isAdmin): ?>
                     <div class="form-group">
-                        <label for="project_user_id">Responsavel</label>
+                        <label for="project_user_id">Responsável</label>
                         <select id="project_user_id" name="user_id">
-                            <option value="">Sem responsavel</option>
+                            <option value="">Sem responsável</option>
                             <?php foreach ($allUsers as $user): ?>
                                 <?php $userId = (int) ($user['id'] ?? 0); ?>
                                 <option value="<?php echo $userId; ?>" <?php echo (string) $projectForm['user_id'] === (string) $userId ? 'selected' : ''; ?>>
-                                    <?php echo htmlspecialchars((string) ($user['fullname'] ?? $user['username']), ENT_QUOTES, 'UTF-8'); ?>
+                                    <?php echo htmlspecialchars((string) ($user['fullname'] ?? $user['username']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                 </option>
                             <?php endforeach; ?>
                         </select>
                     </div>
                 <?php else: ?>
                     <div class="form-group">
-                        <label for="project_owner_locked">Responsavel</label>
-                        <input type="text" id="project_owner_locked" value="<?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>" disabled>
+                        <label for="project_owner_locked">Responsável</label>
+                        <input type="text" id="project_owner_locked" value="<?php echo htmlspecialchars($displayName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" disabled>
                     </div>
                 <?php endif; ?>
 
                 <div class="form-group">
-                    <label for="project_title">Titulo</label>
-                    <input type="text" id="project_title" name="title" value="<?php echo htmlspecialchars((string) $projectForm['title'], ENT_QUOTES, 'UTF-8'); ?>" required>
+                    <label for="project_title">Título</label>
+                    <input type="text" id="project_title" name="title" value="<?php echo htmlspecialchars((string) $projectForm['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" required>
                 </div>
 
                 <div class="form-group">
                     <label for="project_category">Categoria</label>
                     <select id="project_category" name="category" required>
                         <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
-                            <option value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo (string) $projectForm['category'] === (string) $areaKey ? 'selected' : ''; ?>>
-                                <?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES, 'UTF-8'); ?>
+                            <option value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo (string) $projectForm['category'] === (string) $areaKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
                         <?php endforeach; ?>
                     </select>
@@ -451,8 +451,8 @@ if (is_array($formOverrides)) {
                         <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
                             <?php $isChecked = in_array((string) $areaKey, $projectForm['tags'], true); ?>
                             <label class="checkbox-row tag-option-card">
-                                <input type="checkbox" name="tags[]" value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES, 'UTF-8'); ?>" <?php echo $isChecked ? 'checked' : ''; ?>>
-                                <span><?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES, 'UTF-8'); ?></span>
+                                <input type="checkbox" name="tags[]" value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo $isChecked ? 'checked' : ''; ?>>
+                                <span><?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                             </label>
                         <?php endforeach; ?>
                     </div>
@@ -469,33 +469,33 @@ if (is_array($formOverrides)) {
                 </div>
 
                 <div class="form-group">
-                    <label for="project_description">Descricao</label>
-                    <textarea id="project_description" name="description" rows="8" placeholder="Apresente objetivo, escopo, impacto e contexto do projeto."><?php echo htmlspecialchars((string) $projectForm['description'], ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <label for="project_description">Descrição</label>
+                    <textarea id="project_description" name="description" rows="8" placeholder="Apresente objetivo, escopo, impacto e contexto do projeto."><?php echo htmlspecialchars((string) $projectForm['description'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></textarea>
                 </div>
 
                 <div class="form-group">
                     <label for="project_participation_info">Como participar</label>
-                    <textarea id="project_participation_info" name="participation_info" rows="6" placeholder="Explique quem pode entrar, disponibilidade esperada, perfil desejado e como a pessoa deve se apresentar ao escrever para a equipe."><?php echo htmlspecialchars((string) $projectForm['participation_info'], ENT_QUOTES, 'UTF-8'); ?></textarea>
-                    <p class="form-help">Esse texto aparecera na pagina detalhada do projeto, junto do CTA para a pessoa escrever ao responsavel e ao CEPIN-CIS.</p>
+                    <textarea id="project_participation_info" name="participation_info" rows="6" placeholder="Explique quem pode entrar, disponibilidade esperada, perfil desejado e como a pessoa deve se apresentar ao escrever para a equipe."><?php echo htmlspecialchars((string) $projectForm['participation_info'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></textarea>
+                    <p class="form-help">Esse texto aparecerá na página detalhada do projeto, junto do CTA para a pessoa escrever ao responsável e ao CEPIN-CIS.</p>
                 </div>
 
                 <div class="form-group">
-                    <label for="project_document_file">Documentacao obrigatoria</label>
+                    <label for="project_document_file">Documentação obrigatoria</label>
                     <input type="file" id="project_document_file" name="document_file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" <?php echo $projectForm['id'] === '' ? 'required' : ''; ?>>
-                    <p class="form-help">Todo novo projeto precisa de um PDF ou DOCX para entrar na fila de autenticacao administrativa. Em edicoes, envie outro arquivo apenas se quiser substituir ou complementar a avaliacao.</p>
+                    <p class="form-help">Todo novo projeto precisa de um PDF ou DOCX para entrar na fila de autenticação administrativa. Em edicoes, envie outro arquivo apenas se quiser substituir ou complementar a avaliação.</p>
                 </div>
 
                 <?php if ((string) $projectForm['image_path'] !== ''): ?>
                     <div class="admin-partner-preview admin-project-preview">
                         <img
-                            src="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?>"
-                            alt="<?php echo htmlspecialchars((string) ($projectForm['title'] !== '' ? $projectForm['title'] : 'Preview do projeto'), ENT_QUOTES, 'UTF-8'); ?>"
+                            src="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                            alt="<?php echo htmlspecialchars((string) ($projectForm['title'] !== '' ? $projectForm['title'] : 'Preview do projeto'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                             class="admin-partner-preview__image"
                         >
                         <div class="admin-partner-preview__copy">
                             <strong>Banner atual do projeto</strong>
-                            <p><?php echo htmlspecialchars((string) ($projectForm['title'] !== '' ? $projectForm['title'] : 'Projeto em edicao'), ENT_QUOTES, 'UTF-8'); ?></p>
-                            <span><?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            <p><?php echo htmlspecialchars((string) ($projectForm['title'] !== '' ? $projectForm['title'] : 'Projeto em edição'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+                            <span><?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                         </div>
                     </div>
                 <?php endif; ?>
@@ -503,13 +503,13 @@ if (is_array($formOverrides)) {
                 <div class="form-group">
                     <label for="project_image_file">Imagem do banner</label>
                     <input type="file" id="project_image_file" name="image_file" accept="image/png,image/jpeg,image/webp,image/gif">
-                    <p class="form-help">Envie JPG, PNG, WEBP ou GIF com ate 6 MB. Esse campo e opcional: se voce nao enviar imagem, a pagina do projeto usa uma das capas editoriais escuras do CEPIN-CIS.</p>
+                    <p class="form-help">Envie JPG, PNG, WEBP ou GIF com até 6 MB. Esse campo é opcional: se você não enviar imagem, a página do projeto usa uma das capas editoriais escuras do CEPIN-CIS.</p>
                 </div>
 
                 <div class="form-group">
                     <label for="project_image_path">Ou caminho da imagem</label>
-                    <input type="text" id="project_image_path" name="image_path" value="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES, 'UTF-8'); ?>" placeholder="./img/projeto-banner.png ou ./uploads/projects/arquivo.png">
-                    <p class="form-help">Se o asset ja existe no projeto, voce pode apontar o caminho local diretamente sem reenviar o arquivo. Se deixar vazio, o fallback visual entra automaticamente.</p>
+                    <input type="text" id="project_image_path" name="image_path" value="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" placeholder="./img/projeto-banner.png ou ./uploads/projects/arquivo.png">
+                    <p class="form-help">Se o asset já existe no projeto, você pode apontar o caminho local diretamente sem reenviar o arquivo. Se deixar vazio, o fallback visual entra automaticamente.</p>
                 </div>
 
                 <button type="submit" class="dashboard-btn"><?php echo $projectForm['id'] !== '' ? 'Salvar projeto' : 'Criar projeto'; ?></button>
@@ -521,7 +521,7 @@ if (is_array($formOverrides)) {
                 <div class="panel-card-header">
                     <div>
                         <p class="eyebrow">Conexao com o portal</p>
-                        <h2>O que muda quando voce publica</h2>
+                        <h2>O que muda quando você publica</h2>
                     </div>
                 </div>
 
@@ -531,16 +531,16 @@ if (is_array($formOverrides)) {
                         <strong>Home, admin e workspace</strong>
                     </li>
                     <li>
-                        <span>Vinculo com orientacoes</span>
+                        <span>Vínculo com orientações</span>
                         <strong><?php echo $linkedOrientationCount; ?> associado(s)</strong>
                     </li>
                     <li>
-                        <span>Responsavel atual</span>
-                        <strong><?php echo $isAdmin ? 'Definivel por projeto' : htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <span>Responsável atual</span>
+                        <strong><?php echo $isAdmin ? 'Definível por projeto' : htmlspecialchars($displayName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                     </li>
                     <li>
-                        <span>Nivel atual</span>
-                        <strong><?php echo htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <span>Nível atual</span>
+                        <strong><?php echo htmlspecialchars($roleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                     </li>
                 </ul>
             </article>
@@ -553,7 +553,7 @@ if (is_array($formOverrides)) {
                     </div>
                 </div>
 
-                <p class="panel-copy">Publique o projeto com titulo, descricao e tags claras. Depois, quando ele tiver orientandos envolvidos, conecte a orientacao no workspace correspondente para fechar o ciclo da hierarquia.</p>
+                <p class="panel-copy">Publique o projeto com título, descrição e tags claras. Depois, quando ele tiver orientandos envolvidos, conecte a orientação no workspace correspondente para fechar o ciclo da hierarquia.</p>
             </article>
         </div>
     </section>
@@ -562,14 +562,14 @@ if (is_array($formOverrides)) {
         <article class="panel-card admin-workspace__full">
             <div class="panel-card-header">
                 <div>
-                    <p class="eyebrow"><?php echo $isAdmin ? 'Panorama' : 'Historico'; ?></p>
+                    <p class="eyebrow"><?php echo $isAdmin ? 'Panorama' : 'Histórico'; ?></p>
                     <h2><?php echo $isAdmin ? 'Projetos cadastrados' : 'Meus projetos'; ?></h2>
-                    <p class="admin-subtitle"><?php echo $isAdmin ? 'O admin consegue revisar tudo por aqui, mas o ownership continua respeitado para pesquisadores plenos.' : 'Esta listagem mostra tudo o que ja foi publicado ou salvo na sua area de pesquisa.'; ?></p>
+                    <p class="admin-subtitle"><?php echo $isAdmin ? 'O admin consegue revisar tudo por aqui, mas o ownership continua respeitado para pesquisadores plenos.' : 'Esta listagem mostra tudo o que já foi publicado ou salvo na sua área de pesquisa.'; ?></p>
                 </div>
             </div>
 
             <?php if (empty($projects)): ?>
-                <p class="admin-empty"><?php echo $isAdmin ? 'Nenhum projeto cadastrado ainda.' : 'Voce ainda nao cadastrou nenhum projeto.'; ?></p>
+                <p class="admin-empty"><?php echo $isAdmin ? 'Nenhum projeto cadastrado ainda.' : 'Você ainda não cadastrou nenhum projeto.'; ?></p>
             <?php else: ?>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
@@ -578,8 +578,8 @@ if (is_array($formOverrides)) {
                                 <th>Projeto</th>
                                 <th>Categoria e tags</th>
                                 <th>Status</th>
-                                <th>Autenticacao</th>
-                                <th>Responsavel</th>
+                                <th>Autenticação</th>
+                                <th>Responsável</th>
                                 <th>Atualizado em</th>
                                 <th>Acoes</th>
                             </tr>
@@ -593,28 +593,28 @@ if (is_array($formOverrides)) {
                                 ?>
                                 <tr>
                                     <td>
-                                        <strong><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                                        <strong><?php echo htmlspecialchars((string) ($project['title'] ?? 'Projeto'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                                         <?php if ((string) ($project['description'] ?? '') !== ''): ?>
-                                            <div class="admin-meta"><?php echo htmlspecialchars(research_projects_excerpt((string) $project['description']), ENT_QUOTES, 'UTF-8'); ?></div>
+                                            <div class="admin-meta"><?php echo htmlspecialchars(research_projects_excerpt((string) $project['description']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <strong><?php echo htmlspecialchars((string) ($project['category'] ?? 'Geral'), ENT_QUOTES, 'UTF-8'); ?></strong>
-                                        <div class="admin-meta"><?php echo htmlspecialchars(research_projects_format_tags($project['tags'] ?? []), ENT_QUOTES, 'UTF-8'); ?></div>
+                                        <strong><?php echo htmlspecialchars((string) ($project['category'] ?? 'Geral'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                                        <div class="admin-meta"><?php echo htmlspecialchars(research_projects_format_tags($project['tags'] ?? []), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                                     </td>
-                                    <td><span class="admin-pill admin-pill--status"><?php echo htmlspecialchars(research_projects_status_label((string) ($project['status'] ?? 'active')), ENT_QUOTES, 'UTF-8'); ?></span></td>
-                                    <td><span class="admin-pill admin-pill--<?php echo htmlspecialchars((string) ($authentication['status'] ?? 'missing'), ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentacao'), ENT_QUOTES, 'UTF-8'); ?></span></td>
-                                    <td><?php echo htmlspecialchars((string) ($owner['fullname'] ?? $owner['username'] ?? 'Sem responsavel'), ENT_QUOTES, 'UTF-8'); ?></td>
-                                    <td><?php echo htmlspecialchars(research_projects_format_datetime($project['updated_at'] ?? null), ENT_QUOTES, 'UTF-8'); ?></td>
+                                    <td><span class="admin-pill admin-pill--status"><?php echo htmlspecialchars(research_projects_status_label((string) ($project['status'] ?? 'active')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span></td>
+                                    <td><span class="admin-pill admin-pill--<?php echo htmlspecialchars((string) ($authentication['status'] ?? 'missing'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"><?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentação'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span></td>
+                                    <td><?php echo htmlspecialchars((string) ($owner['fullname'] ?? $owner['username'] ?? 'Sem responsável'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></td>
+                                    <td><?php echo htmlspecialchars(research_projects_format_datetime($project['updated_at'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></td>
                                     <td>
                                         <div class="table-actions">
-                                            <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project.php?id=<?php echo urlencode($projectId); ?>">Ver pagina</a>
+                                            <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project.php?id=<?php echo urlencode($projectId); ?>">Ver página</a>
                                             <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-workspace.php?id=<?php echo urlencode($projectId); ?>">Workspace</a>
                                             <a class="dashboard-btn admin-btn-small" href="research-projects.php?edit=<?php echo urlencode($projectId); ?>#manage">Editar</a>
                                             <form method="POST" onsubmit="return confirm('Excluir este projeto?');">
-                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                                 <input type="hidden" name="action" value="delete_research_project">
-                                                <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES, 'UTF-8'); ?>">
+                                                <input type="hidden" name="project_id" value="<?php echo htmlspecialchars($projectId, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                                 <button type="submit" class="dashboard-btn admin-btn-danger">Excluir</button>
                                             </form>
                                         </div>

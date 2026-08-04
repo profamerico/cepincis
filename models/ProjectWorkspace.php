@@ -18,10 +18,10 @@ class ProjectWorkspaceManager
     private const TIMELINE_EXTENSIONS = ['pdf', 'docx', 'jpg', 'jpeg', 'png', 'webp'];
 
     private const TIMELINE_TYPES = [
-        'update' => 'Atualizacao',
+        'update' => 'Atualização',
         'milestone' => 'Conquista',
-        'fix' => 'Correcao',
-        'documentation' => 'Documentacao',
+        'fix' => 'Correção',
+        'documentation' => 'Documentação',
         'release' => 'Release',
         'notice' => 'Aviso',
     ];
@@ -72,7 +72,7 @@ class ProjectWorkspaceManager
             case 'rejected':
                 return 'Rejeitado';
             default:
-                return 'Sem documentacao';
+                return 'Sem documentação';
         }
     }
 
@@ -214,7 +214,7 @@ class ProjectWorkspaceManager
     {
         $decision = $this->normalizeDocumentDecision($decision);
         if ($decision === '') {
-            return ['success' => false, 'errors' => ['Decisao invalida para o documento.']];
+            return ['success' => false, 'errors' => ['Decisão inválida para o documento.']];
         }
 
         $documents = $this->loadRecords('documents');
@@ -228,7 +228,7 @@ class ProjectWorkspaceManager
         }
 
         if ($documentIndex === null) {
-            return ['success' => false, 'errors' => ['Documento nao encontrado.']];
+            return ['success' => false, 'errors' => ['Documento não encontrado.']];
         }
 
         $documents[$documentIndex]['status'] = $decision;
@@ -326,7 +326,7 @@ class ProjectWorkspaceManager
     public function inviteCollaborator(array $project, array $actor, int $invitedUserId, string $role = 'collaborator'): array
     {
         if (!$this->canManageProject($project, $actor)) {
-            return ['success' => false, 'errors' => ['Voce nao tem permissao para convidar colaboradores neste projeto.']];
+            return ['success' => false, 'errors' => ['Você não tem permissão para convidar colaboradores neste projeto.']];
         }
 
         $projectId = (string) ($project['id'] ?? '');
@@ -335,20 +335,20 @@ class ProjectWorkspaceManager
         $role = $this->normalizeProjectRole($role);
 
         if ($invitedUserId <= 0) {
-            return ['success' => false, 'errors' => ['Selecione um usuario valido.']];
+            return ['success' => false, 'errors' => ['Selecione um usuário válido.']];
         }
 
         if ($invitedUserId === $ownerId) {
-            return ['success' => false, 'errors' => ['O responsavel ja possui controle total do projeto.']];
+            return ['success' => false, 'errors' => ['O responsável já possui controle total do projeto.']];
         }
 
         if ($this->getActiveCollaborator($projectId, $invitedUserId) !== null) {
-            return ['success' => false, 'errors' => ['Este usuario ja e colaborador do projeto.']];
+            return ['success' => false, 'errors' => ['Este usuário já é colaborador do projeto.']];
         }
 
         foreach ($this->getProjectInvites($projectId) as $invite) {
             if ((int) ($invite['invited_user_id'] ?? 0) === $invitedUserId) {
-                return ['success' => false, 'errors' => ['Ja existe um convite pendente para este usuario.']];
+                return ['success' => false, 'errors' => ['Já existe um convite pendente para este usuário.']];
             }
         }
 
@@ -371,8 +371,8 @@ class ProjectWorkspaceManager
         $this->createNotification(
             $invitedUserId,
             'collaboration_invite',
-            'Convite de colaboracao',
-            'Voce recebeu um convite para colaborar em "' . $this->projectTitle($project) . '".',
+            'Convite de colaboração',
+            'Você recebeu um convite para colaborar em "' . $this->projectTitle($project) . '".',
             $projectId,
             'notifications.php',
             $actorId
@@ -388,7 +388,7 @@ class ProjectWorkspaceManager
     {
         $response = strtolower(trim($response));
         if (!in_array($response, ['accepted', 'rejected'], true)) {
-            return ['success' => false, 'errors' => ['Resposta invalida para o convite.']];
+            return ['success' => false, 'errors' => ['Resposta inválida para o convite.']];
         }
 
         $invites = $this->loadRecords('invites');
@@ -402,18 +402,18 @@ class ProjectWorkspaceManager
         }
 
         if ($inviteIndex === null) {
-            return ['success' => false, 'errors' => ['Convite nao encontrado.']];
+            return ['success' => false, 'errors' => ['Convite não encontrado.']];
         }
 
         $invite = $invites[$inviteIndex];
         $userId = (int) ($user['id'] ?? 0);
 
         if ((int) ($invite['invited_user_id'] ?? 0) !== $userId) {
-            return ['success' => false, 'errors' => ['Este convite pertence a outro usuario.']];
+            return ['success' => false, 'errors' => ['Este convite pertence a outro usuário.']];
         }
 
         if ((string) ($invite['status'] ?? '') !== 'pending') {
-            return ['success' => false, 'errors' => ['Este convite ja foi respondido.']];
+            return ['success' => false, 'errors' => ['Este convite já foi respondido.']];
         }
 
         $invites[$inviteIndex]['status'] = $response;
@@ -462,7 +462,7 @@ class ProjectWorkspaceManager
     public function removeCollaborator(array $project, array $actor, int $userId): array
     {
         if (!$this->canManageProject($project, $actor)) {
-            return ['success' => false, 'errors' => ['Voce nao tem permissao para remover colaboradores.']];
+            return ['success' => false, 'errors' => ['Você não tem permissão para remover colaboradores.']];
         }
 
         $projectId = (string) ($project['id'] ?? '');
@@ -484,14 +484,14 @@ class ProjectWorkspaceManager
         unset($collaborator);
 
         if (!$changed) {
-            return ['success' => false, 'errors' => ['Colaborador nao encontrado.']];
+            return ['success' => false, 'errors' => ['Colaborador não encontrado.']];
         }
 
         $this->saveRecords('collaborators', $collaborators);
         $this->createNotification(
             $userId,
             'collaborator_removed',
-            'Colaboracao encerrada',
+            'Colaboração encerrada',
             'Seu acesso de colaborador em "' . $this->projectTitle($project) . '" foi removido.',
             $projectId,
             'project.php?id=' . rawurlencode($projectId),
@@ -590,7 +590,7 @@ class ProjectWorkspaceManager
     public function addTimelineEvent(array $project, array $user, array $data, ?array $file = null): array
     {
         if (!$this->canEditTimeline($project, $user)) {
-            return ['success' => false, 'errors' => ['Voce nao tem permissao para atualizar a timeline deste projeto.']];
+            return ['success' => false, 'errors' => ['Você não tem permissão para atualizar a timeline deste projeto.']];
         }
 
         $normalized = $this->normalizeTimelinePayload($data);
@@ -630,7 +630,7 @@ class ProjectWorkspaceManager
         $this->notifyProjectParticipants(
             $project,
             'timeline_added',
-            'Nova atualizacao na timeline',
+            'Nova atualização na timeline',
             '"' . $event['title'] . '" foi adicionada em "' . $this->projectTitle($project) . '".',
             (int) ($user['id'] ?? 0),
             (int) ($user['id'] ?? 0)
@@ -655,11 +655,11 @@ class ProjectWorkspaceManager
         }
 
         if ($eventIndex === null) {
-            return ['success' => false, 'errors' => ['Evento nao encontrado.']];
+            return ['success' => false, 'errors' => ['Evento não encontrado.']];
         }
 
         if (!$this->canEditTimelineEvent($project, $events[$eventIndex], $user)) {
-            return ['success' => false, 'errors' => ['Voce nao pode editar este evento.']];
+            return ['success' => false, 'errors' => ['Você não pode editar este evento.']];
         }
 
         $normalized = $this->normalizeTimelinePayload($data);
@@ -710,11 +710,11 @@ class ProjectWorkspaceManager
         }
 
         if ($eventIndex === null) {
-            return ['success' => false, 'errors' => ['Evento nao encontrado.']];
+            return ['success' => false, 'errors' => ['Evento não encontrado.']];
         }
 
         if (!$this->canEditTimelineEvent($project, $events[$eventIndex], $user)) {
-            return ['success' => false, 'errors' => ['Voce nao pode remover este evento.']];
+            return ['success' => false, 'errors' => ['Você não pode remover este evento.']];
         }
 
         $before = $events[$eventIndex];
@@ -769,7 +769,7 @@ class ProjectWorkspaceManager
             'id' => $this->nextId('ntf_'),
             'user_id' => $userId,
             'type' => trim($type) !== '' ? trim($type) : 'general',
-            'title' => trim($title) !== '' ? trim($title) : 'Notificacao',
+            'title' => trim($title) !== '' ? trim($title) : 'Notificação',
             'body' => trim($body),
             'project_id' => $projectId,
             'target_url' => $targetUrl,
@@ -1057,11 +1057,11 @@ class ProjectWorkspaceManager
         $errors = [];
 
         if ($title === '') {
-            $errors[] = 'Informe um titulo para o evento.';
+            $errors[] = 'Informe um título para o evento.';
         }
 
         if ($description === '') {
-            $errors[] = 'Informe uma descricao para o evento.';
+            $errors[] = 'Informe uma descrição para o evento.';
         }
 
         if ($eventDate === '') {
@@ -1070,7 +1070,7 @@ class ProjectWorkspaceManager
 
         $date = DateTime::createFromFormat('Y-m-d', $eventDate);
         if (!$date || $date->format('Y-m-d') !== $eventDate) {
-            $errors[] = 'Informe uma data valida para o evento.';
+            $errors[] = 'Informe uma data válida para o evento.';
         }
 
         return [
@@ -1112,16 +1112,16 @@ class ProjectWorkspaceManager
     private function validateFileUpload(?array $file, array $allowedExtensions, int $maxBytes, bool $strictDocument): array
     {
         if (!$this->hasUploadedFile($file)) {
-            return ['success' => false, 'error' => 'Envie um arquivo valido.'];
+            return ['success' => false, 'error' => 'Envie um arquivo válido.'];
         }
 
         if ((int) ($file['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-            return ['success' => false, 'error' => 'Nao foi possivel processar o upload.'];
+            return ['success' => false, 'error' => 'Não foi possível processar o upload.'];
         }
 
         $tmpName = (string) ($file['tmp_name'] ?? '');
         if ($tmpName === '' || !is_uploaded_file($tmpName)) {
-            return ['success' => false, 'error' => 'O arquivo enviado nao foi reconhecido pelo servidor.'];
+            return ['success' => false, 'error' => 'O arquivo enviado não foi reconhecido pelo servidor.'];
         }
 
         $size = (int) ($file['size'] ?? 0);
@@ -1135,7 +1135,7 @@ class ProjectWorkspaceManager
         }
 
         if (!in_array($extension, $allowedExtensions, true)) {
-            return ['success' => false, 'error' => 'Extensao nao permitida para este upload.'];
+            return ['success' => false, 'error' => 'Extensão não permitida para este upload.'];
         }
 
         $mimeType = $this->detectMimeType($tmpName);
@@ -1159,7 +1159,7 @@ class ProjectWorkspaceManager
 
         if ($extension === 'pdf') {
             if (strncmp($head, '%PDF-', 5) !== 0) {
-                return ['success' => false, 'error' => 'O PDF enviado nao possui assinatura valida.'];
+                return ['success' => false, 'error' => 'O PDF enviado não possui assinatura válida.'];
             }
 
             return ['success' => true, 'mime_type' => 'application/pdf'];
@@ -1167,13 +1167,13 @@ class ProjectWorkspaceManager
 
         if ($extension === 'docx') {
             if (strncmp($head, "PK", 2) !== 0) {
-                return ['success' => false, 'error' => 'O DOCX enviado nao possui estrutura valida.'];
+                return ['success' => false, 'error' => 'O DOCX enviado não possui estrutura válida.'];
             }
 
             if (class_exists('ZipArchive')) {
                 $zip = new ZipArchive();
                 if ($zip->open($tmpName) !== true) {
-                    return ['success' => false, 'error' => 'Nao foi possivel validar a estrutura DOCX.'];
+                    return ['success' => false, 'error' => 'Não foi possível validar a estrutura DOCX.'];
                 }
 
                 $hasContentTypes = $zip->locateName('[Content_Types].xml') !== false;
@@ -1181,7 +1181,7 @@ class ProjectWorkspaceManager
                 $zip->close();
 
                 if (!$hasContentTypes || !$hasDocument) {
-                    return ['success' => false, 'error' => 'O arquivo DOCX nao contem os metadados esperados.'];
+                    return ['success' => false, 'error' => 'O arquivo DOCX não contém os metadados esperados.'];
                 }
             }
 
@@ -1192,7 +1192,7 @@ class ProjectWorkspaceManager
         }
 
         if ($strictDocument) {
-            return ['success' => false, 'error' => 'A documentacao deve ser PDF ou DOCX.'];
+            return ['success' => false, 'error' => 'A documentação deve ser PDF ou DOCX.'];
         }
 
         $imageMimes = [
@@ -1205,7 +1205,7 @@ class ProjectWorkspaceManager
             return ['success' => true, 'mime_type' => $mimeType];
         }
 
-        return ['success' => false, 'error' => 'Arquivo de anexo nao suportado.'];
+        return ['success' => false, 'error' => 'Arquivo de anexo não suportado.'];
     }
 
     private function storeUploadedFile(array $file, string $directory, string $prefix, string $extension): array
@@ -1218,7 +1218,7 @@ class ProjectWorkspaceManager
         $absolutePath = $directory . DIRECTORY_SEPARATOR . $storedName;
 
         if (!move_uploaded_file((string) ($file['tmp_name'] ?? ''), $absolutePath)) {
-            return ['success' => false, 'error' => 'Nao foi possivel salvar o arquivo no servidor.'];
+            return ['success' => false, 'error' => 'Não foi possível salvar o arquivo no servidor.'];
         }
 
         return [
@@ -1397,7 +1397,7 @@ class ProjectWorkspaceManager
 
     private function userName(array $user): string
     {
-        return trim((string) ($user['fullname'] ?? $user['username'] ?? 'Usuario')) ?: 'Usuario';
+        return trim((string) ($user['fullname'] ?? $user['username'] ?? 'Usuário')) ?: 'Usuário';
     }
 
     private function nextId(string $prefix): string

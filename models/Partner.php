@@ -52,7 +52,7 @@ class PartnerManager
         $partnerIndex = $isCreate ? null : $this->findPartnerIndex($partners, (string) $partnerId);
 
         if (!$isCreate && $partnerIndex === null) {
-            return ['success' => false, 'errors' => ['Parceiro nao encontrado.']];
+            return ['success' => false, 'errors' => ['Parceiro não encontrado.']];
         }
 
         $name = trim((string) ($data['name'] ?? ''));
@@ -61,16 +61,16 @@ class PartnerManager
         $errors = [];
 
         if ($name === '') {
-            $errors[] = 'Nome do parceiro e obrigatorio.';
+            $errors[] = 'Nome do parceiro é obrigatório.';
         }
 
         if ($description === '') {
-            $errors[] = 'Descricao do parceiro e obrigatoria.';
+            $errors[] = 'Descrição do parceiro é obrigatória.';
         }
 
         $hasUpload = $this->hasUploadedFile($uploadedImage);
         if ($isCreate && !$hasUpload && $imagePath === '') {
-            $errors[] = 'Envie uma imagem ou informe um caminho valido para o card do parceiro.';
+            $errors[] = 'Envie uma imagem ou informe um caminho válido para o card do parceiro.';
         }
 
         if ($imagePath !== '' && !$hasUpload) {
@@ -105,7 +105,7 @@ class PartnerManager
         }
 
         if ($nextImagePath === '') {
-            return ['success' => false, 'errors' => ['A imagem do parceiro nao pode ficar vazia.']];
+            return ['success' => false, 'errors' => ['A imagem do parceiro não pode ficar vazia.']];
         }
 
         if ($isCreate) {
@@ -131,7 +131,7 @@ class PartnerManager
                 $this->deleteManagedImage($nextImagePath);
             }
 
-            return ['success' => false, 'errors' => ['Nao foi possivel salvar o parceiro.']];
+            return ['success' => false, 'errors' => ['Não foi possível salvar o parceiro.']];
         }
 
         if ($hasUpload && $previousImagePath !== '' && $previousImagePath !== $nextImagePath) {
@@ -214,7 +214,7 @@ class PartnerManager
             [
                 'id' => 'partner_fuzhou',
                 'name' => 'Universidade de Fuzhou',
-                'description' => 'Instituicao publica de ensino superior localizada em Fuzhou, capital da provincia de Fujian, na China.',
+                'description' => 'Instituição pública de ensino superior localizada em Fuzhou, capital da província de Fujian, na China.',
                 'image_path' => './img/Fuhzou.png',
                 'created_at' => $seedCreatedAt,
                 'updated_at' => $seedCreatedAt,
@@ -222,7 +222,7 @@ class PartnerManager
             [
                 'id' => 'partner_getis',
                 'name' => 'GETIS',
-                'description' => 'Grupo de Pesquisa em Engenharia, Tecnologia, Inovacao e Sustentabilidade (GETIS) - IFSP-CAR',
+                'description' => 'Grupo de Pesquisa em Engenharia, Tecnologia, Inovação e Sustentabilidade (GETIS) - IFSP-CAR',
                 'image_path' => './img/Getis.png',
                 'created_at' => $seedCreatedAt,
                 'updated_at' => $seedCreatedAt,
@@ -332,21 +332,21 @@ class PartnerManager
         }
 
         if ((int) ($uploadedImage['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-            return ['success' => false, 'error' => 'Nao foi possivel processar a imagem enviada.'];
+            return ['success' => false, 'error' => 'Não foi possível processar a imagem enviada.'];
         }
 
         $tmpName = (string) ($uploadedImage['tmp_name'] ?? '');
         if ($tmpName === '' || !is_uploaded_file($tmpName)) {
-            return ['success' => false, 'error' => 'O upload da imagem nao foi reconhecido pelo servidor.'];
+            return ['success' => false, 'error' => 'O upload da imagem não foi reconhecido pelo servidor.'];
         }
 
         $imageFormat = $this->resolveUploadedImageFormat($uploadedImage, $tmpName);
         if (!$imageFormat['success']) {
-            return ['success' => false, 'error' => 'Formato de imagem nao suportado. Envie JPG, PNG, WEBP ou GIF.'];
+            return ['success' => false, 'error' => 'Formato de imagem não suportado. Envie JPG, PNG, WEBP ou GIF.'];
         }
 
         if ((int) ($uploadedImage['size'] ?? 0) > 5 * 1024 * 1024) {
-            return ['success' => false, 'error' => 'A imagem do parceiro deve ter no maximo 5 MB.'];
+            return ['success' => false, 'error' => 'A imagem do parceiro deve ter no máximo 5 MB.'];
         }
 
         return [
@@ -373,7 +373,7 @@ class PartnerManager
         }
 
         if (!move_uploaded_file($tmpName, $destination)) {
-            return ['success' => false, 'error' => 'Nao foi possivel salvar a imagem do parceiro no servidor.'];
+            return ['success' => false, 'error' => 'Não foi possível salvar a imagem do parceiro no servidor.'];
         }
 
         return ['success' => true, 'path' => './uploads/partners/' . $filename];
@@ -459,7 +459,7 @@ class PartnerManager
     {
         $imagePath = trim($imagePath);
         if ($imagePath === '') {
-            return ['success' => false, 'error' => 'A imagem do parceiro nao pode ficar vazia.'];
+            return ['success' => false, 'error' => 'A imagem do parceiro não pode ficar vazia.'];
         }
 
         $url = filter_var($imagePath, FILTER_VALIDATE_URL);
@@ -478,7 +478,7 @@ class PartnerManager
         }
 
         if (!file_exists($candidatePath)) {
-            return ['success' => false, 'error' => 'O caminho informado para a imagem do parceiro nao foi encontrado no projeto.'];
+            return ['success' => false, 'error' => 'O caminho informado para a imagem do parceiro não foi encontrado no projeto.'];
         }
 
         return ['success' => true];

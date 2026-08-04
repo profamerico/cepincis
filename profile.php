@@ -35,8 +35,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $workspaceManager->notifyAdministrators(
                 $auth->listUsers(),
                 'role_request',
-                'Solicitacao de aumento de nivel',
-                (string) ($user['fullname'] ?? $user['username']) . ' solicitou nivel de ' . $profileExtrasManager->getRoleRequestLabel((string) ($_POST['requested_role'] ?? '')) . '.',
+                'Solicitação de aumento de nível',
+                (string) ($user['fullname'] ?? $user['username']) . ' solicitou nível de ' . $profileExtrasManager->getRoleRequestLabel((string) ($_POST['requested_role'] ?? '')) . '.',
                 null,
                 'admin.php#role-requests',
                 (int) $user['id']
@@ -83,26 +83,26 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
     <section class="panel-hero">
         <div class="panel-hero-main">
             <p class="eyebrow">Perfil</p>
-            <h1><?php echo htmlspecialchars((string) ($user['fullname'] ?? $user['username']), ENT_QUOTES, 'UTF-8'); ?></h1>
+            <h1><?php echo htmlspecialchars((string) ($user['fullname'] ?? $user['username']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h1>
             <p class="hero-copy">Atualize seus dados principais e mantenha a conta pronta para contato, acompanhamento e administracao do portal.</p>
         </div>
 
         <aside class="panel-hero-aside profile-summary-card">
             <?php if ($profilePhotoPath !== ''): ?>
-                <img class="profile-photo" src="<?php echo htmlspecialchars($profilePhotoPath, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars((string) ($user['fullname'] ?? $user['username']), ENT_QUOTES, 'UTF-8'); ?>">
+                <img class="profile-photo" src="<?php echo htmlspecialchars($profilePhotoPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars((string) ($user['fullname'] ?? $user['username']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
             <?php else: ?>
-                <span class="profile-initial"><?php echo htmlspecialchars(strtoupper(substr((string) $user['username'], 0, 1)), ENT_QUOTES, 'UTF-8'); ?></span>
+                <span class="profile-initial"><?php echo htmlspecialchars(strtoupper(substr((string) $user['username'], 0, 1)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
             <?php endif; ?>
-            <h2>@<?php echo htmlspecialchars((string) $user['username'], ENT_QUOTES, 'UTF-8'); ?></h2>
-            <p>Membro desde <?php echo htmlspecialchars(date('d/m/Y', strtotime((string) ($user['created_at'] ?? 'now'))), ENT_QUOTES, 'UTF-8'); ?></p>
+            <h2>@<?php echo htmlspecialchars((string) $user['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+            <p>Membro desde <?php echo htmlspecialchars(date('d/m/Y', strtotime((string) ($user['created_at'] ?? 'now'))), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
         </aside>
     </section>
 
     <section class="profile-cta-panel panel-card">
         <div>
             <p class="eyebrow">Acesso rapido</p>
-            <h2>Projetos, workspaces e evolucao de nivel</h2>
-            <p class="panel-copy">Entre direto nas areas de pesquisa ou solicite uma permissao maior para participar do fluxo academico.</p>
+            <h2>Projetos, workspaces e evolucao de nível</h2>
+            <p class="panel-copy">Entre direto nas áreas de pesquisa ou solicite uma permissão maior para participar do fluxo acadêmico.</p>
         </div>
 
         <div class="profile-cta-actions">
@@ -111,7 +111,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
             <form method="POST" class="profile-role-request-form">
                 <input type="hidden" name="action" value="request_role">
                 <input type="hidden" name="requested_role" value="academic_researcher">
-                <button class="dashboard-btn dashboard-btn--ghost" type="submit">Solicitar Academico</button>
+                <button class="dashboard-btn dashboard-btn--ghost" type="submit">Solicitar Acadêmico</button>
             </form>
             <form method="POST" class="profile-role-request-form">
                 <input type="hidden" name="action" value="request_role">
@@ -121,15 +121,15 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
         </div>
 
         <?php if ($latestRoleRequest && (string) ($latestRoleRequest['status'] ?? '') === 'pending'): ?>
-            <p class="form-help">Solicitacao pendente: <?php echo htmlspecialchars($profileExtrasManager->getRoleRequestLabel((string) ($latestRoleRequest['requested_role'] ?? '')), ENT_QUOTES, 'UTF-8'); ?>.</p>
+            <p class="form-help">Solicitação pendente: <?php echo htmlspecialchars($profileExtrasManager->getRoleRequestLabel((string) ($latestRoleRequest['requested_role'] ?? '')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>.</p>
         <?php endif; ?>
 
         <?php if ($roleRequestResult && !$roleRequestResult['success']): ?>
             <?php foreach ($roleRequestResult['errors'] as $error): ?>
-                <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8'); ?></div>
+                <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
             <?php endforeach; ?>
         <?php elseif ($roleRequestResult && $roleRequestResult['success']): ?>
-            <div class="mensagem sucesso">Solicitacao enviada para os administradores.</div>
+            <div class="mensagem sucesso">Solicitação enviada para os administradores.</div>
         <?php endif; ?>
     </section>
 
@@ -137,7 +137,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
         <article class="metric-card">
             <span class="metric-label">Projetos</span>
             <strong class="metric-value"><?php echo (int) $stats['total']; ?></strong>
-            <p>Total atualmente ligado ao seu usuario.</p>
+            <p>Total atualmente ligado ao seu usuário.</p>
         </article>
         <article class="metric-card">
             <span class="metric-label">Ativos</span>
@@ -161,13 +161,13 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
             <div class="panel-card-header">
                 <div>
                     <p class="eyebrow">Dados da conta</p>
-                    <h2>Informacoes pessoais</h2>
+                    <h2>Informações pessoais</h2>
                 </div>
             </div>
 
             <?php if ($result && !$result['success']): ?>
                 <?php foreach ($result['errors'] as $error): ?>
-                    <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8'); ?></div>
+                    <div class="mensagem erro"><?php echo htmlspecialchars((string) $error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                 <?php endforeach; ?>
             <?php elseif ($result && $result['success']): ?>
                 <div class="mensagem sucesso">Perfil atualizado com sucesso.</div>
@@ -177,11 +177,11 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                 <input type="hidden" name="action" value="update_profile">
 
                 <div class="form-group">
-                    <label for="username">Usuario</label>
+                    <label for="username">Usuário</label>
                     <input
                         type="text"
                         id="username"
-                        value="<?php echo htmlspecialchars((string) $user['username'], ENT_QUOTES, 'UTF-8'); ?>"
+                        value="<?php echo htmlspecialchars((string) $user['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         disabled
                     >
                 </div>
@@ -192,7 +192,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                         type="text"
                         id="fullname"
                         name="fullname"
-                        value="<?php echo htmlspecialchars((string) ($user['fullname'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                        value="<?php echo htmlspecialchars((string) ($user['fullname'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         required
                     >
                 </div>
@@ -203,36 +203,36 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                         type="email"
                         id="email"
                         name="email"
-                        value="<?php echo htmlspecialchars((string) ($user['email'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>"
+                        value="<?php echo htmlspecialchars((string) ($user['email'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                     >
                 </div>
 
                 <div class="form-group">
                     <label for="photo_file">Foto de perfil</label>
                     <input type="file" id="photo_file" name="photo_file" accept="image/png,image/jpeg,image/webp">
-                    <p class="form-help">Envie JPG, PNG ou WEBP com ate 3 MB.</p>
+                    <p class="form-help">Envie JPG, PNG ou WEBP com até 3 MB.</p>
                 </div>
 
                 <div class="form-group">
                     <label for="bio">Biografia</label>
-                    <textarea id="bio" name="bio" rows="6" placeholder="Conte um pouco sobre sua trajetoria, area de pesquisa e interesses."><?php echo htmlspecialchars((string) ($profileExtras['bio'] ?? ''), ENT_QUOTES, 'UTF-8'); ?></textarea>
+                    <textarea id="bio" name="bio" rows="6" placeholder="Conte um pouco sobre sua trajetória, área de pesquisa e interesses."><?php echo htmlspecialchars((string) ($profileExtras['bio'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></textarea>
                 </div>
 
                 <div class="form-grid-2">
                     <div class="form-group">
                         <label for="linkedin_url">LinkedIn</label>
-                        <input type="url" id="linkedin_url" name="linkedin_url" value="<?php echo htmlspecialchars((string) ($profileExtras['linkedin_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://linkedin.com/in/...">
+                        <input type="url" id="linkedin_url" name="linkedin_url" value="<?php echo htmlspecialchars((string) ($profileExtras['linkedin_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" placeholder="https://linkedin.com/in/...">
                     </div>
 
                     <div class="form-group">
                         <label for="integra_ifsp_url">Integra IFSP</label>
-                        <input type="url" id="integra_ifsp_url" name="integra_ifsp_url" value="<?php echo htmlspecialchars((string) ($profileExtras['integra_ifsp_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="https://integra.ifsp.edu.br/...">
+                        <input type="url" id="integra_ifsp_url" name="integra_ifsp_url" value="<?php echo htmlspecialchars((string) ($profileExtras['integra_ifsp_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" placeholder="https://integra.ifsp.edu.br/...">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label for="lattes_url">Lattes CNPq</label>
-                    <input type="url" id="lattes_url" name="lattes_url" value="<?php echo htmlspecialchars((string) ($profileExtras['lattes_url'] ?? ''), ENT_QUOTES, 'UTF-8'); ?>" placeholder="http://lattes.cnpq.br/...">
+                    <input type="url" id="lattes_url" name="lattes_url" value="<?php echo htmlspecialchars((string) ($profileExtras['lattes_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" placeholder="http://lattes.cnpq.br/...">
                 </div>
 
                 <div class="form-group">
@@ -261,19 +261,19 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                 <ul class="dashboard-list">
                     <li>
                         <span>Nome exibido</span>
-                        <strong><?php echo htmlspecialchars((string) ($user['fullname'] ?? $user['username']), ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <strong><?php echo htmlspecialchars((string) ($user['fullname'] ?? $user['username']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                     </li>
                     <li>
                         <span>Email</span>
-                        <strong><?php echo htmlspecialchars((string) ($user['email'] ?: 'Nao informado'), ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <strong><?php echo htmlspecialchars((string) ($user['email'] ?: 'Não informado'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                     </li>
                     <li>
-                        <span>Usuario</span>
-                        <strong>@<?php echo htmlspecialchars((string) $user['username'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <span>Usuário</span>
+                        <strong>@<?php echo htmlspecialchars((string) $user['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                     </li>
                     <li>
-                        <span>Nivel atual</span>
-                        <strong><?php echo htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8'); ?></strong>
+                        <span>Nível atual</span>
+                        <strong><?php echo htmlspecialchars($roleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                     </li>
                 </ul>
             </article>
@@ -281,27 +281,27 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
             <article class="panel-card">
                 <div class="panel-card-header">
                     <div>
-                        <p class="eyebrow">Links publicos</p>
-                        <h2>Perfis academicos</h2>
+                        <p class="eyebrow">Links públicos</p>
+                        <h2>Perfis acadêmicos</h2>
                     </div>
                 </div>
 
                 <div class="profile-public-links">
                     <?php if ((string) ($profileExtras['linkedin_url'] ?? '') !== ''): ?>
-                        <a href="<?php echo htmlspecialchars((string) $profileExtras['linkedin_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in"></i><span>LinkedIn</span></a>
+                        <a href="<?php echo htmlspecialchars((string) $profileExtras['linkedin_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in"></i><span>LinkedIn</span></a>
                     <?php endif; ?>
                     <?php if ((string) ($profileExtras['integra_ifsp_url'] ?? '') !== ''): ?>
-                        <a href="<?php echo htmlspecialchars((string) $profileExtras['integra_ifsp_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-building-columns"></i><span>Integra IFSP</span></a>
+                        <a href="<?php echo htmlspecialchars((string) $profileExtras['integra_ifsp_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-building-columns"></i><span>Integra IFSP</span></a>
                     <?php endif; ?>
                     <?php if ((string) ($profileExtras['lattes_url'] ?? '') !== ''): ?>
-                        <a href="<?php echo htmlspecialchars((string) $profileExtras['lattes_url'], ENT_QUOTES, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap"></i><span>Lattes CNPq</span></a>
+                        <a href="<?php echo htmlspecialchars((string) $profileExtras['lattes_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap"></i><span>Lattes CNPq</span></a>
                     <?php endif; ?>
                     <?php if (
                         (string) ($profileExtras['linkedin_url'] ?? '') === ''
                         && (string) ($profileExtras['integra_ifsp_url'] ?? '') === ''
                         && (string) ($profileExtras['lattes_url'] ?? '') === ''
                     ): ?>
-                        <p class="admin-empty">Nenhum link publico cadastrado ainda.</p>
+                        <p class="admin-empty">Nenhum link público cadastrado ainda.</p>
                     <?php endif; ?>
                 </div>
             </article>
@@ -314,7 +314,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                     </div>
                 </div>
 
-                <p class="panel-copy">Se voce terminou as alteracoes, pode voltar para o dashboard principal e seguir para configuracoes ou administracao.</p>
+                <p class="panel-copy">Se você terminou as alteracoes, pode voltar para o dashboard principal e seguir para configuracoes ou administracao.</p>
                 <a class="dashboard-btn dashboard-btn--ghost" href="dashboard.php">Ir para o dashboard</a>
             </article>
         </div>

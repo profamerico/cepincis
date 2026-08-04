@@ -23,7 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $result = [
         'success' => true,
-        'message' => 'Se a conta existir, um link de redefinicao sera gerado para ela.',
+        'message' => 'Se a conta existir, um link de redefinição será gerado para ela.',
     ];
 
     if ($user) {
@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <aside class="auth-aside">
             <p class="eyebrow">Acesso</p>
             <h1>Recupere sua senha</h1>
-            <p class="auth-copy">Informe seu usuario ou email cadastrado para gerar um link temporario de redefinicao.</p>
+            <p class="auth-copy">Informe seu usuário ou email cadastrado para gerar um link temporário de redefinição.</p>
         </aside>
 
         <section class="auth-card">
@@ -51,24 +51,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h2>Esqueci minha senha</h2>
 
             <?php if ($result): ?>
-                <div class="mensagem sucesso"><?php echo htmlspecialchars((string) $result['message'], ENT_QUOTES, 'UTF-8'); ?></div>
+                <div class="mensagem sucesso"><?php echo htmlspecialchars((string) $result['message'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
             <?php endif; ?>
 
             <?php if ($resetUrl !== ''): ?>
                 <div class="password-reset-link-box">
-                    <span>Link temporario</span>
-                    <a href="<?php echo htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8'); ?>"><?php echo htmlspecialchars($resetUrl, ENT_QUOTES, 'UTF-8'); ?></a>
+                    <span>Link temporário</span>
+                    <a href="<?php echo htmlspecialchars($resetUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"><?php echo htmlspecialchars($resetUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></a>
                 </div>
             <?php endif; ?>
 
             <form action="forgot-password.php" method="POST" class="stack-form">
                 <div class="form-group">
-                    <label for="identifier">Usuario ou email</label>
+                    <label for="identifier">Usuário ou email</label>
                     <input
                         type="text"
                         id="identifier"
                         name="identifier"
-                        value="<?php echo htmlspecialchars($identifier, ENT_QUOTES, 'UTF-8'); ?>"
+                        value="<?php echo htmlspecialchars($identifier, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         required
                     >
                 </div>

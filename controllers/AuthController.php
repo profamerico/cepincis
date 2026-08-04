@@ -16,11 +16,11 @@ class AuthController
 
     private const ROLE_DEFINITIONS = [
         self::ROLE_MEMBER => [
-            'label' => 'Usuario',
+            'label' => 'Usuário',
             'rank' => 10,
         ],
         self::ROLE_ACADEMIC_RESEARCHER => [
-            'label' => 'Pesquisador Academico',
+            'label' => 'Pesquisador Acadêmico',
             'rank' => 20,
         ],
         self::ROLE_ASSOCIATE_RESEARCHER => [
@@ -98,7 +98,7 @@ class AuthController
         if (!$user) {
             return [
                 'success' => false,
-                'errors' => ['Usuario nao encontrado.']
+                'errors' => ['Usuário não encontrado.']
             ];
         }
 
@@ -126,7 +126,7 @@ class AuthController
         if ($displayName === '') {
             return [
                 'success' => false,
-                'errors' => ['Nao foi possivel identificar o usuario da rede social.']
+                'errors' => ['Não foi possível identificar o usuário da rede social.']
             ];
         }
 
@@ -289,7 +289,7 @@ class AuthController
         if ($check->fetch()) {
             return [
                 'success' => false,
-                'errors' => ['Usuario ja existe.']
+                'errors' => ['Usuário já existe.']
             ];
         }
 
@@ -494,7 +494,7 @@ class AuthController
         }
 
         if ($password !== $passwordConfirm) {
-            $errors[] = 'As senhas nao coincidem.';
+            $errors[] = 'As senhas não coincidem.';
         }
 
         if ($errors) {
@@ -553,10 +553,10 @@ class AuthController
             'logged_at' => time(),
         ];
 
-        $_SESSION['usuario_id'] = $user['id'];
-        $_SESSION['usuario_nome'] = $user['fullname'];
-        $_SESSION['usuario_email'] = $user['email'];
-        $_SESSION['usuario_role'] = $user['role'];
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_nome'] = $user['fullname'];
+        $_SESSION['user_email'] = $user['email'];
+        $_SESSION['user_role'] = $user['role'];
         $_SESSION['user_name'] = $user['fullname'];
         $_SESSION['user_email'] = $user['email'];
     }
@@ -565,10 +565,10 @@ class AuthController
     {
         unset(
             $_SESSION['user'],
-            $_SESSION['usuario_id'],
-            $_SESSION['usuario_nome'],
-            $_SESSION['usuario_email'],
-            $_SESSION['usuario_role'],
+            $_SESSION['user_id'],
+            $_SESSION['user_nome'],
+            $_SESSION['user_email'],
+            $_SESSION['user_role'],
             $_SESSION['user_name'],
             $_SESSION['user_email'],
             $_SESSION['provider_usado']
@@ -658,15 +658,15 @@ class AuthController
         $errors = [];
 
         if ($fullname === '') {
-            $errors[] = 'Nome completo e obrigatorio.';
+            $errors[] = 'Nome completo é obrigatório.';
         }
 
         if ($email === '') {
-            $errors[] = 'Email e obrigatorio.';
+            $errors[] = 'Email é obrigatório.';
         }
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email invalido.';
+            $errors[] = 'Email inválido.';
         }
 
         if ($password !== '' && strlen($password) < 6) {
@@ -674,7 +674,7 @@ class AuthController
         }
 
         if ($password !== '' && $password !== $passwordConfirm) {
-            $errors[] = 'As senhas nao coincidem.';
+            $errors[] = 'As senhas não coincidem.';
         }
 
         if ($errors) {
@@ -763,14 +763,14 @@ class AuthController
         if (!$user) {
             return [
                 'success' => false,
-                'errors' => ['Usuario nao encontrado.']
+                'errors' => ['Usuário não encontrado.']
             ];
         }
 
         $errors = [];
 
         if ($currentPassword === '') {
-            $errors[] = 'Senha atual e obrigatoria.';
+            $errors[] = 'Senha atual é obrigatória.';
         }
 
         if (strlen($newPassword) < 6) {
@@ -778,7 +778,7 @@ class AuthController
         }
 
         if ($newPassword !== $confirmPassword) {
-            $errors[] = 'As senhas nao coincidem.';
+            $errors[] = 'As senhas não coincidem.';
         }
 
         if (!password_verify($currentPassword, $user['password_hash'])) {
@@ -828,15 +828,15 @@ class AuthController
         $errors = [];
 
         if ($username === '') {
-            $errors[] = 'Usuario e obrigatorio.';
+            $errors[] = 'Usuário é obrigatório.';
         }
 
         if ($fullname === '') {
-            $errors[] = 'Nome completo e obrigatorio.';
+            $errors[] = 'Nome completo é obrigatório.';
         }
 
         if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email invalido.';
+            $errors[] = 'Email inválido.';
         }
 
         if ($isCreate && strlen($password) < 6) {
@@ -863,7 +863,7 @@ class AuthController
             $existingUser &&
             ($isCreate || (int) $existingUser['id'] !== (int) $id)
         ) {
-            $errors[] = 'Ja existe outro usuario com esse login.';
+            $errors[] = 'Já existe outro usuário com esse login.';
         }
 
         if ($errors) {
@@ -995,7 +995,7 @@ class AuthController
             return [
                 'success' => false,
                 'errors' => [
-                    'Voce nao pode remover a propria conta pelo painel admin.'
+                    'Você não pode remover a própria conta pelo painel admin.'
                 ]
             ];
         }
@@ -1016,7 +1016,7 @@ class AuthController
         if (!$user) {
             return [
                 'success' => false,
-                'errors' => ['Usuario nao encontrado.']
+                'errors' => ['Usuário não encontrado.']
             ];
         }
 

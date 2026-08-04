@@ -84,9 +84,9 @@ if ($canAccessResearchWorkspace) {
     }, $workspaceOrientations)));
 }
 
-$heroCopy = 'Um ponto central para acompanhar sua conta, navegar pelos recursos do portal e administrar a plataforma quando voce tiver permissao elevada.';
+$heroCopy = 'Um ponto central para acompanhar sua conta, navegar pelos recursos do portal e administrar a plataforma quando você tiver permissão elevada.';
 $heroMeta = [
-    'Email: ' . (string) ($currentUser['email'] ?: 'Nao informado'),
+    'Email: ' . (string) ($currentUser['email'] ?: 'Não informado'),
     'Projetos ativos: ' . (int) $userStats['active'],
     'Projetos concluidos: ' . (int) $userStats['completed'],
 ];
@@ -94,14 +94,14 @@ $actionCards = [
     [
         'href' => 'notifications.php',
         'icon' => 'fa-bell',
-        'title' => 'Notificacoes',
-        'copy' => 'Veja convites, autenticacoes e atualizacoes de timeline.',
+        'title' => 'Notificações',
+        'copy' => 'Veja convites, autenticações e atualizações de timeline.',
     ],
     [
         'href' => 'project-workspace.php',
         'icon' => 'fa-users-gear',
         'title' => 'Workspaces',
-        'copy' => 'Acesse projetos em que voce cria, administra ou colabora.',
+        'copy' => 'Acesse projetos em que você cria, administra ou colabora.',
     ],
     [
         'href' => 'profile.php',
@@ -113,37 +113,37 @@ $actionCards = [
         'href' => 'settings.php',
         'icon' => 'fa-sliders',
         'title' => 'Preferencias',
-        'copy' => 'Consulte ajustes de conta e notificacoes.',
+        'copy' => 'Consulte ajustes de conta e notificações.',
     ],
 ];
-$statusPanelTitle = 'Visao da sua conta';
+$statusPanelTitle = 'Visão da sua conta';
 $statusPanelItems = [
     ['label' => 'Perfil principal', 'value' => $displayName],
-    ['label' => 'Permissao atual', 'value' => $roleLabel],
-    ['label' => 'Usuario', 'value' => '@' . (string) $currentUser['username']],
-    ['label' => 'Email', 'value' => (string) ($currentUser['email'] ?: 'Nao informado')],
-    ['label' => 'Notificacoes nao lidas', 'value' => (string) $unreadNotifications],
+    ['label' => 'Permissão atual', 'value' => $roleLabel],
+    ['label' => 'Usuário', 'value' => '@' . (string) $currentUser['username']],
+    ['label' => 'Email', 'value' => (string) ($currentUser['email'] ?: 'Não informado')],
+    ['label' => 'Notificações não lidas', 'value' => (string) $unreadNotifications],
     ['label' => 'Workspaces acessiveis', 'value' => (string) count($workspaceProjects)],
     ['label' => 'Convites pendentes', 'value' => (string) count($pendingWorkspaceInvites)],
 ];
 $accentEyebrow = 'Conta';
 $accentTitle = 'Proximo passo sugerido';
-$accentCopy = 'Mantenha seu perfil atualizado para facilitar o contato e a organizacao do portal. Se precisar de mais acessos, um administrador pode ajustar sua permissao no painel interno.';
+$accentCopy = 'Mantenha seu perfil atualizado para facilitar o contato e a organização do portal. Se precisar de mais acessos, um administrador pode ajustar sua permissão no painel interno.';
 $accentAction = ['href' => 'settings.php', 'label' => 'Ver configuracoes'];
 $metrics = [];
 
 if ($isAdmin) {
-    $heroCopy = 'Voce controla a plataforma inteira: usuarios, projetos, conteudo global, parceiros e tambem os fluxos de pesquisa e orientacao.';
+    $heroCopy = 'Você controla a plataforma inteira: usuários, projetos, conteúdo global, parceiros e também os fluxos de pesquisa e orientação.';
     $heroMeta = [
-        'Email: ' . (string) ($currentUser['email'] ?: 'Nao informado'),
-        'Usuarios cadastrados: ' . count($users),
+        'Email: ' . (string) ($currentUser['email'] ?: 'Não informado'),
+        'Usuários cadastrados: ' . count($users),
         'Projetos ativos na plataforma: ' . (int) ($projectStats['active'] ?? 0),
     ];
     $actionCards[] = [
         'href' => 'orientations.php',
         'icon' => 'fa-user-graduate',
-        'title' => 'Orientacoes',
-        'copy' => 'Acompanhe todas as orientacoes cadastradas no portal.',
+        'title' => 'Orientações',
+        'copy' => 'Acompanhe todas as orientações cadastradas no portal.',
     ];
     $actionCards[] = [
         'href' => 'research-projects.php',
@@ -155,32 +155,32 @@ if ($isAdmin) {
         'href' => 'admin.php',
         'icon' => 'fa-shield-halved',
         'title' => 'Controle administrativo',
-        'copy' => 'Usuarios, permissoes, projetos e conteudo em um so lugar.',
+        'copy' => 'Usuários, permissões, projetos e conteúdo em um só lugar.',
     ];
     $metrics = [
-        ['label' => 'Usuarios', 'value' => count($users), 'copy' => 'Contas registradas atualmente no portal.'],
+        ['label' => 'Usuários', 'value' => count($users), 'copy' => 'Contas registradas atualmente no portal.'],
         ['label' => 'Projetos', 'value' => (int) ($projectStats['total'] ?? 0), 'copy' => 'Projetos totais na plataforma.'],
-        ['label' => 'Orientacoes', 'value' => (int) ($orientationStats['total'] ?? 0), 'copy' => 'Orientacoes ativas ou historicas do workspace.'],
-        ['label' => 'Docs pendentes', 'value' => (int) ($projectStats['authentication_pending'] ?? 0), 'copy' => 'Projetos aguardando aprovacao documental.'],
+        ['label' => 'Orientações', 'value' => (int) ($orientationStats['total'] ?? 0), 'copy' => 'Orientações ativas ou históricas do workspace.'],
+        ['label' => 'Docs pendentes', 'value' => (int) ($projectStats['authentication_pending'] ?? 0), 'copy' => 'Projetos aguardando aprovação documental.'],
     ];
     $statusPanelTitle = 'Radar administrativo';
-    $statusPanelItems[] = ['label' => 'Orientacoes ativas', 'value' => (string) (int) ($orientationStats['active'] ?? 0)];
+    $statusPanelItems[] = ['label' => 'Orientações ativas', 'value' => (string) (int) ($orientationStats['active'] ?? 0)];
     $accentEyebrow = 'Panorama admin';
     $accentTitle = 'Estado da plataforma';
-    $accentCopy = 'Os fluxos principais ja estao conectados: conteudo, parceiros, projetos e orientacoes. O painel mestre segue sendo o ponto de governanca mais alto.';
+    $accentCopy = 'Os fluxos principais já estão conectados: conteúdo, parceiros, projetos e orientações. O painel mestre segue sendo o ponto de governança mais alto.';
     $accentAction = ['href' => 'admin.php', 'label' => 'Abrir admin'];
 } elseif ($isFull) {
-    $heroCopy = 'Como Pesquisador Pleno, voce pode orientar pesquisadores academicos e cadastrar projetos diretamente no site do CEPIN-CIS.';
+    $heroCopy = 'Como Pesquisador Pleno, você pode orientar pesquisadores acadêmicos e cadastrar projetos diretamente no site do CEPIN-CIS.';
     $heroMeta = [
-        'Email: ' . (string) ($currentUser['email'] ?: 'Nao informado'),
-        'Projetos criados por voce: ' . (int) $userStats['total'],
-        'Orientacoes ativas: ' . (int) ($orientationStats['active'] ?? 0),
+        'Email: ' . (string) ($currentUser['email'] ?: 'Não informado'),
+        'Projetos criados por você: ' . (int) $userStats['total'],
+        'Orientações ativas: ' . (int) ($orientationStats['active'] ?? 0),
     ];
     $actionCards[] = [
         'href' => 'orientations.php',
         'icon' => 'fa-user-graduate',
-        'title' => 'Gerenciar orientacoes',
-        'copy' => 'Organize orientandos, carga horaria e status das orientacoes.',
+        'title' => 'Gerenciar orientações',
+        'copy' => 'Organize orientandos, carga horária e status das orientações.',
     ];
     $actionCards[] = [
         'href' => 'research-projects.php',
@@ -191,75 +191,75 @@ if ($isAdmin) {
     $metrics = [
         ['label' => 'Projetos', 'value' => (int) $userStats['total'], 'copy' => 'Projetos atualmente ligados a sua conta.'],
         ['label' => 'Projetos ativos', 'value' => (int) $userStats['active'], 'copy' => 'Projetos em andamento publicados ou em andamento.'],
-        ['label' => 'Orientacoes ativas', 'value' => (int) ($orientationStats['active'] ?? 0), 'copy' => 'Orientacoes em execucao com pesquisadores academicos.'],
-        ['label' => 'Orientandos', 'value' => $uniqueResearchersCount, 'copy' => 'Pesquisadores academicos atualmente acompanhados por voce.'],
+        ['label' => 'Orientações ativas', 'value' => (int) ($orientationStats['active'] ?? 0), 'copy' => 'Orientações em execução com pesquisadores acadêmicos.'],
+        ['label' => 'Orientandos', 'value' => $uniqueResearchersCount, 'copy' => 'Pesquisadores acadêmicos atualmente acompanhados por você.'],
     ];
-    $statusPanelItems[] = ['label' => 'Projetos vinculados a orientacoes', 'value' => (string) $linkedProjectsCount];
+    $statusPanelItems[] = ['label' => 'Projetos vinculados a orientações', 'value' => (string) $linkedProjectsCount];
     $accentEyebrow = 'Pesquisa aplicada';
-    $accentTitle = 'Seu espaco de trabalho';
-    $accentCopy = 'Use o workspace para manter orientacoes em dia e publicar novos projetos. Tudo o que voce cadastrar aqui ja conversa com o portal principal.';
+    $accentTitle = 'Seu espaço de trabalho';
+    $accentCopy = 'Use o workspace para manter orientações em dia e publicar novos projetos. Tudo o que você cadastrar aqui já conversa com o portal principal.';
     $accentAction = ['href' => 'research-projects.php', 'label' => 'Abrir projetos'];
 } elseif ($isAssociate) {
-    $heroCopy = 'Como Pesquisador Associado, voce pode orientar pesquisadores academicos e acompanhar os fluxos vinculados a projetos aprovados no ambito do CEPIN-CIS.';
+    $heroCopy = 'Como Pesquisador Associado, você pode orientar pesquisadores acadêmicos e acompanhar os fluxos vinculados a projetos aprovados no ambito do CEPIN-CIS.';
     $heroMeta = [
-        'Email: ' . (string) ($currentUser['email'] ?: 'Nao informado'),
-        'Orientacoes totais: ' . (int) ($orientationStats['total'] ?? 0),
+        'Email: ' . (string) ($currentUser['email'] ?: 'Não informado'),
+        'Orientações totais: ' . (int) ($orientationStats['total'] ?? 0),
         'Orientandos ativos: ' . $uniqueResearchersCount,
     ];
     $actionCards[] = [
         'href' => 'orientations.php',
         'icon' => 'fa-user-graduate',
-        'title' => 'Gerenciar orientacoes',
-        'copy' => 'Crie, acompanhe e finalize orientacoes academicas.',
+        'title' => 'Gerenciar orientações',
+        'copy' => 'Crie, acompanhe e finalize orientações acadêmicas.',
     ];
     $metrics = [
-        ['label' => 'Orientacoes', 'value' => (int) ($orientationStats['total'] ?? 0), 'copy' => 'Orientacoes cadastradas sob sua supervisao.'],
-        ['label' => 'Ativas', 'value' => (int) ($orientationStats['active'] ?? 0), 'copy' => 'Orientacoes em andamento agora.'],
-        ['label' => 'Planejadas', 'value' => (int) ($orientationStats['planned'] ?? 0), 'copy' => 'Orientacoes aguardando inicio formal.'],
-        ['label' => 'Orientandos', 'value' => $uniqueResearchersCount, 'copy' => 'Pesquisadores academicos atualmente ligados a voce.'],
+        ['label' => 'Orientações', 'value' => (int) ($orientationStats['total'] ?? 0), 'copy' => 'Orientações cadastradas sob sua supervisão.'],
+        ['label' => 'Ativas', 'value' => (int) ($orientationStats['active'] ?? 0), 'copy' => 'Orientações em andamento agora.'],
+        ['label' => 'Planejadas', 'value' => (int) ($orientationStats['planned'] ?? 0), 'copy' => 'Orientações aguardando início formal.'],
+        ['label' => 'Orientandos', 'value' => $uniqueResearchersCount, 'copy' => 'Pesquisadores acadêmicos atualmente ligados a você.'],
     ];
-    $statusPanelItems[] = ['label' => 'Projetos vinculados a orientacoes', 'value' => (string) $linkedProjectsCount];
-    $accentEyebrow = 'Orientacao';
+    $statusPanelItems[] = ['label' => 'Projetos vinculados a orientações', 'value' => (string) $linkedProjectsCount];
+    $accentEyebrow = 'Orientação';
     $accentTitle = 'Proximo passo sugerido';
-    $accentCopy = 'Seu papel agora e estruturar orientacoes. Sempre que um pesquisador academico entrar em um projeto, voce pode registrar a supervisao por la.';
-    $accentAction = ['href' => 'orientations.php', 'label' => 'Abrir orientacoes'];
+    $accentCopy = 'Seu papel agora e estruturar orientações. Sempre que um pesquisador acadêmico entrar em um projeto, você pode registrar a supervisão por lá.';
+    $accentAction = ['href' => 'orientations.php', 'label' => 'Abrir orientações'];
 } elseif ($isAcademic) {
-    $heroCopy = 'Como Pesquisador Academico, este painel passa a acompanhar suas orientacoes e a evolucao do seu percurso dentro dos projetos ligados ao CEPIN-CIS.';
+    $heroCopy = 'Como Pesquisador Acadêmico, este painel passa a acompanhar suas orientações e a evolução do seu percurso dentro dos projetos ligados ao CEPIN-CIS.';
     $heroMeta = [
-        'Email: ' . (string) ($currentUser['email'] ?: 'Nao informado'),
-        'Orientacoes em andamento: ' . (int) ($orientationStats['active'] ?? 0),
+        'Email: ' . (string) ($currentUser['email'] ?: 'Não informado'),
+        'Orientações em andamento: ' . (int) ($orientationStats['active'] ?? 0),
         'Projetos vinculados: ' . $linkedProjectsCount,
     ];
     $actionCards[] = [
         'href' => 'orientations.php',
         'icon' => 'fa-user-graduate',
-        'title' => 'Minhas orientacoes',
-        'copy' => 'Veja suas orientacoes, supervisores e projetos relacionados.',
+        'title' => 'Minhas orientações',
+        'copy' => 'Veja suas orientações, supervisores e projetos relacionados.',
     ];
     $metrics = [
-        ['label' => 'Orientacoes', 'value' => (int) ($orientationStats['total'] ?? 0), 'copy' => 'Orientacoes atualmente associadas ao seu percurso.'],
-        ['label' => 'Ativas', 'value' => (int) ($orientationStats['active'] ?? 0), 'copy' => 'Orientacoes em andamento neste momento.'],
-        ['label' => 'Planejadas', 'value' => (int) ($orientationStats['planned'] ?? 0), 'copy' => 'Frentes cadastradas aguardando inicio.'],
-        ['label' => 'Projetos vinculados', 'value' => $linkedProjectsCount, 'copy' => 'Projetos associados as suas orientacoes.'],
+        ['label' => 'Orientações', 'value' => (int) ($orientationStats['total'] ?? 0), 'copy' => 'Orientações atualmente associadas ao seu percurso.'],
+        ['label' => 'Ativas', 'value' => (int) ($orientationStats['active'] ?? 0), 'copy' => 'Orientações em andamento neste momento.'],
+        ['label' => 'Planejadas', 'value' => (int) ($orientationStats['planned'] ?? 0), 'copy' => 'Frentes cadastradas aguardando início.'],
+        ['label' => 'Projetos vinculados', 'value' => $linkedProjectsCount, 'copy' => 'Projetos associados as suas orientações.'],
     ];
-    $statusPanelItems[] = ['label' => 'Orientacoes concluidas', 'value' => (string) (int) ($orientationStats['completed'] ?? 0)];
+    $statusPanelItems[] = ['label' => 'Orientações concluídas', 'value' => (string) (int) ($orientationStats['completed'] ?? 0)];
     $accentEyebrow = 'Acompanhamento';
     $accentTitle = 'Proximo passo sugerido';
-    $accentCopy = 'Sempre que um pesquisador associado ou pleno registrar uma orientacao para voce, ela aparecera aqui. Use esse espaco para acompanhar o andamento e os vinculos com projetos.';
-    $accentAction = ['href' => 'orientations.php', 'label' => 'Ver minhas orientacoes'];
+    $accentCopy = 'Sempre que um pesquisador associado ou pleno registrar uma orientação para você, ela aparecerá aqui. Use esse espaço para acompanhar o andamento e os vínculos com projetos.';
+    $accentAction = ['href' => 'orientations.php', 'label' => 'Ver minhas orientações'];
 } else {
     $metrics = [
-        ['label' => 'Numero de projetos', 'value' => (int) $userStats['total'], 'copy' => 'Quantidade total associada ao seu usuario.'],
+        ['label' => 'Número de projetos', 'value' => (int) $userStats['total'], 'copy' => 'Quantidade total associada ao seu usuário.'],
         ['label' => 'Ativos', 'value' => (int) $userStats['active'], 'copy' => 'Itens em andamento no momento.'],
         ['label' => 'Pendentes', 'value' => (int) $userStats['pending'], 'copy' => 'Demandas aguardando proximo passo.'],
-        ['label' => 'Concluidos', 'value' => (int) $userStats['completed'], 'copy' => 'Projetos que ja foram finalizados.'],
+        ['label' => 'Concluidos', 'value' => (int) $userStats['completed'], 'copy' => 'Projetos que já foram finalizados.'],
     ];
 }
 
 $actionCards[] = [
     'href' => 'logout.php',
     'icon' => 'fa-right-from-bracket',
-    'title' => 'Encerrar sessao',
+    'title' => 'Encerrar sessão',
     'copy' => 'Sair da conta com seguranca quando terminar.',
 ];
 ?>
@@ -270,8 +270,8 @@ $actionCards[] = [
     <section class="panel-hero">
         <div class="panel-hero-main">
             <p class="eyebrow">Painel interno</p>
-            <h1><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></h1>
-            <p class="hero-copy"><?php echo htmlspecialchars($heroCopy, ENT_QUOTES, 'UTF-8'); ?></p>
+            <h1><?php echo htmlspecialchars($displayName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h1>
+            <p class="hero-copy"><?php echo htmlspecialchars($heroCopy, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
 
             <div class="hero-actions">
                 <a class="dashboard-btn" href="profile.php">Editar perfil</a>
@@ -288,12 +288,12 @@ $actionCards[] = [
         </div>
 
         <aside class="panel-hero-aside">
-            <span class="dashboard-badge"><?php echo htmlspecialchars($roleLabel, ENT_QUOTES, 'UTF-8'); ?></span>
-            <h2>Resumo da sessao</h2>
-            <p>Conta conectada como <strong>@<?php echo htmlspecialchars((string) $currentUser['username'], ENT_QUOTES, 'UTF-8'); ?></strong>.</p>
+            <span class="dashboard-badge"><?php echo htmlspecialchars($roleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+            <h2>Resumo da sessão</h2>
+            <p>Conta conectada como <strong>@<?php echo htmlspecialchars((string) $currentUser['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>.</p>
             <ul class="hero-meta-list">
                 <?php foreach ($heroMeta as $metaLine): ?>
-                    <li><?php echo htmlspecialchars($metaLine, ENT_QUOTES, 'UTF-8'); ?></li>
+                    <li><?php echo htmlspecialchars($metaLine, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></li>
                 <?php endforeach; ?>
             </ul>
         </aside>
@@ -302,9 +302,9 @@ $actionCards[] = [
     <section class="metrics-grid">
         <?php foreach ($metrics as $metric): ?>
             <article class="metric-card">
-                <span class="metric-label"><?php echo htmlspecialchars((string) $metric['label'], ENT_QUOTES, 'UTF-8'); ?></span>
-                <strong class="metric-value"><?php echo htmlspecialchars((string) $metric['value'], ENT_QUOTES, 'UTF-8'); ?></strong>
-                <p><?php echo htmlspecialchars((string) $metric['copy'], ENT_QUOTES, 'UTF-8'); ?></p>
+                <span class="metric-label"><?php echo htmlspecialchars((string) $metric['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                <strong class="metric-value"><?php echo htmlspecialchars((string) $metric['value'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                <p><?php echo htmlspecialchars((string) $metric['copy'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
             </article>
         <?php endforeach; ?>
     </section>
@@ -314,17 +314,17 @@ $actionCards[] = [
             <div class="panel-card-header">
                 <div>
                     <p class="eyebrow">Atalhos</p>
-                    <h2>O que voce quer fazer agora?</h2>
+                    <h2>O que você quer fazer agora?</h2>
                 </div>
             </div>
 
             <div class="action-grid">
                 <?php foreach ($actionCards as $actionCard): ?>
-                    <a class="action-card" href="<?php echo htmlspecialchars((string) $actionCard['href'], ENT_QUOTES, 'UTF-8'); ?>">
-                        <i class="fa-solid <?php echo htmlspecialchars((string) $actionCard['icon'], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                    <a class="action-card" href="<?php echo htmlspecialchars((string) $actionCard['href'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                        <i class="fa-solid <?php echo htmlspecialchars((string) $actionCard['icon'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"></i>
                         <div>
-                            <strong><?php echo htmlspecialchars((string) $actionCard['title'], ENT_QUOTES, 'UTF-8'); ?></strong>
-                            <span><?php echo htmlspecialchars((string) $actionCard['copy'], ENT_QUOTES, 'UTF-8'); ?></span>
+                            <strong><?php echo htmlspecialchars((string) $actionCard['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                            <span><?php echo htmlspecialchars((string) $actionCard['copy'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                         </div>
                     </a>
                 <?php endforeach; ?>
@@ -336,15 +336,15 @@ $actionCards[] = [
                 <div class="panel-card-header">
                     <div>
                         <p class="eyebrow">Status rapido</p>
-                        <h2><?php echo htmlspecialchars($statusPanelTitle, ENT_QUOTES, 'UTF-8'); ?></h2>
+                        <h2><?php echo htmlspecialchars($statusPanelTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
                     </div>
                 </div>
 
                 <ul class="dashboard-list">
                     <?php foreach ($statusPanelItems as $item): ?>
                         <li>
-                            <span><?php echo htmlspecialchars((string) $item['label'], ENT_QUOTES, 'UTF-8'); ?></span>
-                            <strong><?php echo htmlspecialchars((string) $item['value'], ENT_QUOTES, 'UTF-8'); ?></strong>
+                            <span><?php echo htmlspecialchars((string) $item['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                            <strong><?php echo htmlspecialchars((string) $item['value'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                         </li>
                     <?php endforeach; ?>
                 </ul>
@@ -353,14 +353,14 @@ $actionCards[] = [
             <article class="panel-card accent-panel">
                 <div class="panel-card-header">
                     <div>
-                        <p class="eyebrow"><?php echo htmlspecialchars($accentEyebrow, ENT_QUOTES, 'UTF-8'); ?></p>
-                        <h2><?php echo htmlspecialchars($accentTitle, ENT_QUOTES, 'UTF-8'); ?></h2>
+                        <p class="eyebrow"><?php echo htmlspecialchars($accentEyebrow, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+                        <h2><?php echo htmlspecialchars($accentTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
                     </div>
                 </div>
 
-                <p class="panel-copy"><?php echo htmlspecialchars($accentCopy, ENT_QUOTES, 'UTF-8'); ?></p>
-                <a class="dashboard-btn dashboard-btn--ghost" href="<?php echo htmlspecialchars((string) $accentAction['href'], ENT_QUOTES, 'UTF-8'); ?>">
-                    <?php echo htmlspecialchars((string) $accentAction['label'], ENT_QUOTES, 'UTF-8'); ?>
+                <p class="panel-copy"><?php echo htmlspecialchars($accentCopy, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+                <a class="dashboard-btn dashboard-btn--ghost" href="<?php echo htmlspecialchars((string) $accentAction['href'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                    <?php echo htmlspecialchars((string) $accentAction['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                 </a>
             </article>
         </div>

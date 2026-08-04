@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     ];
     
     // delega a atualização de perfil para o AuthController
-    if ($auth->updateUserProfile($_SESSION['usuario_id'], $data)) {
+    if ($auth->updateUserProfile($_SESSION['user_id'], $data)) {
         $message = '<div class="mensagem sucesso">Perfil atualizado com sucesso!</div>';
         $user = $auth->getCurrentUser(); // Recarregar dados
     } else {
@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     } elseif (strlen($new_password) < 6) {
         $message = '<div class="mensagem erro">A senha deve ter pelo menos 6 caracteres.</div>';
     } else {
-        if ($auth->changePassword($_SESSION['usuario_id'], $current_password, $new_password)) {
+        if ($auth->changePassword($_SESSION['user_id'], $current_password, $new_password)) {
             $message = '<div class="mensagem sucesso">Senha alterada com sucesso!</div>';
         } else {
             $message = '<div class="mensagem erro">Senha atual incorreta.</div>';
@@ -56,13 +56,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                     <div class="profile-avatar">
                         <?php echo strtoupper(substr($user['username'], 0, 1)); ?>
                     </div>
-                    <h1><?php echo htmlspecialchars($user['username']); ?></h1>
+                    <h1><?php echo htmlspecialchars($user['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h1>
                     <p>Membro do CEPIN-CIS desde <?php echo date('d/m/Y', strtotime($user['created_at'])); ?></p>
                     
                     <?php
                     require_once 'models/Project.php';
                     $projectManager = new ProjectManager();
-                    $stats = $projectManager->getUserStats($_SESSION['usuario_id']);
+                    $stats = $projectManager->getUserStats($_SESSION['user_id']);
                     ?>
                     
                     <div class="profile-stats">
@@ -87,22 +87,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
                     <form method="POST">
                         <div class="form-group">
                             <label for="username">Nome de Usuário</label>
-                            <input type="text" id="username" value="<?php echo htmlspecialchars($user['username']); ?>" readonly>
+                            <input type="text" id="username" value="<?php echo htmlspecialchars($user['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" readonly>
                         </div>
                         
                         <div class="form-group">
                             <label for="full_name">Nome Completo</label>
-                            <input type="text" id="full_name" name="full_name" value="<?php echo htmlspecialchars($user['full_name'] ?? ''); ?>" placeholder="Seu nome completo">
+                            <input type="text" id="full_name" name="full_name" value="<?php echo htmlspecialchars($user['full_name'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" placeholder="Seu nome completo">
                         </div>
                         
                         <div class="form-group">
                             <label for="email">Email</label>
-                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" placeholder="seu@email.com">
+                            <input type="email" id="email" name="email" value="<?php echo htmlspecialchars($user['email'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" placeholder="seu@email.com">
                         </div>
                         
                         <div class="form-group">
                             <label for="bio">Biografia</label>
-                            <textarea id="bio" name="bio" rows="4" placeholder="Conte um pouco sobre você..."><?php echo htmlspecialchars($user['bio'] ?? ''); ?></textarea>
+                            <textarea id="bio" name="bio" rows="4" placeholder="Conte um pouco sobre você..."><?php echo htmlspecialchars($user['bio'] ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></textarea>
                         </div>
                         
                         <button type="submit" name="update_profile" class="dashboard-btn" style="border: none; cursor: pointer;">Salvar Alterações</button>
