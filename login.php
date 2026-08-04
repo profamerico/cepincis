@@ -49,7 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<?php include_once 'includes/header.php'; ?>
+<?php include_once 'includes/header.php';
+header('Content-Type: text/html; charset=UTF-8');
+?>
 
 <main class="page-shell auth-shell">
     <section class="auth-grid">

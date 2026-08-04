@@ -1,6 +1,7 @@
 <?php
 $bodyClass = 'public-page project-detail-page';
 
+header('Content-Type: text/html; charset=UTF-8');
 require_once 'controllers/AuthController.php';
 require_once 'models/Project.php';
 require_once 'models/ProjectWorkspace.php';

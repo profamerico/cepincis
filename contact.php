@@ -5,6 +5,7 @@ $projectInterest = trim((string) ($_GET['project'] ?? ''));
 $categoryInterest = trim((string) ($_GET['category'] ?? ''));
 $hasContext = $projectInterest !== '' || $categoryInterest !== '';
 
+header('Content-Type: text/html; charset=UTF-8');
 require_once 'models/ContentBlock.php';
 
 $contentManager = new ContentBlockManager();

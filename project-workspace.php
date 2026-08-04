@@ -2,6 +2,7 @@
 $pageTitle = 'Workspace de Projetos | CEPIN-CIS';
 $bodyClass = 'app-page project-workspace-page';
 
+header('Content-Type: text/html; charset=UTF-8');
 require_once 'controllers/AuthController.php';
 require_once 'models/Project.php';
 require_once 'models/ProjectWorkspace.php';

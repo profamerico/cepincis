@@ -2,6 +2,7 @@
 $pageTitle = 'Orientações | CEPIN-CIS';
 $bodyClass = 'app-page orientations-page';
 
+header('Content-Type: text/html; charset=UTF-8');
 require_once 'controllers/AuthController.php';
 require_once 'models/Orientation.php';
 require_once 'models/Project.php';

@@ -1,4 +1,5 @@
 <?php
+header('Content-Type: text/html; charset=UTF-8');
 require_once 'controllers/AuthController.php';
 
 $auth = new AuthController();

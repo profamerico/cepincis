@@ -6,6 +6,7 @@ require_once __DIR__ . '/bootstrap.php';
 $pageTitle = 'Painel Admin | CEPIN-CIS';
 $bodyClass = 'app-page admin-page';
 
+header('Content-Type: text/html; charset=UTF-8');
 require_once 'controllers/AuthController.php';
 require_once 'models/ContentBlock.php';
 require_once 'models/Orientation.php';

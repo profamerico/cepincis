@@ -2,6 +2,7 @@
 $pageTitle = 'Sobre | CEPIN-CIS';
 $bodyClass = 'public-page';
 
+header('Content-Type: text/html; charset=UTF-8');
 require_once 'models/ContentBlock.php';
 
 $contentManager = new ContentBlockManager();

@@ -2,6 +2,7 @@
 $pageTitle = 'Notificações | CEPIN-CIS';
 $bodyClass = 'app-page notifications-page';
 
+header('Content-Type: text/html; charset=UTF-8');
 require_once 'controllers/AuthController.php';
 require_once 'models/Project.php';
 require_once 'models/ProjectWorkspace.php';
