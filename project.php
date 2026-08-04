@@ -377,7 +377,7 @@ $displayParticipationText = $participationInfo !== ''
     <section class="project-detail-grid project-detail-grid--secondary">
         <article class="panel-card public-section-card project-detail-section-card">
             <p class="eyebrow">Timeline</p>
-            <h2>Evolucao do projeto</h2>
+            <h2>Evolução do projeto</h2>
             <?php if (empty($timelineEvents)): ?>
                 <p>A equipe ainda não publicou eventos na timeline deste projeto.</p>
             <?php else: ?>
@@ -419,7 +419,7 @@ $displayParticipationText = $participationInfo !== ''
                 <?php if (empty($collaborators)): ?>
                     <div class="project-detail-contact-item">
                         <span>Colaboradores</span>
-                        <strong>Equipe em formacao</strong>
+                        <strong>Equipe em formação</strong>
                     </div>
                 <?php endif; ?>
             </div>
@@ -438,7 +438,7 @@ $displayParticipationText = $participationInfo !== ''
             <h2>O que enviar no primeiro contato</h2>
 
             <ol class="project-detail-steps">
-                <li>Apresente seu nome, vinculação academica ou profissional e como conheceu o projeto.</li>
+                <li>Apresente seu nome, vinculação acadêmica ou profissional e como conheceu o projeto.</li>
                 <li>Explique sua disponibilidade, sua afinidade com a área temática e de que forma imagina contribuir.</li>
                 <li>Envie a mensagem para o responsável pelo projeto e mantenha o CEPIN-CIS em cópia para facilitar o acompanhamento institucional.</li>
             </ol>
