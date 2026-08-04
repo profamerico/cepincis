@@ -49,8 +49,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<?php include_once 'includes/header.php';
-header('Content-Type: text/html; charset=UTF-8');
+<?php header('Content-Type: text/html; charset=UTF-8');
+ include_once 'includes/header.php';
+;
 ?>
 
 <main class="page-shell auth-shell">
@@ -62,12 +63,12 @@ header('Content-Type: text/html; charset=UTF-8');
 
             <div class="auth-highlights">
                 <div class="auth-highlight">
-                    <strong>Gestao centralizada</strong>
-                    <span>Conta, perfil e administracao no mesmo fluxo.</span>
+                    <strong>Gestão centralizada</strong>
+                    <span>Conta, perfil e administração no mesmo fluxo.</span>
                 </div>
                 <div class="auth-highlight">
                     <strong>Experiência mais limpa</strong>
-                    <span>Sem o scroll especial da home atrapalhando formularios.</span>
+                    <span>Sem o scroll especial da home atrapalhando formulários.</span>
                 </div>
                 <div class="auth-highlight">
                     <strong>Acesso social</strong>
