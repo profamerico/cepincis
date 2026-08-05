@@ -1,4 +1,5 @@
 <?php
+header('Content-Type: text/html; charset=UTF-8');
 $pageTitle = 'Login | CEPIN-CIS';
 $bodyClass = 'auth-page';
 
@@ -49,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<?php header('Content-Type: text/html; charset=UTF-8');
+<?php
  include_once 'includes/header.php';
 ;
 ?>
