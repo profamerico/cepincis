@@ -254,8 +254,8 @@ include_once 'includes/header.php';
 
                 <p class="mensagem-projetos-home" data-carousel-empty-message hidden>Nenhum projeto encontrado para esse filtro.</p>
 
-                <div class="wrapper-carrossel-publicações">
-                    <div class="container-carrossel-publicações" id="carrosselPúblicacoes">
+                <div class="wrapper-carrossel-publicacoes">
+                    <div class="container-carrossel-publicacoes" id="carrosselPúblicacoes">
                         <?php if (!empty($homepageProjects)): ?>
                             <?php foreach ($homepageProjects as $project): ?>
                                 <?php
@@ -323,7 +323,7 @@ include_once 'includes/header.php';
                         <?php endif; ?>
                     </div>
 
-                    <div class="navegacao-carrossel-publicações">
+                    <div class="navegacao-carrossel-publicacoes">
                         <button
                             type="button"
                             class="botao-seta-carrossel"
