@@ -1,10 +1,14 @@
 <?php
 
+
 require_once __DIR__ . '/database.php';
+
 
 $db = new Database();
 
+
 $pdo = $db->getConnection();
+
 
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS migrations (
@@ -54,5 +58,6 @@ foreach ($files as $file) {
 
     echo "DONE: {$file}\n";
 }
+
 
 echo "\nAll migrations completed.\n";
