@@ -245,8 +245,7 @@ $displayParticipationText = $participationInfo !== ''
                 class="project-detail-hero__background"
                 src="<?php echo htmlspecialchars($bannerPath, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                 alt=""
-                aria-hidden="true"
-            >
+                aria-hidden="true">
         <?php endif; ?>
 
         <div class="project-detail-hero__veil" aria-hidden="true"></div>

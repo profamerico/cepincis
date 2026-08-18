@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 ob_start();
 require_once __DIR__ . '/bootstrap.php';
@@ -267,7 +268,7 @@ function admin_render_layout_builder(
         data-layout-builder
         data-layout-builder-page="<?php echo htmlspecialchars($pageKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
         data-layout-inline-controls="1"
- <?php echo $isVisible ? '' : 'hidden'; ?>>
+        <?php echo $isVisible ? '' : 'hidden'; ?>>
         <div class="panel-card-header">
             <div>
                 <p class="eyebrow">Esqueleto da página</p>
@@ -276,9 +277,9 @@ function admin_render_layout_builder(
             </div>
         </div>
 
- <?php foreach ($errors as $error): ?>
+        <?php foreach ($errors as $error): ?>
             <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
- <?php endforeach; ?>
+        <?php endforeach; ?>
 
         <form method="POST" class="stack-form admin-layout-builder__form" data-layout-builder-form>
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
@@ -293,11 +294,11 @@ function admin_render_layout_builder(
                         <span class="admin-layout-control__value" data-layout-value-output="grid_style"></span>
                     </div>
                     <select id="<?php echo htmlspecialchars($pageKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>_grid_style" name="grid_style" data-layout-input="grid_style" class="admin-layout-control__select">
-   <?php foreach ($gridStyleOptions as $gridStyleKey => $gridStyleLabel): ?>
-                            <option value="<?php echo htmlspecialchars($gridStyleKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"<?php echo $gridStyle === (string) $gridStyleKey ? 'selected' : ''; ?>>
-   <?php echo htmlspecialchars($gridStyleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                        <?php foreach ($gridStyleOptions as $gridStyleKey => $gridStyleLabel): ?>
+                            <option value="<?php echo htmlspecialchars($gridStyleKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo $gridStyle === (string) $gridStyleKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($gridStyleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                     <p class="admin-layout-control__note">Defina se a grade deve respirar mais ou encaixar os cards de forma mais densa.</p>
                 </div>
@@ -389,8 +390,8 @@ function admin_render_layout_builder(
             </div>
 
             <div class="admin-layout-canvas" data-layout-preview style="<?php echo htmlspecialchars($layoutStyle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-   <?php foreach ($blocks as $block): ?>
-   <?php
+                <?php foreach ($blocks as $block): ?>
+                    <?php
                     $previewSpan = $contentManager->getWidthSpan((string) ($block['width'] ?? 'half'), (int) ($layoutForm['columns'] ?? 2));
                     $previewHeightFactor = $contentManager->getHeightFactor((string) ($block['height'] ?? 'regular'));
                     $previewType = (string) ($block['type'] ?? 'text_card');
@@ -417,10 +418,10 @@ function admin_render_layout_builder(
                         style="grid-column: span<?php echo $previewSpan; ?> / span<?php echo $previewSpan; ?>; --admin-block-height-factor:<?php echo htmlspecialchars((string) $previewHeightFactor, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>;">
                         <div class="admin-layout-preview-block__rail">
                             <button type="button" class="admin-layout-preview-icon is-active" data-layout-mode="preview" aria-label="Visualizar<?php echo htmlspecialchars($previewTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" title="Visualizar bloco">
-   <?php echo admin_icon('eye'); ?>
+                                <?php echo admin_icon('eye'); ?>
                             </button>
                             <button type="button" class="admin-layout-preview-icon" data-layout-mode="edit" aria-label="Editar layout de<?php echo htmlspecialchars($previewTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" title="Editar layout do bloco">
-   <?php echo admin_icon('edit'); ?>
+                                <?php echo admin_icon('edit'); ?>
                             </button>
                         </div>
 
@@ -442,31 +443,31 @@ function admin_render_layout_builder(
                             <div class="admin-layout-preview-panel__section">
                                 <span class="admin-layout-preview-panel__label">Largura</span>
                                 <div class="admin-layout-preview-choices" role="group" aria-label="Largura de<?php echo htmlspecialchars($previewTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-   <?php foreach ($widthOptions as $widthKey => $widthLabel): ?>
+                                    <?php foreach ($widthOptions as $widthKey => $widthLabel): ?>
                                         <button
                                             type="button"
                                             class="admin-layout-choice<?php echo $previewWidth === (string) $widthKey ? 'is-selected' : ''; ?>"
                                             data-layout-choice="width"
                                             data-choice-value="<?php echo htmlspecialchars((string) $widthKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                                             title="<?php echo htmlspecialchars((string) $widthLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-           <?php echo htmlspecialchars(admin_visual_width_short_label((string) $widthKey), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                            <?php echo htmlspecialchars(admin_visual_width_short_label((string) $widthKey), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                         </button>
-   <?php endforeach; ?>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
 
                             <div class="admin-layout-preview-panel__section">
                                 <span class="admin-layout-preview-panel__label">Altura</span>
                                 <div class="admin-layout-preview-choices" role="group" aria-label="Altura de<?php echo htmlspecialchars($previewTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-   <?php foreach ($heightOptions as $heightKey => $heightLabel): ?>
+                                    <?php foreach ($heightOptions as $heightKey => $heightLabel): ?>
                                         <button
                                             type="button"
                                             class="admin-layout-choice admin-layout-choice--text<?php echo $previewHeight === (string) $heightKey ? 'is-selected' : ''; ?>"
                                             data-layout-choice="height"
                                             data-choice-value="<?php echo htmlspecialchars((string) $heightKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-           <?php echo htmlspecialchars((string) $heightLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                            <?php echo htmlspecialchars((string) $heightLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                         </button>
-   <?php endforeach; ?>
+                                    <?php endforeach; ?>
                                 </div>
                             </div>
 
@@ -476,12 +477,12 @@ function admin_render_layout_builder(
                                 </button>
 
                                 <button type="button" class="admin-layout-preview-action" data-layout-move="-1">
-   <?php echo admin_icon('up'); ?>
+                                    <?php echo admin_icon('up'); ?>
                                     <span>Subir</span>
                                 </button>
 
                                 <button type="button" class="admin-layout-preview-action" data-layout-move="1">
-   <?php echo admin_icon('down'); ?>
+                                    <?php echo admin_icon('down'); ?>
                                     <span>Descer</span>
                                 </button>
 
@@ -489,7 +490,7 @@ function admin_render_layout_builder(
                             </div>
                         </div>
                     </article>
-   <?php endforeach; ?>
+                <?php endforeach; ?>
             </div>
         </div>
     </article>
@@ -712,7 +713,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         (int) ($currentUser['id'] ?? 0)
                     );
 
-                    
+
                     if (is_array($project) && (int) ($project['user_id'] ?? 0) !== (int) ($document['uploaded_by_user_id'] ?? 0)) {
                         $workspaceManager->createNotification(
                             (int) ($project['user_id'] ?? 0),
@@ -1191,11 +1192,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         </aside>
     </section>
 
-<?php if ($flash): ?>
+    <?php if ($flash): ?>
         <div class="mensagem<?php echo htmlspecialchars((string) $flash['type'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-  <?php echo htmlspecialchars((string) $flash['message'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+            <?php echo htmlspecialchars((string) $flash['message'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
         </div>
-<?php endif; ?>
+    <?php endif; ?>
 
     <section class="metrics-grid">
         <article class="metric-card">
@@ -1317,12 +1318,12 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     <p class="admin-hierarchy-note">Hierarquia atual: Usuário, Pesquisador Acadêmico, Pesquisador Associado, Pesquisador Pleno e Admin. O editor abaixo ajusta identidade, contato, permissão e senha da conta selecionada.</p>
                 </div>
 
-   <?php if ($userForm['id'] !== ''): ?>
+                <?php if ($userForm['id'] !== ''): ?>
                     <a class="dashboard-btn dashboard-btn--ghost" href="admin.php#users">Limpar formulario</a>
-   <?php endif; ?>
+                <?php endif; ?>
             </div>
 
-  <?php if ($editingUserId > 0): ?>
+            <?php if ($editingUserId > 0): ?>
                 <section class="admin-user-profile-summary">
                     <div class="admin-user-profile-summary__head">
                         <div>
@@ -1333,11 +1334,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
 
                         <div class="admin-user-profile-summary__badges">
                             <span class="admin-pill<?php echo htmlspecialchars($editingUserRoleClass, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-   <?php echo htmlspecialchars($editingUserRoleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                <?php echo htmlspecialchars($editingUserRoleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </span>
-   <?php if ($editingUserIsSelf): ?>
+                            <?php if ($editingUserIsSelf): ?>
                                 <span class="admin-self-tag">Conta atual</span>
-   <?php endif; ?>
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -1375,11 +1376,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                         </li>
                     </ul>
                 </section>
-  <?php endif; ?>
+            <?php endif; ?>
 
-  <?php foreach ($userFormErrors as $error): ?>
+            <?php foreach ($userFormErrors as $error): ?>
                 <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
-  <?php endforeach; ?>
+            <?php endforeach; ?>
 
             <form method="POST" class="stack-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
@@ -1401,27 +1402,27 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     <input type="email" id="email" name="email" value="<?php echo htmlspecialchars((string) $userForm['email'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                 </div>
 
-   <?php if ($editingUserId > 0): ?>
+                <?php if ($editingUserId > 0): ?>
                     <div class="form-group">
                         <label for="user_provider_preview">Origem da conta</label>
                         <input type="text" id="user_provider_preview" value="<?php echo htmlspecialchars($editingUserProviderLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" disabled>
                     </div>
-   <?php endif; ?>
+                <?php endif; ?>
 
                 <div class="form-group">
                     <label for="role">Nível hierarquico</label>
                     <select id="role" name="role">
-   <?php foreach ($roleOptions as $roleKey => $roleMeta): ?>
-                            <option value="<?php echo htmlspecialchars($roleKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"<?php echo $auth->getRoleKey($userForm['role']) === $roleKey ? 'selected' : ''; ?>>
-   <?php echo htmlspecialchars((string) $roleMeta['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                        <?php foreach ($roleOptions as $roleKey => $roleMeta): ?>
+                            <option value="<?php echo htmlspecialchars($roleKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo $auth->getRoleKey($userForm['role']) === $roleKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $roleMeta['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="password"><?php echo $userForm['id'] !== '' ? 'Nova senha (opcional)' : 'Senha'; ?></label>
-                    <input type="password" id="password" name="password"<?php echo $userForm['id'] === '' ? 'required' : ''; ?>>
+                    <input type="password" id="password" name="password" <?php echo $userForm['id'] === '' ? 'required' : ''; ?>>
                 </div>
 
                 <button type="submit" class="dashboard-btn"><?php echo $userForm['id'] !== '' ? 'Salvar usuário' : 'Criar usuário'; ?></button>
@@ -1436,9 +1437,9 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 </div>
             </div>
 
-  <?php if (empty($users)): ?>
+            <?php if (empty($users)): ?>
                 <p class="admin-empty">Nenhum usuário cadastrado ainda.</p>
-  <?php else: ?>
+            <?php else: ?>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
                         <thead>
@@ -1451,8 +1452,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                             </tr>
                         </thead>
                         <tbody>
-   <?php foreach ($users as $listedUser): ?>
-   <?php
+                            <?php foreach ($users as $listedUser): ?>
+                                <?php
                                 $listedUserId = (int) $listedUser['id'];
                                 $listedIsAdmin = $auth->isAdmin($listedUser);
                                 $listedRoleKey = $auth->getRoleKey($listedUser);
@@ -1473,7 +1474,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                     </td>
                                     <td>
                                         <span class="admin-pill<?php echo htmlspecialchars($listedRoleClass, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-           <?php echo htmlspecialchars($listedRoleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                            <?php echo htmlspecialchars($listedRoleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                         </span>
                                     </td>
                                     <td>
@@ -1493,24 +1494,24 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                                 <button type="submit" class="dashboard-btn admin-btn-small">Editar perfil</button>
                                             </form>
 
-           <?php if (!$isSelf): ?>
+                                            <?php if (!$isSelf): ?>
                                                 <form method="POST" onsubmit="return confirm('Remover este usuário?');">
                                                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                                     <input type="hidden" name="action" value="delete_user">
                                                     <input type="hidden" name="user_id" value="<?php echo $listedUserId; ?>">
                                                     <button type="submit" class="dashboard-btn admin-btn-danger">Excluir</button>
                                                 </form>
-           <?php else: ?>
+                                            <?php else: ?>
                                                 <span class="admin-self-tag">Conta atual</span>
-           <?php endif; ?>
+                                            <?php endif; ?>
                                         </div>
                                     </td>
                                 </tr>
-   <?php endforeach; ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
-  <?php endif; ?>
+            <?php endif; ?>
         </article>
     </section>
 
@@ -1587,14 +1588,14 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     <h2><?php echo $projectForm['id'] !== '' ? 'Editar projeto' : 'Novo projeto'; ?></h2>
                 </div>
 
-   <?php if ($projectForm['id'] !== ''): ?>
+                <?php if ($projectForm['id'] !== ''): ?>
                     <a class="dashboard-btn dashboard-btn--ghost" href="admin.php#projects">Limpar formulario</a>
-   <?php endif; ?>
+                <?php endif; ?>
             </div>
 
-  <?php foreach ($projectFormErrors as $error): ?>
+            <?php foreach ($projectFormErrors as $error): ?>
                 <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
-  <?php endforeach; ?>
+            <?php endforeach; ?>
 
             <form method="POST" enctype="multipart/form-data" class="stack-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
@@ -1605,12 +1606,12 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     <label for="user_id">Responsável</label>
                     <select id="user_id" name="user_id">
                         <option value="">Sem responsável</option>
-   <?php foreach ($users as $listedUser): ?>
-   <?php $listedUserId = (int) $listedUser['id']; ?>
-                            <option value="<?php echo $listedUserId; ?>"<?php echo (string) $projectForm['user_id'] === (string) $listedUserId ? 'selected' : ''; ?>>
-   <?php echo htmlspecialchars((string) $listedUser['fullname'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                        <?php foreach ($users as $listedUser): ?>
+                            <?php $listedUserId = (int) $listedUser['id']; ?>
+                            <option value="<?php echo $listedUserId; ?>" <?php echo (string) $projectForm['user_id'] === (string) $listedUserId ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $listedUser['fullname'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
@@ -1622,11 +1623,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="form-group">
                     <label for="category">Categoria</label>
                     <select id="category" name="category" required>
-   <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
-                            <option value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"<?php echo (string) $projectForm['category'] === (string) $areaKey ? 'selected' : ''; ?>>
-   <?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                        <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
+                            <option value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo (string) $projectForm['category'] === (string) $areaKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                     <p class="form-help">A categoria principal do projeto agora fica restrita as 5 siglas oficiais das Áreas Temáticas.</p>
                 </div>
@@ -1634,13 +1635,13 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="form-group">
                     <label for="tags">Tags</label>
                     <div class="tag-options-grid" id="tags">
-   <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
-   <?php $isChecked = in_array((string) $areaKey, $projectForm['tags'], true); ?>
+                        <?php foreach ($thematicAreaOptions as $areaKey => $areaLabel): ?>
+                            <?php $isChecked = in_array((string) $areaKey, $projectForm['tags'], true); ?>
                             <label class="checkbox-row tag-option-card">
-                                <input type="checkbox" name="tags[]" value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"<?php echo $isChecked ? 'checked' : ''; ?>>
+                                <input type="checkbox" name="tags[]" value="<?php echo htmlspecialchars((string) $areaKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo $isChecked ? 'checked' : ''; ?>>
                                 <span><?php echo htmlspecialchars((string) $areaLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                             </label>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </div>
                     <p class="form-help">As tags também ficam limitadas as 5 siglas das Áreas Temáticas e alimentam os filtros e cards da home.</p>
                 </div>
@@ -1648,9 +1649,9 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="form-group">
                     <label for="project_status">Status</label>
                     <select id="project_status" name="status">
-                        <option value="active"<?php echo $projectForm['status'] === 'active' ? 'selected' : ''; ?>>Ativo</option>
-                        <option value="pending"<?php echo $projectForm['status'] === 'pending' ? 'selected' : ''; ?>>Pendente</option>
-                        <option value="completed"<?php echo $projectForm['status'] === 'completed' ? 'selected' : ''; ?>>Concluido</option>
+                        <option value="active" <?php echo $projectForm['status'] === 'active' ? 'selected' : ''; ?>>Ativo</option>
+                        <option value="pending" <?php echo $projectForm['status'] === 'pending' ? 'selected' : ''; ?>>Pendente</option>
+                        <option value="completed" <?php echo $projectForm['status'] === 'completed' ? 'selected' : ''; ?>>Concluido</option>
                     </select>
                 </div>
 
@@ -1671,7 +1672,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     <p class="form-help">Novos projetos precisam de PDF ou DOCX para entrar no fluxo de autenticação. Em edicoes, use este campo apenas para enviar uma nova versão documental.</p>
                 </div>
 
-   <?php if ((string) $projectForm['image_path'] !== ''): ?>
+                <?php if ((string) $projectForm['image_path'] !== ''): ?>
                     <div class="admin-partner-preview admin-project-preview">
                         <img
                             src="<?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
@@ -1683,7 +1684,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                             <span><?php echo htmlspecialchars((string) $projectForm['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                         </div>
                     </div>
-   <?php endif; ?>
+                <?php endif; ?>
 
                 <div class="form-group">
                     <label for="project_image_file">Imagem do banner</label>
@@ -1709,9 +1710,9 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 </div>
             </div>
 
-  <?php if (empty($projects)): ?>
+            <?php if (empty($projects)): ?>
                 <p class="admin-empty">Nenhum projeto cadastrado ainda.</p>
-  <?php else: ?>
+            <?php else: ?>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
                         <thead>
@@ -1726,8 +1727,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                             </tr>
                         </thead>
                         <tbody>
-   <?php foreach ($projects as $project): ?>
-   <?php
+                            <?php foreach ($projects as $project): ?>
+                                <?php
                                 $ownerId = $project['user_id'] ?? null;
                                 $owner = $ownerId !== null && isset($userMap[(int) $ownerId]) ? $userMap[(int) $ownerId] : null;
                                 $authentication = $workspaceManager->getAuthenticationStatus($project);
@@ -1737,19 +1738,19 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                         <strong><?php echo htmlspecialchars((string) $project['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                                         <div class="admin-meta"><?php echo htmlspecialchars((string) $project['description'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                                         <div class="admin-meta">Tags:<?php echo htmlspecialchars(admin_format_tags($projectManager->getProjectTagList($project, false)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
-       <?php if ((string) ($project['image_path'] ?? '') !== ''): ?>
+                                        <?php if ((string) ($project['image_path'] ?? '') !== ''): ?>
                                             <div class="admin-meta">Banner:<?php echo htmlspecialchars((string) $project['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
-       <?php endif; ?>
+                                        <?php endif; ?>
                                     </td>
                                     <td><?php echo htmlspecialchars((string) ($owner['fullname'] ?? 'Sem responsável'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></td>
                                     <td>
                                         <span class="admin-pill admin-pill--status">
-           <?php echo htmlspecialchars(admin_status_label((string) $project['status']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                            <?php echo htmlspecialchars(admin_status_label((string) $project['status']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                         </span>
                                     </td>
                                     <td>
                                         <span class="admin-pill admin-pill--<?php echo htmlspecialchars((string) ($authentication['status'] ?? 'missing'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-           <?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentação'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                            <?php echo htmlspecialchars((string) ($authentication['label'] ?? 'Sem documentação'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                         </span>
                                     </td>
                                     <td><?php echo htmlspecialchars((string) $project['category'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></td>
@@ -1769,11 +1770,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                         </div>
                                     </td>
                                 </tr>
-   <?php endforeach; ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
-  <?php endif; ?>
+            <?php endif; ?>
         </article>
     </section>
 
@@ -1786,16 +1787,16 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     <p class="admin-subtitle">Gerencie os cards da seção Parceiros na home com imagem, nome e descrição. O upload substitui o caminho atual quando você quiser renovar uma marca ou identidade visual.</p>
                 </div>
 
-   <?php if ($partnerForm['id'] !== ''): ?>
+                <?php if ($partnerForm['id'] !== ''): ?>
                     <a class="dashboard-btn dashboard-btn--ghost" href="admin.php#partners">Limpar formulario</a>
-   <?php endif; ?>
+                <?php endif; ?>
             </div>
 
-  <?php foreach ($partnerFormErrors as $error): ?>
+            <?php foreach ($partnerFormErrors as $error): ?>
                 <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
-  <?php endforeach; ?>
+            <?php endforeach; ?>
 
-  <?php if ((string) $partnerForm['image_path'] !== ''): ?>
+            <?php if ((string) $partnerForm['image_path'] !== ''): ?>
                 <div class="admin-partner-preview">
                     <img
                         src="<?php echo htmlspecialchars((string) $partnerForm['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
@@ -1807,7 +1808,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                         <span><?php echo htmlspecialchars((string) $partnerForm['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                     </div>
                 </div>
-  <?php endif; ?>
+            <?php endif; ?>
 
             <form method="POST" enctype="multipart/form-data" class="stack-form">
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
@@ -1849,9 +1850,9 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 </div>
             </div>
 
-  <?php if (empty($partners)): ?>
+            <?php if (empty($partners)): ?>
                 <p class="admin-empty">Nenhum parceiro cadastrado ainda.</p>
-  <?php else: ?>
+            <?php else: ?>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
                         <thead>
@@ -1863,8 +1864,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                             </tr>
                         </thead>
                         <tbody>
-   <?php foreach ($partners as $partner): ?>
-   <?php $partnerId = (string) ($partner['id'] ?? ''); ?>
+                            <?php foreach ($partners as $partner): ?>
+                                <?php $partnerId = (string) ($partner['id'] ?? ''); ?>
                                 <tr>
                                     <td>
                                         <strong><?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
@@ -1872,14 +1873,14 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                         <div class="admin-meta"><?php echo htmlspecialchars((string) ($partner['image_path'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
                                     </td>
                                     <td>
-       <?php if ((string) ($partner['image_path'] ?? '') !== ''): ?>
+                                        <?php if ((string) ($partner['image_path'] ?? '') !== ''): ?>
                                             <img
                                                 src="<?php echo htmlspecialchars((string) $partner['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                                                 alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                                                 class="admin-partner-thumb">
-       <?php else: ?>
+                                        <?php else: ?>
                                             <span class="admin-empty">Sem imagem</span>
-       <?php endif; ?>
+                                        <?php endif; ?>
                                     </td>
                                     <td><?php echo htmlspecialchars(admin_format_datetime($partner['updated_at'] ?? null), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></td>
                                     <td>
@@ -1895,11 +1896,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                         </div>
                                     </td>
                                 </tr>
-   <?php endforeach; ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
-  <?php endif; ?>
+            <?php endif; ?>
         </article>
     </section>
 
@@ -1915,14 +1916,14 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     class="dashboard-btn dashboard-btn--ghost"
                     href="admin.php#content"
                     data-content-form-reset
-   <?php echo $contentForm['id'] !== '' ? '' : 'hidden'; ?>>
+                    <?php echo $contentForm['id'] !== '' ? '' : 'hidden'; ?>>
                     Limpar formulario
                 </a>
             </div>
 
-  <?php foreach ($contentFormErrors as $error): ?>
+            <?php foreach ($contentFormErrors as $error): ?>
                 <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
-  <?php endforeach; ?>
+            <?php endforeach; ?>
 
             <form method="POST" class="stack-form" data-block-form-root data-content-form>
                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
@@ -1932,22 +1933,22 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="form-group">
                     <label for="content_page_key">Página</label>
                     <select id="content_page_key" name="page_key" data-block-page-select data-content-field="page_key">
-   <?php foreach ($contentPageOptions as $pageKey => $pageMeta): ?>
+                        <?php foreach ($contentPageOptions as $pageKey => $pageMeta): ?>
                             <option
                                 value="<?php echo htmlspecialchars($pageKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                                 data-supports-layout-builder="<?php echo !empty($pageMeta['supports_layout_builder']) ? '1' : '0'; ?>"
-   <?php echo (string) $contentForm['page_key'] === (string) $pageKey ? 'selected' : ''; ?>>
-   <?php echo htmlspecialchars((string) $pageMeta['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                <?php echo (string) $contentForm['page_key'] === (string) $pageKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $pageMeta['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="content_type">Tipo de bloco</label>
                     <select id="content_type" name="type" data-block-type-select data-content-field="type">
-   <?php foreach ($contentTypeOptions as $typeKey => $typeMeta): ?>
-   <?php
+                        <?php foreach ($contentTypeOptions as $typeKey => $typeMeta): ?>
+                            <?php
                             $allowedPages = [];
 
                             foreach ($contentPageOptions as $pageKey => $pageMeta) {
@@ -1961,13 +1962,13 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 value="<?php echo htmlspecialchars($typeKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                                 data-allowed-pages="<?php echo htmlspecialchars(implode(',', $allowedPages), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                                 data-type-description="<?php echo htmlspecialchars((string) ($typeMeta['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-   <?php echo (string) $contentForm['type'] === (string) $typeKey ? 'selected' : ''; ?>>
-   <?php echo htmlspecialchars((string) $typeMeta['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                <?php echo (string) $contentForm['type'] === (string) $typeKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars((string) $typeMeta['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                     <p class="form-help" data-block-type-help data-default-help="Cada página libera apenas os tipos de bloco que fazem sentido para o layout dela.">
-   <?php echo htmlspecialchars((string) ($contentTypeOptions[$contentForm['type']]['description'] ?? 'Cada página libera apenas os tipos de bloco que fazem sentido para o layout dela.'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                        <?php echo htmlspecialchars((string) ($contentTypeOptions[$contentForm['type']]['description'] ?? 'Cada página libera apenas os tipos de bloco que fazem sentido para o layout dela.'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                     </p>
                 </div>
 
@@ -2033,8 +2034,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="form-group">
                     <label for="content_width">Largura do bloco</label>
                     <select id="content_width" name="width" data-block-width-select data-content-field="width">
-   <?php foreach ($contentWidthOptions as $widthKey => $widthLabel): ?>
-   <?php
+                        <?php foreach ($contentWidthOptions as $widthKey => $widthLabel): ?>
+                            <?php
                             $allowedWidthPages = [];
 
                             foreach ($contentPageOptions as $pageKey => $pageMeta) {
@@ -2047,10 +2048,10 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                             <option
                                 value="<?php echo htmlspecialchars($widthKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                                 data-allowed-pages="<?php echo htmlspecialchars(implode(',', $allowedWidthPages), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-   <?php echo (string) $contentForm['width'] === (string) $widthKey ? 'selected' : ''; ?>>
-   <?php echo htmlspecialchars($widthLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                <?php echo (string) $contentForm['width'] === (string) $widthKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($widthLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                     <p class="form-help">Na página Sobre, isso define quantas colunas o card ocupa dentro do grid configurado pelo admin.</p>
                 </div>
@@ -2058,11 +2059,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="form-group" data-block-field-group="about_text,about_media,about_list,about_cta">
                     <label for="content_height">Altura visual do bloco</label>
                     <select id="content_height" name="height" data-block-height-select data-content-field="height">
-   <?php foreach ($contentHeightOptions as $heightKey => $heightLabel): ?>
-                            <option value="<?php echo htmlspecialchars($heightKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"<?php echo (string) $contentForm['height'] === (string) $heightKey ? 'selected' : ''; ?>>
-   <?php echo htmlspecialchars($heightLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                        <?php foreach ($contentHeightOptions as $heightKey => $heightLabel): ?>
+                            <option value="<?php echo htmlspecialchars($heightKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo (string) $contentForm['height'] === (string) $heightKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($heightLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                     <p class="form-help">Use isso para deixar um card mais compacto, equilibrado ou dominante dentro da composição.</p>
                 </div>
@@ -2076,17 +2077,17 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="form-group">
                     <label for="content_status">Visibilidade</label>
                     <select id="content_status" name="status" data-content-field="status">
-   <?php foreach ($contentStatusOptions as $statusKey => $statusLabel): ?>
-                            <option value="<?php echo htmlspecialchars($statusKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"<?php echo (string) $contentForm['status'] === (string) $statusKey ? 'selected' : ''; ?>>
-   <?php echo htmlspecialchars($statusLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                        <?php foreach ($contentStatusOptions as $statusKey => $statusLabel): ?>
+                            <option value="<?php echo htmlspecialchars($statusKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo (string) $contentForm['status'] === (string) $statusKey ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($statusLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                             </option>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                 </div>
 
                 <div class="form-group" data-block-field-group="contact_info,text_card">
                     <label class="checkbox-row" for="content_context_note">
-                        <input type="checkbox" id="content_context_note" name="show_context_note" value="1"<?php echo !empty($contentForm['show_context_note']) ? 'checked' : ''; ?> data-content-field="show_context_note">
+                        <input type="checkbox" id="content_context_note" name="show_context_note" value="1" <?php echo !empty($contentForm['show_context_note']) ? 'checked' : ''; ?> data-content-field="show_context_note">
                         Exibir contexto de projeto/categoria quando o usuário vier da home
                     </label>
                 </div>
@@ -2096,8 +2097,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         </article>
 
         <div class="admin-layout-builder-stack">
-  <?php foreach ($layoutBuilderPageKeys as $layoutPageKey): ?>
-   <?php
+            <?php foreach ($layoutBuilderPageKeys as $layoutPageKey): ?>
+                <?php
                 $layoutErrorsForPage = $layoutOverridePageKey === $layoutPageKey ? $contentLayoutErrors : [];
                 admin_render_layout_builder(
                     $layoutPageKey,
@@ -2113,16 +2114,16 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     $contentManager
                 );
                 ?>
-  <?php endforeach; ?>
+            <?php endforeach; ?>
         </div>
 
- <?php if (false): ?>
+        <?php if (false): ?>
             <article
                 class="panel-card admin-layout-builder"
                 data-layout-builder
                 data-layout-builder-page="about"
                 data-layout-inline-controls="1"
-   <?php echo (string) $contentForm['page_key'] === 'about' ? '' : 'hidden'; ?>>
+                <?php echo (string) $contentForm['page_key'] === 'about' ? '' : 'hidden'; ?>>
                 <div class="panel-card-header">
                     <div>
                         <p class="eyebrow">Esqueleto da página</p>
@@ -2131,9 +2132,9 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     </div>
                 </div>
 
-   <?php foreach ($contentLayoutErrors as $error): ?>
+                <?php foreach ($contentLayoutErrors as $error): ?>
                     <div class="mensagem erro"><?php echo htmlspecialchars($error, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
-   <?php endforeach; ?>
+                <?php endforeach; ?>
 
                 <form method="POST" class="stack-form admin-layout-builder__form" data-layout-builder-form>
                     <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
@@ -2148,11 +2149,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 <span class="admin-layout-control__value" data-layout-value-output="grid_style"></span>
                             </div>
                             <select id="about_grid_style" name="grid_style" data-layout-input="grid_style" class="admin-layout-control__select">
-   <?php foreach ($contentGridStyleOptions as $gridStyleKey => $gridStyleLabel): ?>
-                                    <option value="<?php echo htmlspecialchars($gridStyleKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"<?php echo (string) $aboutLayoutForm['grid_style'] === (string) $gridStyleKey ? 'selected' : ''; ?>>
-       <?php echo htmlspecialchars($gridStyleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                <?php foreach ($contentGridStyleOptions as $gridStyleKey => $gridStyleLabel): ?>
+                                    <option value="<?php echo htmlspecialchars($gridStyleKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" <?php echo (string) $aboutLayoutForm['grid_style'] === (string) $gridStyleKey ? 'selected' : ''; ?>>
+                                        <?php echo htmlspecialchars($gridStyleLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                     </option>
-   <?php endforeach; ?>
+                                <?php endforeach; ?>
                             </select>
                             <p class="admin-layout-control__note">Defina se a grade deve respirar mais ou encaixar os cards de forma mais densa.</p>
                         </div>
@@ -2246,8 +2247,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                         class="admin-layout-canvas"
                         data-layout-preview
                         style="--admin-layout-columns:<?php echo (int) $aboutLayoutForm['columns']; ?>; --admin-layout-gap:<?php echo (int) $aboutLayoutForm['gap']; ?>px; --admin-layout-width:<?php echo (int) $aboutLayoutForm['container_width']; ?>px; --admin-layout-min-height:<?php echo (int) $aboutLayoutForm['block_min_height']; ?>px; --admin-layout-flow:<?php echo (string) $aboutLayoutForm['grid_style'] === 'dense' ? 'row dense' : 'row'; ?>;">
-   <?php foreach ($aboutContentBlocks as $block): ?>
-   <?php
+                        <?php foreach ($aboutContentBlocks as $block): ?>
+                            <?php
                             $previewSpan = $contentManager->getWidthSpan((string) ($block['width'] ?? 'span_1'), (int) $aboutLayoutForm['columns']);
                             $previewHeightFactor = $contentManager->getHeightFactor((string) ($block['height'] ?? 'regular'));
                             $previewType = (string) ($block['type'] ?? 'about_text');
@@ -2274,10 +2275,10 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 style="grid-column: span<?php echo $previewSpan; ?> / span<?php echo $previewSpan; ?>; --admin-block-height-factor:<?php echo htmlspecialchars((string) $previewHeightFactor, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>;">
                                 <div class="admin-layout-preview-block__rail">
                                     <button type="button" class="admin-layout-preview-icon is-active" data-layout-mode="preview" aria-label="Visualizar<?php echo htmlspecialchars($previewTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" title="Visualizar bloco">
-       <?php echo admin_icon('eye'); ?>
+                                        <?php echo admin_icon('eye'); ?>
                                     </button>
                                     <button type="button" class="admin-layout-preview-icon" data-layout-mode="edit" aria-label="Editar layout de<?php echo htmlspecialchars($previewTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" title="Editar layout do bloco">
-       <?php echo admin_icon('edit'); ?>
+                                        <?php echo admin_icon('edit'); ?>
                                     </button>
                                 </div>
 
@@ -2299,31 +2300,31 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                     <div class="admin-layout-preview-panel__section">
                                         <span class="admin-layout-preview-panel__label">Largura</span>
                                         <div class="admin-layout-preview-choices" role="group" aria-label="Largura de<?php echo htmlspecialchars($previewTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-           <?php foreach ($aboutVisualWidthOptions as $widthKey => $widthLabel): ?>
+                                            <?php foreach ($aboutVisualWidthOptions as $widthKey => $widthLabel): ?>
                                                 <button
                                                     type="button"
                                                     class="admin-layout-choice<?php echo $previewWidth === (string) $widthKey ? 'is-selected' : ''; ?>"
                                                     data-layout-choice="width"
                                                     data-choice-value="<?php echo htmlspecialchars((string) $widthKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                                                     title="<?php echo htmlspecialchars((string) $widthLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                   <?php echo htmlspecialchars(admin_visual_width_short_label((string) $widthKey), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                                    <?php echo htmlspecialchars(admin_visual_width_short_label((string) $widthKey), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                                 </button>
-           <?php endforeach; ?>
+                                            <?php endforeach; ?>
                                         </div>
                                     </div>
 
                                     <div class="admin-layout-preview-panel__section">
                                         <span class="admin-layout-preview-panel__label">Altura</span>
                                         <div class="admin-layout-preview-choices" role="group" aria-label="Altura de<?php echo htmlspecialchars($previewTitle, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-           <?php foreach ($aboutVisualHeightOptions as $heightKey => $heightLabel): ?>
+                                            <?php foreach ($aboutVisualHeightOptions as $heightKey => $heightLabel): ?>
                                                 <button
                                                     type="button"
                                                     class="admin-layout-choice admin-layout-choice--text<?php echo $previewHeight === (string) $heightKey ? 'is-selected' : ''; ?>"
                                                     data-layout-choice="height"
                                                     data-choice-value="<?php echo htmlspecialchars((string) $heightKey, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                   <?php echo htmlspecialchars((string) $heightLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                                    <?php echo htmlspecialchars((string) $heightLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                                 </button>
-           <?php endforeach; ?>
+                                            <?php endforeach; ?>
                                         </div>
                                     </div>
 
@@ -2333,12 +2334,12 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                         </button>
 
                                         <button type="button" class="admin-layout-preview-action" data-layout-move="-1">
-           <?php echo admin_icon('up'); ?>
+                                            <?php echo admin_icon('up'); ?>
                                             <span>Subir</span>
                                         </button>
 
                                         <button type="button" class="admin-layout-preview-action" data-layout-move="1">
-           <?php echo admin_icon('down'); ?>
+                                            <?php echo admin_icon('down'); ?>
                                             <span>Descer</span>
                                         </button>
 
@@ -2346,7 +2347,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                     </div>
                                 </div>
                             </article>
-   <?php endforeach; ?>
+                        <?php endforeach; ?>
 
                         <article
                             class="admin-layout-preview-block admin-layout-preview-block--draft"
@@ -2357,7 +2358,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 <span class="admin-layout-preview-block__type">Rascunho atual</span>
                                 <strong class="admin-layout-preview-block__title" data-layout-draft-title><?php echo htmlspecialchars((string) ($contentForm['name'] !== '' ? $contentForm['name'] : 'Bloco em edição'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
                                 <span class="admin-layout-preview-block__meta" data-layout-draft-meta>
-   <?php echo htmlspecialchars($contentManager->getWidthLabel((string) $contentForm['width']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?> Â·<?php echo htmlspecialchars($contentManager->getHeightLabel((string) $contentForm['height']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                    <?php echo htmlspecialchars($contentManager->getWidthLabel((string) $contentForm['width']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?> Â·<?php echo htmlspecialchars($contentManager->getHeightLabel((string) $contentForm['height']), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                 </span>
                                 <p class="admin-layout-preview-block__body">Este card responde ao formulario acima e mostra como o bloco atual vai entrar na composição quando for salvo.</p>
                                 <div class="admin-layout-preview-block__mockup" aria-hidden="true">
@@ -2370,7 +2371,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                     </div>
                 </div>
             </article>
- <?php endif; ?>
+        <?php endif; ?>
 
         <article class="panel-card admin-workspace__full">
             <div class="panel-card-header">
@@ -2381,9 +2382,9 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 </div>
             </div>
 
-  <?php if (empty($contentBlocks)): ?>
+            <?php if (empty($contentBlocks)): ?>
                 <p class="admin-empty">Nenhum bloco de conteúdo cadastrado ainda.</p>
-  <?php else: ?>
+            <?php else: ?>
                 <div class="admin-table-wrap">
                     <table class="admin-table">
                         <thead>
@@ -2397,8 +2398,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                             </tr>
                         </thead>
                         <tbody>
-   <?php foreach ($contentBlocks as $block): ?>
-   <?php
+                            <?php foreach ($contentBlocks as $block): ?>
+                                <?php
                                 $blockId = (string) ($block['id'] ?? '');
                                 $blockStatus = (string) ($block['status'] ?? 'published');
                                 $blockStatusClass = $blockStatus === 'published' ? 'admin-pill--published' : 'admin-pill--hidden';
@@ -2412,21 +2413,21 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                     </td>
                                     <td>
                                         <span class="admin-pill admin-pill--page">
-           <?php echo htmlspecialchars($contentManager->getPageLabel((string) ($block['page_key'] ?? 'contact')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                            <?php echo htmlspecialchars($contentManager->getPageLabel((string) ($block['page_key'] ?? 'contact')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                         </span>
                                     </td>
                                     <td>
                                         <div class="admin-meta"><?php echo htmlspecialchars($contentManager->getTypeLabel((string) ($block['type'] ?? 'text_card')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
-       <?php if ((string) ($block['type'] ?? '') === 'map_embed'): ?>
+                                        <?php if ((string) ($block['type'] ?? '') === 'map_embed'): ?>
                                             <div class="admin-meta">Embed configurado</div>
-       <?php endif; ?>
-       <?php if ((string) ($block['type'] ?? '') === 'about_media'): ?>
+                                        <?php endif; ?>
+                                        <?php if ((string) ($block['type'] ?? '') === 'about_media'): ?>
                                             <div class="admin-meta">Mídia configurada</div>
-       <?php endif; ?>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <span class="admin-pill<?php echo htmlspecialchars($blockStatusClass, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-           <?php echo htmlspecialchars($contentManager->getStatusLabel($blockStatus), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                            <?php echo htmlspecialchars($contentManager->getStatusLabel($blockStatus), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                                         </span>
                                         <div class="admin-meta">Posição:<?php echo (int) ($block['position'] ?? 0); ?></div>
                                         <div class="admin-meta">Largura:<?php echo htmlspecialchars($contentManager->getWidthLabel((string) ($block['width'] ?? 'half')), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></div>
@@ -2446,11 +2447,11 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                         </div>
                                     </td>
                                 </tr>
-   <?php endforeach; ?>
+                            <?php endforeach; ?>
                         </tbody>
                     </table>
                 </div>
-  <?php endif; ?>
+            <?php endif; ?>
         </article>
     </section>
 </main>
@@ -2487,7 +2488,7 @@ foreach ($contentBlocks as $block) {
 }
 ?>
 <script id="content-block-payloads" type="application/json">
-<?php echo json_encode($contentBlockPayloads, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
+    <?php echo json_encode($contentBlockPayloads, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?>
 </script>
 <script>
     (function() {

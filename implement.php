@@ -50,7 +50,7 @@ function thematic_render_contact_items(array $items): void
     if (empty($items)) {
         return;
     }
-    ?>
+?>
     <div class="public-contact-list">
         <?php foreach ($items as $item): ?>
             <?php
@@ -76,7 +76,7 @@ function thematic_render_contact_items(array $items): void
             </div>
         <?php endforeach; ?>
     </div>
-    <?php
+<?php
 }
 
 function thematic_block_classes(array $block): string
@@ -116,11 +116,10 @@ function thematic_block_style(array $block, ContentBlockManager $contentManager,
 function thematic_render_block(array $block, ?string $headingTag, ContentBlockManager $contentManager, array $layout): void
 {
     $type = (string) ($block['type'] ?? 'thematic_topic');
-    ?>
+?>
     <article
         class="<?php echo htmlspecialchars(thematic_block_classes($block), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-        style="<?php echo htmlspecialchars(thematic_block_style($block, $contentManager, $layout), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-    >
+        style="<?php echo htmlspecialchars(thematic_block_style($block, $contentManager, $layout), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
         <?php if (($block['eyebrow'] ?? '') !== ''): ?>
             <?php if ($type === 'thematic_topic'): ?>
                 <span class="public-topic-tag"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
@@ -149,7 +148,7 @@ function thematic_render_block(array $block, ?string $headingTag, ContentBlockMa
             </div>
         <?php endif; ?>
     </article>
-    <?php
+<?php
 }
 
 $gridStyleClass = (string) ($thematicLayout['grid_style'] ?? 'standard') === 'dense'

@@ -84,11 +84,10 @@ function contact_block_style(array $block, ContentBlockManager $contentManager, 
 function contact_render_block(array $block, string $headingTag, bool $hasContext, string $projectInterest, string $categoryInterest, ContentBlockManager $contentManager, array $layout): void
 {
     $blockType = (string) ($block['type'] ?? 'text_card');
-    ?>
+?>
     <article
         class="<?php echo htmlspecialchars(contact_block_classes($block), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-        style="<?php echo htmlspecialchars(contact_block_style($block, $contentManager, $layout), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-    >
+        style="<?php echo htmlspecialchars(contact_block_style($block, $contentManager, $layout), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
         <?php if (($block['eyebrow'] ?? '') !== ''): ?>
             <p class="eyebrow content-block-eyebrow"><?php echo htmlspecialchars((string) $block['eyebrow'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
         <?php endif; ?>
@@ -146,8 +145,7 @@ function contact_render_block(array $block, string $headingTag, bool $hasContext
                 loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade"
                 allowfullscreen=""
-                title="<?php echo htmlspecialchars((string) ($block['title'] ?? 'Mapa do CEPIN-CIS'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-            ></iframe>
+                title="<?php echo htmlspecialchars((string) ($block['title'] ?? 'Mapa do CEPIN-CIS'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"></iframe>
         <?php endif; ?>
 
         <?php if ($blockType !== 'map_embed' && (string) ($block['cta_label'] ?? '') !== '' && (string) ($block['cta_url'] ?? '') !== ''): ?>
@@ -158,7 +156,7 @@ function contact_render_block(array $block, string $headingTag, bool $hasContext
             </div>
         <?php endif; ?>
     </article>
-    <?php
+<?php
 }
 
 $gridStyleClass = (string) ($contactLayout['grid_style'] ?? 'standard') === 'dense'
@@ -202,8 +200,7 @@ include_once 'includes/header.php';
                             data-content-block-toggle
                             aria-expanded="false"
                             aria-controls="contactOverflowBlocks"
-                            style="grid-column: span <?php echo (int) $toggleSpan; ?> / span <?php echo (int) $toggleSpan; ?>;"
-                        >
+                            style="grid-column: span <?php echo (int) $toggleSpan; ?> / span <?php echo (int) $toggleSpan; ?>;">
                             <span class="content-block-toggle__icon" aria-hidden="true">+</span>
                             <span class="content-block-toggle__label">Ver mais blocos</span>
                             <span class="content-block-toggle__count"><?php echo count($overflowContactBlocks); ?> bloco(s) extra(s)</span>

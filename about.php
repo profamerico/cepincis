@@ -69,7 +69,7 @@ function about_render_contact_items(array $items): void
     if (empty($items)) {
         return;
     }
-    ?>
+?>
     <div class="public-contact-list">
         <?php foreach ($items as $item): ?>
             <?php
@@ -176,11 +176,10 @@ function about_render_block(array $block, ?string $headingTag, ContentBlockManag
         if ($monitorAlt === '') {
             $monitorAlt = 'Monitor ilustrando a infraestrutura do CEPIN-CIS';
         }
-        ?>
+    ?>
         <section
             class="<?php echo htmlspecialchars(about_block_classes($block), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-            style="grid-column: span <?php echo $span; ?> / span <?php echo $span; ?>;"
-        >
+            style="grid-column: span <?php echo $span; ?> / span <?php echo $span; ?>;">
             <div class="infraestruturas-inner">
                 <<?php echo $headingTag; ?> class="titulo-infraestruturas-sobre">
                     <?php echo htmlspecialchars((string) ($block['title'] ?? 'Infraestruturas'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
@@ -190,8 +189,7 @@ function about_render_block(array $block, ?string $headingTag, ContentBlockManag
                     <img
                         src="<?php echo htmlspecialchars($monitorImage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         alt="<?php echo htmlspecialchars($monitorAlt, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                        class="monitor"
-                    >
+                        class="monitor">
 
                     <div class="infraestruturas-copy">
                         <?php if ((string) ($block['body'] ?? '') !== ''): ?>
@@ -225,29 +223,26 @@ function about_render_block(array $block, ?string $headingTag, ContentBlockManag
                 </div>
             </div>
         </section>
-        <?php
+    <?php
         return;
     }
 
     ?>
     <article
         class="<?php echo htmlspecialchars(about_block_classes($block), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-        style="grid-column: span <?php echo $span; ?> / span <?php echo $span; ?>;"
-    >
+        style="grid-column: span <?php echo $span; ?> / span <?php echo $span; ?>;">
         <?php if ($type === 'about_media'): ?>
             <img
                 class="public-image-card__asset public-image-card__asset--light"
                 src="<?php echo htmlspecialchars((string) ($block['media_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                alt="<?php echo htmlspecialchars((string) ($block['media_alt'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-            >
+                alt="<?php echo htmlspecialchars((string) ($block['media_alt'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
 
             <?php if ((string) ($block['media_dark_url'] ?? '') !== ''): ?>
                 <img
                     class="public-image-card__asset public-image-card__asset--dark"
                     src="<?php echo htmlspecialchars((string) ($block['media_dark_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                     alt=""
-                    aria-hidden="true"
-                >
+                    aria-hidden="true">
             <?php endif; ?>
         <?php else: ?>
             <?php if ((string) ($block['eyebrow'] ?? '') !== ''): ?>
@@ -277,7 +272,7 @@ function about_render_block(array $block, ?string $headingTag, ContentBlockManag
             <?php endif; ?>
         <?php endif; ?>
     </article>
-    <?php
+<?php
 }
 
 $gridStyleClass = (string) ($aboutLayout['grid_style'] ?? 'standard') === 'dense'
@@ -291,7 +286,7 @@ $layoutStyle = sprintf(
     (int) ($aboutLayout['container_width'] ?? 1219.9999999),
     (int) ($aboutLayout['block_padding'] ?? 32),
     (int) ($aboutLayout['block_min_height'] ?? 210)
-);  
+);
 
 include_once 'includes/header.php';
 ?>

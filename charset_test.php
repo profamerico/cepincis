@@ -59,7 +59,6 @@ try {
     }
 
     echo "</table>";
-
 } catch (Exception $e) {
     echo "Erro: " . $e->getMessage();
 }

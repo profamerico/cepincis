@@ -1,10 +1,12 @@
 <?php
 
-class Database {
+class Database
+{
 
     private $conn;
 
-    public function getConnection() {
+    public function getConnection()
+    {
 
         $this->conn = null;
         $this->loadEnvironment();
@@ -40,11 +42,9 @@ class Database {
             );
 
             $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        } catch(PDOException $e) {
+        } catch (PDOException $e) {
 
             die("Erro de conexão: " . $e->getMessage());
-
         }
 
         return $this->conn;

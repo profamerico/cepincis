@@ -69,8 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         id="identifier"
                         name="identifier"
                         value="<?php echo htmlspecialchars($identifier, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                        required
-                    >
+                        required>
                 </div>
 
                 <button type="submit" class="dashboard-btn auth-submit">Gerar link</button>

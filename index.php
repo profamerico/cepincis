@@ -334,275 +334,275 @@ include_once 'includes/header.php';
                     <div class="indicadores-paginacao-carrossel" data-carousel-indicators></div>
                 </div>
             </section>
-                    <div class="navegacao-carrossel-publicacoes">
-                        <button
-                            type="button"
-                            class="botao-seta-carrossel"
-                            data-carousel-prev
-                            aria-label="Projeto anterior"
-                            <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>>
-                            &#8592;
-                        </button>
-                        <button
-                            type="button"
-                            class="botao-seta-carrossel"
-                            data-carousel-next
-                            aria-label="Próximo projeto"
-                            <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>>
-                            &#8594;
-                        </button>
-                    </div>
-                    <div class="indicadores-paginacao-carrossel" data-carousel-indicators></div>
-                </div>
-            </section>
+            <div class="navegacao-carrossel-publicacoes">
+                <button
+                    type="button"
+                    class="botao-seta-carrossel"
+                    data-carousel-prev
+                    aria-label="Projeto anterior"
+                    <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>>
+                    &#8592;
+                </button>
+                <button
+                    type="button"
+                    class="botao-seta-carrossel"
+                    data-carousel-next
+                    aria-label="Próximo projeto"
+                    <?php echo count($homepageProjects) <= 1 ? 'disabled' : ''; ?>>
+                    &#8594;
+                </button>
+            </div>
+            <div class="indicadores-paginacao-carrossel" data-carousel-indicators></div>
+        </div>
+        </section>
 
-            <main class="page-shell public-home-sections">
-                <section id="sobre" class="public-story-grid">
-                    <article class="panel-card public-copy-card">
-                        <h2><?php echo htmlspecialchars((string) ($homeAboutTextBlock['title'] ?? 'Sobre'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
-
-                        <div class="mobile-collapse-card" data-mobile-collapse>
-                            <button type="button" class="mobile-collapse-toggle" data-mobile-collapse-toggle aria-expanded="false">
-                                <span>Ler resumo</span>
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </button>
-
-                            <div class="mobile-collapse-content" data-mobile-collapse-content>
-                                <div class="mobile-collapse-inner" data-mobile-collapse-inner>
-                                    <?php echo home_render_body((string) ($homeAboutTextBlock['body'] ?? '')); ?>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="hero-actions">
-                            <a class="dashboard-btn" href="<?php echo htmlspecialchars($homeAboutButtonUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                                <?php echo htmlspecialchars($homeAboutButtonLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
-                            </a>
-                        </div>
-                    </article>
-
-                    <article class="panel-card public-researchers-panel">
-                        <div class="panel-card-header">
-                            <div>
-                                <p class="eyebrow">Equipe vinculada</p>
-                                <h2>Pesquisadores e administradores</h2>
-                            </div>
-                        </div>
-
-                        <?php if (empty($homepageResearchUsers)): ?>
-                            <p class="admin-empty">Nenhum pesquisador ou administrador público cadastrado ainda.</p>
-                        <?php else: ?>
-                            <div class="researcher-directory">
-                                <?php foreach ($homepageResearchUsers as $researchUser): ?>
-                                    <?php
-                                    $researchUserId = (int) ($researchUser['id'] ?? 0);
-                                    $researchProfile = $homepageProfiles[$researchUserId] ?? [];
-                                    $researchPhoto = trim((string) ($researchProfile['photo_path'] ?? ''));
-                                    $researchBio = trim((string) ($researchProfile['bio'] ?? ''));
-                                    $researchName = trim((string) ($researchUser['fullname'] ?? $researchUser['username'] ?? 'Pesquisador'));
-                                    ?>
-                                    <details class="researcher-directory-item">
-                                        <summary>
-                                            <span><?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
-                                            <small><?php echo htmlspecialchars($homeAuth->getRoleLabel($researchUser), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
-                                        </summary>
-
-                                        <div class="researcher-directory-profile">
-                                            <?php if ($researchPhoto !== ''): ?>
-                                                <img src="<?php echo htmlspecialchars($researchPhoto, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                                            <?php else: ?>
-                                                <span class="researcher-directory-initial"><?php echo htmlspecialchars(strtoupper(substr($researchName, 0, 1)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
-                                            <?php endif; ?>
-
-                                            <div>
-                                                <h3><?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
-                                                <p><?php echo htmlspecialchars($researchBio !== '' ? $researchBio : 'Biografia ainda não cadastrada.', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
-
-                                                <div class="profile-public-links profile-public-links--compact">
-                                                    <?php if (!empty($researchProfile['linkedin_url'])): ?>
-                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['linkedin_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></a>
-                                                    <?php else: ?>
-                                                        <span class="profile-public-link-disabled"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></span>
-                                                    <?php endif; ?>
-                                                    <?php if (!empty($researchProfile['integra_ifsp_url'])): ?>
-                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['integra_ifsp_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></a>
-                                                    <?php else: ?>
-                                                        <span class="profile-public-link-disabled"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></span>
-                                                    <?php endif; ?>
-                                                    <?php if (!empty($researchProfile['lattes_url'])): ?>
-                                                        <a href="<?php echo htmlspecialchars((string) $researchProfile['lattes_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></a>
-                                                    <?php else: ?>
-                                                        <span class="profile-public-link-disabled"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></span>
-                                                    <?php endif; ?>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </details>
-                                <?php endforeach; ?>
-                            </div>
-                        <?php endif; ?>
-                    </article>
-                </section>
-
-                <section id="implementacao" class="panel-card public-section-card">
-                    <div class="panel-card-header">
-                        <div>
-                            <h2>Áreas Temáticas</h2>
-                        </div>
-
-                        <a class="dashboard-btn dashboard-btn--ghost" href="./implement.php">Ver todas as áreas</a>
-                    </div>
-
-                    <p class="panel-copy">As Áreas Temáticas, nas quais serão alinhados os projetos, foram definidas para orientar as atividades do CEPIN-CIS e compreendem:</p>
-
-                    <div class="public-topic-grid public-topic-grid--home">
-                        <?php foreach ($implementationHighlights as $highlight): ?>
-                            <article class="public-topic-card">
-                                <span class="public-topic-tag"><?php echo htmlspecialchars((string) ($highlight['tag'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
-                                <h3><?php echo htmlspecialchars($highlight['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
-
-                                <div class="mobile-collapse-card mobile-collapse-card--compact" data-mobile-collapse>
-                                    <button type="button" class="mobile-collapse-toggle mobile-collapse-toggle--compact" data-mobile-collapse-toggle aria-expanded="false">
-                                        <span>Ver resumo</span>
-                                        <i class="fa-solid fa-chevron-down"></i>
-                                    </button>
-
-                                    <div class="mobile-collapse-content mobile-collapse-content--compact" data-mobile-collapse-content>
-                                        <div class="mobile-collapse-inner" data-mobile-collapse-inner>
-                                            <p><?php echo htmlspecialchars($highlight['description'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </article>
-                        <?php endforeach; ?>
-                    </div>
-                </section>
-
-                <section id="parceiros" class="panel-card public-partners-panel">
-                    <div class="panel-card-header">
-                        <div>
-                            <h2>Parceiros</h2>
-                        </div>
-                    </div>
-
-                    <?php if (!empty($homepagePartners)): ?>
-                        <div class="public-partners-stage" data-partners-carousel>
-                            <div class="carousel-container">
-                                <button class="nav-arrow left" type="button" aria-label="Parceiro anterior" data-partner-prev <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>&#8249;</button>
-                                <div class="carousel-track">
-                                    <?php foreach ($homepagePartners as $index => $partner): ?>
-                                        <div
-                                            class="card"
-                                            data-index="<?php echo (int) $index; ?>"
-                                            data-partner-card
-                                            data-partner-name="<?php echo htmlspecialchars((string) ($partner['name'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                                            data-partner-description="<?php echo htmlspecialchars((string) ($partner['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                                            <img
-                                                src="<?php echo htmlspecialchars((string) ($partner['image_path'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                                                alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                                        </div>
-                                    <?php endforeach; ?>
-                                </div>
-                                <button class="nav-arrow right" type="button" aria-label="Próximo parceiro" data-partner-next <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>&#8250;</button>
-                            </div>
-
-                            <div class="member-info">
-                                <h2 class="member-name" data-partner-display-name><?php echo htmlspecialchars((string) ($homepagePartners[0]['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
-                                <p class="member-role" data-partner-display-description><?php echo htmlspecialchars((string) ($homepagePartners[0]['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
-                            </div>
-
-                            <div class="dots">
-                                <?php foreach ($homepagePartners as $index => $partner): ?>
-                                    <div class="dot<?php echo $index === 0 ? ' active' : ''; ?>" data-index="<?php echo (int) $index; ?>" data-partner-dot></div>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
-                    <?php else: ?>
-                        <div class="public-partners-empty">
-                            <p>Nenhum parceiro foi publicado no carrossel ainda. Assim que a equipe cadastrar novas instituições no painel mestre, elas aparecerão aqui automaticamente.</p>
-                        </div>
-                    <?php endif; ?>
-                </section>
-
-                <section id="regulamento" class="panel-card public-simple-card">
-                    <h2>Regulamento</h2>
+        <main class="page-shell public-home-sections">
+            <section id="sobre" class="public-story-grid">
+                <article class="panel-card public-copy-card">
+                    <h2><?php echo htmlspecialchars((string) ($homeAboutTextBlock['title'] ?? 'Sobre'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
 
                     <div class="mobile-collapse-card" data-mobile-collapse>
                         <button type="button" class="mobile-collapse-toggle" data-mobile-collapse-toggle aria-expanded="false">
-                            <span>Ler texto</span>
+                            <span>Ler resumo</span>
                             <i class="fa-solid fa-chevron-down"></i>
                         </button>
 
                         <div class="mobile-collapse-content" data-mobile-collapse-content>
                             <div class="mobile-collapse-inner" data-mobile-collapse-inner>
-                                <p>O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento à pesquisa aplicada, à inovação tecnológica e à reflexão crítica sobre os desafios contemporâneos das cidades.</p>
-                                <p>O regulamento estabelece as diretrizes para a participação de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensão que dialoguem com as áreas temáticas do Centro, além de abrir espaço para a colaboração de pesquisadores externos.</p>
+                                <?php echo home_render_body((string) ($homeAboutTextBlock['body'] ?? '')); ?>
                             </div>
                         </div>
                     </div>
 
                     <div class="hero-actions">
-                        <a class="dashboard-btn" href="<?php echo htmlspecialchars($regulationUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener">Clique aqui para ver o regulamento</a>
+                        <a class="dashboard-btn" href="<?php echo htmlspecialchars($homeAboutButtonUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                            <?php echo htmlspecialchars($homeAboutButtonLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                        </a>
                     </div>
-                </section>
+                </article>
 
-                <section id="contato" class="public-contact-grid">
-                    <article class="panel-card public-copy-card">
-                        <h2><?php echo htmlspecialchars((string) ($homeContactInfoBlock['title'] ?? 'Contato'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+                <article class="panel-card public-researchers-panel">
+                    <div class="panel-card-header">
+                        <div>
+                            <p class="eyebrow">Equipe vinculada</p>
+                            <h2>Pesquisadores e administradores</h2>
+                        </div>
+                    </div>
 
-                        <?php echo home_render_body((string) ($homeContactInfoBlock['body'] ?? '')); ?>
+                    <?php if (empty($homepageResearchUsers)): ?>
+                        <p class="admin-empty">Nenhum pesquisador ou administrador público cadastrado ainda.</p>
+                    <?php else: ?>
+                        <div class="researcher-directory">
+                            <?php foreach ($homepageResearchUsers as $researchUser): ?>
+                                <?php
+                                $researchUserId = (int) ($researchUser['id'] ?? 0);
+                                $researchProfile = $homepageProfiles[$researchUserId] ?? [];
+                                $researchPhoto = trim((string) ($researchProfile['photo_path'] ?? ''));
+                                $researchBio = trim((string) ($researchProfile['bio'] ?? ''));
+                                $researchName = trim((string) ($researchUser['fullname'] ?? $researchUser['username'] ?? 'Pesquisador'));
+                                ?>
+                                <details class="researcher-directory-item">
+                                    <summary>
+                                        <span><?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                        <small><?php echo htmlspecialchars($homeAuth->getRoleLabel($researchUser), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
+                                    </summary>
 
-                        <?php if (!empty($homeContactInfoBlock['items'])): ?>
-                            <div class="public-contact-list">
-                                <?php foreach ($homeContactInfoBlock['items'] as $item): ?>
-                                    <?php
-                                    $itemLabel = trim((string) ($item['label'] ?? ''));
-                                    $itemValue = trim((string) ($item['value'] ?? ''));
-                                    $itemUrl = trim((string) ($item['url'] ?? ''));
-                                    if ($itemLabel === '' && $itemValue === '') {
-                                        continue;
-                                    }
-                                    ?>
-                                    <div class="public-contact-item">
-                                        <?php if ($itemLabel !== ''): ?>
-                                            <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
-                                        <?php endif; ?>
-
-                                        <?php if ($itemUrl !== ''): ?>
-                                            <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                                                <?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
-                                            </a>
+                                    <div class="researcher-directory-profile">
+                                        <?php if ($researchPhoto !== ''): ?>
+                                            <img src="<?php echo htmlspecialchars($researchPhoto, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                         <?php else: ?>
-                                            <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                            <span class="researcher-directory-initial"><?php echo htmlspecialchars(strtoupper(substr($researchName, 0, 1)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                         <?php endif; ?>
+
+                                        <div>
+                                            <h3><?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
+                                            <p><?php echo htmlspecialchars($researchBio !== '' ? $researchBio : 'Biografia ainda não cadastrada.', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+
+                                            <div class="profile-public-links profile-public-links--compact">
+                                                <?php if (!empty($researchProfile['linkedin_url'])): ?>
+                                                    <a href="<?php echo htmlspecialchars((string) $researchProfile['linkedin_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></a>
+                                                <?php else: ?>
+                                                    <span class="profile-public-link-disabled"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></span>
+                                                <?php endif; ?>
+                                                <?php if (!empty($researchProfile['integra_ifsp_url'])): ?>
+                                                    <a href="<?php echo htmlspecialchars((string) $researchProfile['integra_ifsp_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></a>
+                                                <?php else: ?>
+                                                    <span class="profile-public-link-disabled"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></span>
+                                                <?php endif; ?>
+                                                <?php if (!empty($researchProfile['lattes_url'])): ?>
+                                                    <a href="<?php echo htmlspecialchars((string) $researchProfile['lattes_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></a>
+                                                <?php else: ?>
+                                                    <span class="profile-public-link-disabled"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></span>
+                                                <?php endif; ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </details>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </article>
+            </section>
+
+            <section id="implementacao" class="panel-card public-section-card">
+                <div class="panel-card-header">
+                    <div>
+                        <h2>Áreas Temáticas</h2>
+                    </div>
+
+                    <a class="dashboard-btn dashboard-btn--ghost" href="./implement.php">Ver todas as áreas</a>
+                </div>
+
+                <p class="panel-copy">As Áreas Temáticas, nas quais serão alinhados os projetos, foram definidas para orientar as atividades do CEPIN-CIS e compreendem:</p>
+
+                <div class="public-topic-grid public-topic-grid--home">
+                    <?php foreach ($implementationHighlights as $highlight): ?>
+                        <article class="public-topic-card">
+                            <span class="public-topic-tag"><?php echo htmlspecialchars((string) ($highlight['tag'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                            <h3><?php echo htmlspecialchars($highlight['title'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
+
+                            <div class="mobile-collapse-card mobile-collapse-card--compact" data-mobile-collapse>
+                                <button type="button" class="mobile-collapse-toggle mobile-collapse-toggle--compact" data-mobile-collapse-toggle aria-expanded="false">
+                                    <span>Ver resumo</span>
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </button>
+
+                                <div class="mobile-collapse-content mobile-collapse-content--compact" data-mobile-collapse-content>
+                                    <div class="mobile-collapse-inner" data-mobile-collapse-inner>
+                                        <p><?php echo htmlspecialchars($highlight['description'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+
+            <section id="parceiros" class="panel-card public-partners-panel">
+                <div class="panel-card-header">
+                    <div>
+                        <h2>Parceiros</h2>
+                    </div>
+                </div>
+
+                <?php if (!empty($homepagePartners)): ?>
+                    <div class="public-partners-stage" data-partners-carousel>
+                        <div class="carousel-container">
+                            <button class="nav-arrow left" type="button" aria-label="Parceiro anterior" data-partner-prev <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>&#8249;</button>
+                            <div class="carousel-track">
+                                <?php foreach ($homepagePartners as $index => $partner): ?>
+                                    <div
+                                        class="card"
+                                        data-index="<?php echo (int) $index; ?>"
+                                        data-partner-card
+                                        data-partner-name="<?php echo htmlspecialchars((string) ($partner['name'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                                        data-partner-description="<?php echo htmlspecialchars((string) ($partner['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                        <img
+                                            src="<?php echo htmlspecialchars((string) ($partner['image_path'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                                            alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                     </div>
                                 <?php endforeach; ?>
                             </div>
-                        <?php endif; ?>
-
-                        <div class="hero-actions">
-                            <a class="dashboard-btn" href="./contact.php">Abrir contato</a>
-                            <a class="dashboard-btn dashboard-btn--ghost" href="<?php echo htmlspecialchars($homeContactSecondaryUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                                <?php echo htmlspecialchars($homeContactSecondaryLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
-                            </a>
+                            <button class="nav-arrow right" type="button" aria-label="Próximo parceiro" data-partner-next <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>&#8250;</button>
                         </div>
-                    </article>
 
-                    <article class="panel-card public-map-card">
-                        <h2><?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+                        <div class="member-info">
+                            <h2 class="member-name" data-partner-display-name><?php echo htmlspecialchars((string) ($homepagePartners[0]['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+                            <p class="member-role" data-partner-display-description><?php echo htmlspecialchars((string) ($homepagePartners[0]['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+                        </div>
 
-                        <iframe
-                            class="public-map-frame"
-                            src="<?php echo htmlspecialchars((string) ($homeContactMapBlock['embed_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                            loading="lazy"
-                            referrerpolicy="no-referrer-when-downgrade"
-                            allowfullscreen=""
-                            title="<?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa do IFSP Campus Caraguatatuba'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"></iframe>
-                    </article>
-                </section>
-            </main>
-        </div>
+                        <div class="dots">
+                            <?php foreach ($homepagePartners as $index => $partner): ?>
+                                <div class="dot<?php echo $index === 0 ? ' active' : ''; ?>" data-index="<?php echo (int) $index; ?>" data-partner-dot></div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <div class="public-partners-empty">
+                        <p>Nenhum parceiro foi publicado no carrossel ainda. Assim que a equipe cadastrar novas instituições no painel mestre, elas aparecerão aqui automaticamente.</p>
+                    </div>
+                <?php endif; ?>
+            </section>
+
+            <section id="regulamento" class="panel-card public-simple-card">
+                <h2>Regulamento</h2>
+
+                <div class="mobile-collapse-card" data-mobile-collapse>
+                    <button type="button" class="mobile-collapse-toggle" data-mobile-collapse-toggle aria-expanded="false">
+                        <span>Ler texto</span>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+
+                    <div class="mobile-collapse-content" data-mobile-collapse-content>
+                        <div class="mobile-collapse-inner" data-mobile-collapse-inner>
+                            <p>O regulamento do Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis (CEPIN-CIS) foi aprovado em 2024 pelo Conselho de Campus (CONCAM) do IFSP Caraguatatuba. Este marco normativo consolida a missão do CEPIN-CIS como espaço de fomento à pesquisa aplicada, à inovação tecnológica e à reflexão crítica sobre os desafios contemporâneos das cidades.</p>
+                            <p>O regulamento estabelece as diretrizes para a participação de servidores e discentes vinculados a projetos de ensino, pesquisa ou extensão que dialoguem com as áreas temáticas do Centro, além de abrir espaço para a colaboração de pesquisadores externos.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-actions">
+                    <a class="dashboard-btn" href="<?php echo htmlspecialchars($regulationUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener">Clique aqui para ver o regulamento</a>
+                </div>
+            </section>
+
+            <section id="contato" class="public-contact-grid">
+                <article class="panel-card public-copy-card">
+                    <h2><?php echo htmlspecialchars((string) ($homeContactInfoBlock['title'] ?? 'Contato'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+
+                    <?php echo home_render_body((string) ($homeContactInfoBlock['body'] ?? '')); ?>
+
+                    <?php if (!empty($homeContactInfoBlock['items'])): ?>
+                        <div class="public-contact-list">
+                            <?php foreach ($homeContactInfoBlock['items'] as $item): ?>
+                                <?php
+                                $itemLabel = trim((string) ($item['label'] ?? ''));
+                                $itemValue = trim((string) ($item['value'] ?? ''));
+                                $itemUrl = trim((string) ($item['url'] ?? ''));
+                                if ($itemLabel === '' && $itemValue === '') {
+                                    continue;
+                                }
+                                ?>
+                                <div class="public-contact-item">
+                                    <?php if ($itemLabel !== ''): ?>
+                                        <strong><?php echo htmlspecialchars($itemLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></strong>
+                                    <?php endif; ?>
+
+                                    <?php if ($itemUrl !== ''): ?>
+                                        <a href="<?php echo htmlspecialchars($itemUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                                            <?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                                        </a>
+                                    <?php else: ?>
+                                        <span><?php echo htmlspecialchars($itemValue, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="hero-actions">
+                        <a class="dashboard-btn" href="./contact.php">Abrir contato</a>
+                        <a class="dashboard-btn dashboard-btn--ghost" href="<?php echo htmlspecialchars($homeContactSecondaryUrl, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
+                            <?php echo htmlspecialchars($homeContactSecondaryLabel, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
+                        </a>
+                    </div>
+                </article>
+
+                <article class="panel-card public-map-card">
+                    <h2><?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
+
+                    <iframe
+                        class="public-map-frame"
+                        src="<?php echo htmlspecialchars((string) ($homeContactMapBlock['embed_url'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
+                        loading="lazy"
+                        referrerpolicy="no-referrer-when-downgrade"
+                        allowfullscreen=""
+                        title="<?php echo htmlspecialchars((string) ($homeContactMapBlock['title'] ?? 'Mapa do IFSP Campus Caraguatatuba'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"></iframe>
+                </article>
+            </section>
+        </main>
     </div>
+</div>
 </div>
 
 <?php include_once 'includes/footer.php'; ?>

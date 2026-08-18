@@ -51,8 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <?php
- include_once 'includes/header.php';
-;
+include_once 'includes/header.php';;
 ?>
 
 <main class="page-shell auth-shell">
@@ -97,8 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         name="username"
                         value="<?php echo htmlspecialchars($username_preenchido, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                         placeholder="Seu usuário"
-                        required
-                    >
+                        required>
                 </div>
 
                 <div class="form-group">

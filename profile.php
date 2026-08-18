@@ -183,8 +183,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                         type="text"
                         id="username"
                         value="<?php echo htmlspecialchars((string) $user['username'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                        disabled
-                    >
+                        disabled>
                 </div>
 
                 <div class="form-group">
@@ -194,8 +193,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                         id="fullname"
                         name="fullname"
                         value="<?php echo htmlspecialchars((string) ($user['fullname'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                        required
-                    >
+                        required>
                 </div>
 
                 <div class="form-group">
@@ -204,8 +202,7 @@ $profilePhotoPath = trim((string) ($profileExtras['photo_path'] ?? ''));
                         type="email"
                         id="email"
                         name="email"
-                        value="<?php echo htmlspecialchars((string) ($user['email'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                    >
+                        value="<?php echo htmlspecialchars((string) ($user['email'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                 </div>
 
                 <div class="form-group">
