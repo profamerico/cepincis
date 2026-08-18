@@ -216,12 +216,12 @@ include_once 'includes/header.php';
 <div class="js-cont">
     <div class="js-scroll">
         <div class="full-screen">
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             <section class="hero">
                 <h1>CEPIN-CIS</h1>
                 <h2>Centro de Pesquisa e Inovação em Cidades Inteligentes</h2>
@@ -231,12 +231,12 @@ include_once 'includes/header.php';
                 </div>
             </section>
 
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             <section class="secao-publicacoes-recentes">
                 <div class="cabecalho-publicacoes cabecalho-publicacoes--home">
                     <div>
@@ -369,12 +369,12 @@ include_once 'includes/header.php';
         </section>
 
         <main class="page-shell public-home-sections">
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             <section id="sobre" class="public-story-grid">
                 <article class="panel-card public-copy-card">
                     <h2><?php echo htmlspecialchars((string) ($homeAboutTextBlock['title'] ?? 'Sobre'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
@@ -463,9 +463,9 @@ include_once 'includes/header.php';
             </section>
 
 
-            
 
-            
+
+
             <section id="implementacao" class="panel-card public-section-card">
                 <div class="panel-card-header">
                     <div>
@@ -500,12 +500,12 @@ include_once 'includes/header.php';
                 </div>
             </section>
 
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             <section id="parceiros" class="panel-card public-partners-panel">
                 <div class="panel-card-header">
                     <div>
@@ -552,12 +552,11 @@ include_once 'includes/header.php';
                 <?php endif; ?>
             </section>
 
-            
-            
-            
-            
-            
-            
+
+
+
+
+
             <section id="regulamento" class="panel-card public-simple-card">
                 <h2>Regulamento</h2>
 
@@ -580,12 +579,12 @@ include_once 'includes/header.php';
                 </div>
             </section>
 
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
             <section id="contato" class="public-contact-grid">
                 <article class="panel-card public-copy-card">
                     <h2><?php echo htmlspecialchars((string) ($homeContactInfoBlock['title'] ?? 'Contato'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
@@ -595,6 +594,7 @@ include_once 'includes/header.php';
                     <?php if (!empty($homeContactInfoBlock['items'])): ?>
                         <div class="public-contact-list">
                             <?php foreach ($homeContactInfoBlock['items'] as $item): ?>
+
                                 <?php
                                 $itemLabel = trim((string) ($item['label'] ?? ''));
                                 $itemValue = trim((string) ($item['value'] ?? ''));
@@ -643,6 +643,6 @@ include_once 'includes/header.php';
         </main>
     </div>
 </div>
-</div>
+
 
 <?php include_once 'includes/footer.php'; ?>

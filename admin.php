@@ -1163,6 +1163,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
 <?php include_once 'includes/header.php'; ?>
 
 <main class="page-shell app-shell admin-app-shell">
+
+
     <section class="panel-hero">
         <div class="panel-hero-main">
             <p class="eyebrow">Administracao</p>
@@ -1197,6 +1199,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             <?php echo htmlspecialchars((string) $flash['message'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
         </div>
     <?php endif; ?>
+
+
 
     <section class="metrics-grid">
         <article class="metric-card">
@@ -1250,6 +1254,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             <p><?php echo (int) $contentStats['about_published']; ?> publicados na página Sobre.</p>
         </article>
     </section>
+
+
 
     <section id="role-requests" class="admin-workspace">
         <article class="panel-card admin-workspace__full">
@@ -1309,6 +1315,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         </article>
     </section>
 
+
+
     <section id="users" class="admin-workspace">
         <article class="panel-card">
             <div class="panel-card-header">
@@ -1324,6 +1332,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             </div>
 
             <?php if ($editingUserId > 0): ?>
+
+
                 <section class="admin-user-profile-summary">
                     <div class="admin-user-profile-summary__head">
                         <div>
@@ -1515,6 +1525,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         </article>
     </section>
 
+
+
     <section id="document-authentication" class="admin-workspace">
         <article class="panel-card admin-workspace__full">
             <div class="panel-card-header">
@@ -1579,6 +1591,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             <?php endif; ?>
         </article>
     </section>
+
+
 
     <section id="projects" class="admin-workspace">
         <article class="panel-card">
@@ -1778,6 +1792,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         </article>
     </section>
 
+
+
     <section id="partners" class="admin-workspace">
         <article class="panel-card">
             <div class="panel-card-header">
@@ -1903,6 +1919,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
             <?php endif; ?>
         </article>
     </section>
+
+
 
     <section id="content" class="admin-workspace">
         <article class="panel-card">

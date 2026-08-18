@@ -46,6 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="auth-copy">Informe seu usuário ou email cadastrado para gerar um link temporário de redefinição.</p>
         </aside>
 
+
+
         <section class="auth-card">
             <p class="eyebrow">Senha</p>
             <h2>Esqueci minha senha</h2>
