@@ -133,8 +133,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
         </form>
     </div>
 </div>
-</div>
-</div>
-</div>
+
+
+
 
 <?php include_once 'includes/footer.php'; ?>
