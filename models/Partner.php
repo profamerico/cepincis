@@ -1,11 +1,11 @@
 <?php
+
 require_once __DIR__ . '/../bootstrap.php';
 require_once __DIR__ . '/../database.php';
 
 class PartnerManager
 {
     private $db;
-    private $partnersFile;
     private $uploadsDirectory;
 
     private const ALLOWED_IMAGE_TYPES = [
@@ -18,12 +18,11 @@ class PartnerManager
         'image/gif' => 'gif',
     ];
 
-    public function __construct($partnersFile = null, $uploadsDirectory = null)
+    public function __construct($uploadsDirectory = null)
     {
         $database = new Database();
         $this->db = $database->getConnection();
 
-        $this->partnersFile = $partnersFile ?: __DIR__ . '/../data/partners.json';
         $this->uploadsDirectory = $uploadsDirectory ?: __DIR__ . '/../uploads/partners';
 
         if (!is_dir($this->uploadsDirectory)) {
@@ -34,45 +33,65 @@ class PartnerManager
     public function listPartners(): array
     {
         $stmt = $this->db->query("
-        SELECT
-            id,
-            name,
-            description,
-            image_path,
-            created_at,
-            updated_at
-        FROM partners
-        ORDER BY created_at ASC
-    ");
+            SELECT
+                id,
+                name,
+                description,
+                image_path,
+                created_at,
+                updated_at
+            FROM partners
+            ORDER BY created_at ASC
+        ");
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $partners = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($partners as &$partner) {
+            $partner = $this->normalizePartner($partner);
+        }
+
+        return $partners;
     }
 
     public function getPartner(string $partnerId)
     {
-        foreach ($this->loadPartners() as $partner) {
-            if ((string) ($partner['id'] ?? '') === $partnerId) {
-                return $partner;
-            }
+        $stmt = $this->db->prepare("
+            SELECT
+                id,
+                name,
+                description,
+                image_path,
+                created_at,
+                updated_at
+            FROM partners
+            WHERE id = :id
+            LIMIT 1
+        ");
+
+        $stmt->execute([
+            ':id' => $partnerId,
+        ]);
+
+        $partner = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$partner) {
+            return false;
         }
 
-        return false;
+        return $this->normalizePartner($partner);
     }
 
     public function countPartners(): int
     {
-        return count($this->loadPartners());
+        $stmt = $this->db->query("SELECT COUNT(*) FROM partners");
+
+        return (int) $stmt->fetchColumn();
     }
 
     public function adminSavePartner(?string $partnerId, array $data, ?array $uploadedImage = null): array
     {
-        $partners = $this->loadPartners();
         $isCreate = $partnerId === null || trim($partnerId) === '';
-        $partnerIndex = $isCreate ? null : $this->findPartnerIndex($partners, (string) $partnerId);
-
-        if (!$isCreate && $partnerIndex === null) {
-            return ['success' => false, 'errors' => ['Parceiro não encontrado.']];
-        }
+        $partnerId = $partnerId !== null ? trim($partnerId) : null;
 
         $name = trim((string) ($data['name'] ?? ''));
         $description = trim((string) ($data['description'] ?? ''));
@@ -88,12 +107,14 @@ class PartnerManager
         }
 
         $hasUpload = $this->hasUploadedFile($uploadedImage);
+
         if ($isCreate && !$hasUpload && $imagePath === '') {
             $errors[] = 'Envie uma imagem ou informe um caminho válido para o card do parceiro.';
         }
 
         if ($imagePath !== '' && !$hasUpload) {
             $imagePathValidation = $this->validateImagePath($imagePath);
+
             if (!$imagePathValidation['success']) {
                 $errors[] = $imagePathValidation['error'];
             }
@@ -101,221 +122,171 @@ class PartnerManager
 
         if ($hasUpload) {
             $uploadValidation = $this->validateImageUpload($uploadedImage);
+
             if (!$uploadValidation['success']) {
                 $errors[] = $uploadValidation['error'];
             }
         }
 
         if ($errors) {
-            return ['success' => false, 'errors' => $errors];
+            return [
+                'success' => false,
+                'errors' => $errors,
+            ];
         }
 
-        $existingPartner = !$isCreate ? $partners[$partnerIndex] : null;
+        $existingPartner = null;
+
+        if (!$isCreate) {
+            $existingPartner = $this->getPartner($partnerId);
+
+            if ($existingPartner === false) {
+                return [
+                    'success' => false,
+                    'errors' => ['Parceiro não encontrado.'],
+                ];
+            }
+        }
+
         $previousImagePath = (string) ($existingPartner['image_path'] ?? '');
-        $nextImagePath = $imagePath !== '' ? $imagePath : $previousImagePath;
+        $nextImagePath = $imagePath !== ''
+            ? $imagePath
+            : $previousImagePath;
 
         if ($hasUpload) {
             $uploadResult = $this->storeImageUpload($uploadedImage);
+
             if (!$uploadResult['success']) {
-                return ['success' => false, 'errors' => [$uploadResult['error']]];
+                return [
+                    'success' => false,
+                    'errors' => [$uploadResult['error']],
+                ];
             }
 
             $nextImagePath = (string) $uploadResult['path'];
         }
 
         if ($nextImagePath === '') {
-            return ['success' => false, 'errors' => ['A imagem do parceiro não pode ficar vazia.']];
-        }
-
-        if ($isCreate) {
-            $savedPartner = [
-                'id' => uniqid('partner_'),
-                'name' => $name,
-                'description' => $description,
-                'image_path' => $nextImagePath,
-                'created_at' => $this->now(),
-                'updated_at' => $this->now(),
+            return [
+                'success' => false,
+                'errors' => ['A imagem do parceiro não pode ficar vazia.'],
             ];
-            $partners[] = $savedPartner;
-        } else {
-            $partners[$partnerIndex]['name'] = $name;
-            $partners[$partnerIndex]['description'] = $description;
-            $partners[$partnerIndex]['image_path'] = $nextImagePath;
-            $partners[$partnerIndex]['updated_at'] = $this->now();
-            $savedPartner = $partners[$partnerIndex];
         }
 
-        if (!$this->savePartners($partners)) {
-            if ($hasUpload && $nextImagePath !== '' && $nextImagePath !== $previousImagePath) {
+        try {
+            if ($isCreate) {
+                $newId = uniqid('partner_');
+
+                $stmt = $this->db->prepare("
+                    INSERT INTO partners (
+                        id,
+                        name,
+                        description,
+                        image_path
+                    ) VALUES (
+                        :id,
+                        :name,
+                        :description,
+                        :image_path
+                    )
+                ");
+
+                $stmt->execute([
+                    ':id' => $newId,
+                    ':name' => $name,
+                    ':description' => $description,
+                    ':image_path' => $nextImagePath,
+                ]);
+
+                $savedPartner = $this->getPartner($newId);
+            } else {
+                $stmt = $this->db->prepare("
+                    UPDATE partners
+                    SET
+                        name = :name,
+                        description = :description,
+                        image_path = :image_path
+                    WHERE id = :id
+                ");
+
+                $stmt->execute([
+                    ':name' => $name,
+                    ':description' => $description,
+                    ':image_path' => $nextImagePath,
+                    ':id' => $partnerId,
+                ]);
+
+                $savedPartner = $this->getPartner($partnerId);
+            }
+        } catch (PDOException $e) {
+            if (
+                $hasUpload &&
+                $nextImagePath !== '' &&
+                $nextImagePath !== $previousImagePath
+            ) {
                 $this->deleteManagedImage($nextImagePath);
             }
 
-            return ['success' => false, 'errors' => ['Não foi possível salvar o parceiro.']];
+            return [
+                'success' => false,
+                'errors' => ['Não foi possível salvar o parceiro no banco de dados.'],
+            ];
         }
 
-        if ($hasUpload && $previousImagePath !== '' && $previousImagePath !== $nextImagePath) {
+        if (
+            $hasUpload &&
+            $previousImagePath !== '' &&
+            $previousImagePath !== $nextImagePath
+        ) {
             $this->deleteManagedImage($previousImagePath);
         }
 
-        return ['success' => true, 'partner' => $savedPartner, 'created' => $isCreate];
+        return [
+            'success' => true,
+            'partner' => $savedPartner,
+            'created' => $isCreate,
+        ];
     }
 
     public function deletePartner(string $partnerId): bool
     {
-        $partners = $this->loadPartners();
-        $filteredPartners = [];
-        $removedPartner = null;
+        $partner = $this->getPartner($partnerId);
 
-        foreach ($partners as $partner) {
-            if ((string) ($partner['id'] ?? '') === $partnerId) {
-                $removedPartner = $partner;
-                continue;
-            }
-
-            $filteredPartners[] = $partner;
-        }
-
-        if ($removedPartner === null) {
+        if ($partner === false) {
             return false;
         }
 
-        if (!$this->savePartners($filteredPartners)) {
+        try {
+            $stmt = $this->db->prepare("
+                DELETE FROM partners
+                WHERE id = :id
+            ");
+
+            $stmt->execute([
+                ':id' => $partnerId,
+            ]);
+        } catch (PDOException $e) {
             return false;
         }
 
-        $this->deleteManagedImage((string) ($removedPartner['image_path'] ?? ''));
+        if ($stmt->rowCount() < 1) {
+            return false;
+        }
+
+        $this->deleteManagedImage(
+            (string) ($partner['image_path'] ?? '')
+        );
 
         return true;
     }
 
-    private function ensureFileExists(): void
-    {
-        $directory = dirname($this->partnersFile);
-
-        if (!is_dir($directory)) {
-            mkdir($directory, 0775, true);
-        }
-
-        if (!is_dir($this->uploadsDirectory)) {
-            mkdir($this->uploadsDirectory, 0775, true);
-        }
-
-        if (!file_exists($this->partnersFile)) {
-            file_put_contents(
-                $this->partnersFile,
-                json_encode($this->defaultPartners(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
-                LOCK_EX
-            );
-        }
-    }
-
-    private function defaultPartners(): array
-    {
-        $seedCreatedAt = '2026-05-06 00:00:00';
-
-        return [
-            [
-                'id' => 'partner_copenhagen',
-                'name' => 'Universidade de Copenhagen',
-                'description' => 'Copenhagen, Dinamarca',
-                'image_path' => './img/copenhagen.png',
-                'created_at' => $seedCreatedAt,
-                'updated_at' => $seedCreatedAt,
-            ],
-            [
-                'id' => 'partner_roma3',
-                'name' => 'Universidade de Roma 3',
-                'description' => 'Roma, Italia',
-                'image_path' => './img/Roma 3.png',
-                'created_at' => $seedCreatedAt,
-                'updated_at' => $seedCreatedAt,
-            ],
-            [
-                'id' => 'partner_fuzhou',
-                'name' => 'Universidade de Fuzhou',
-                'description' => 'Instituição pública de ensino superior localizada em Fuzhou, capital da província de Fujian, na China.',
-                'image_path' => './img/Fuhzou.png',
-                'created_at' => $seedCreatedAt,
-                'updated_at' => $seedCreatedAt,
-            ],
-            [
-                'id' => 'partner_getis',
-                'name' => 'GETIS',
-                'description' => 'Grupo de Pesquisa em Engenharia, Tecnologia, Inovação e Sustentabilidade (GETIS) - IFSP-CAR',
-                'image_path' => './img/Getis.png',
-                'created_at' => $seedCreatedAt,
-                'updated_at' => $seedCreatedAt,
-            ],
-            [
-                'id' => 'partner_i2',
-                'name' => 'i2',
-                'description' => 'Grupo de Pesquisas em Tecnologias Inovadoras - IFSP CAR',
-                'image_path' => './img/i2v2.png',
-                'created_at' => $seedCreatedAt,
-                'updated_at' => $seedCreatedAt,
-            ],
-            [
-                'id' => 'partner_enasa',
-                'name' => 'ENASA',
-                'description' => 'Grupo de pesquisa em Energia, Agua e Saneamento (ENASA) - IFSP-SP',
-                'image_path' => './img/enasa.png',
-                'created_at' => $seedCreatedAt,
-                'updated_at' => $seedCreatedAt,
-            ],
-        ];
-    }
-
-    private function loadPartners(): array
-    {
-        if (!file_exists($this->partnersFile)) {
-            return $this->defaultPartners();
-        }
-
-        $contents = @file_get_contents($this->partnersFile);
-        $decoded = json_decode((string) $contents, true);
-
-        if (!is_array($decoded)) {
-            return $this->defaultPartners();
-        }
-
-        $partners = [];
-        foreach ($decoded as $partner) {
-            if (is_array($partner)) {
-                $partners[] = $this->normalizePartner($partner);
-            }
-        }
-
-        usort($partners, static function (array $left, array $right): int {
-            return strtotime((string) ($left['created_at'] ?? '')) <=> strtotime((string) ($right['created_at'] ?? ''));
-        });
-
-        return $partners;
-    }
-
-    private function savePartners(array $partners): bool
-    {
-        $normalizedPartners = [];
-
-        foreach ($partners as $partner) {
-            if (is_array($partner)) {
-                $normalizedPartners[] = $this->normalizePartner($partner);
-            }
-        }
-
-        return (bool) file_put_contents(
-            $this->partnersFile,
-            json_encode($normalizedPartners, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
-            LOCK_EX
-        );
-    }
-
     private function normalizePartner(array $partner): array
     {
-        $createdAt = (string) ($partner['created_at'] ?? $this->now());
+        $createdAt = (string) ($partner['created_at'] ?? '');
         $updatedAt = (string) ($partner['updated_at'] ?? $createdAt);
 
         return [
-            'id' => (string) ($partner['id'] ?? uniqid('partner_')),
+            'id' => (string) ($partner['id'] ?? ''),
             'name' => trim((string) ($partner['name'] ?? '')),
             'description' => trim((string) ($partner['description'] ?? '')),
             'image_path' => trim((string) ($partner['image_path'] ?? '')),
@@ -324,48 +295,57 @@ class PartnerManager
         ];
     }
 
-    private function findPartnerIndex(array $partners, string $partnerId): ?int
-    {
-        foreach ($partners as $index => $partner) {
-            if ((string) ($partner['id'] ?? '') === $partnerId) {
-                return $index;
-            }
-        }
-
-        return null;
-    }
-
     private function hasUploadedFile(?array $uploadedImage): bool
     {
         if (!is_array($uploadedImage)) {
             return false;
         }
 
-        return isset($uploadedImage['error']) && (int) $uploadedImage['error'] !== UPLOAD_ERR_NO_FILE;
+        return isset($uploadedImage['error'])
+            && (int) $uploadedImage['error'] !== UPLOAD_ERR_NO_FILE;
     }
 
     private function validateImageUpload(?array $uploadedImage): array
     {
         if (!$this->hasUploadedFile($uploadedImage)) {
-            return ['success' => true];
+            return [
+                'success' => true,
+            ];
         }
 
         if ((int) ($uploadedImage['error'] ?? UPLOAD_ERR_OK) !== UPLOAD_ERR_OK) {
-            return ['success' => false, 'error' => 'Não foi possível processar a imagem enviada.'];
+            return [
+                'success' => false,
+                'error' => 'Não foi possível processar a imagem enviada.',
+            ];
         }
 
         $tmpName = (string) ($uploadedImage['tmp_name'] ?? '');
+
         if ($tmpName === '' || !is_uploaded_file($tmpName)) {
-            return ['success' => false, 'error' => 'O upload da imagem não foi reconhecido pelo servidor.'];
+            return [
+                'success' => false,
+                'error' => 'O upload da imagem não foi reconhecido pelo servidor.',
+            ];
         }
 
-        $imageFormat = $this->resolveUploadedImageFormat($uploadedImage, $tmpName);
+        $imageFormat = $this->resolveUploadedImageFormat(
+            $uploadedImage,
+            $tmpName
+        );
+
         if (!$imageFormat['success']) {
-            return ['success' => false, 'error' => 'Formato de imagem não suportado. Envie JPG, PNG, WEBP ou GIF.'];
+            return [
+                'success' => false,
+                'error' => 'Formato de imagem não suportado. Envie JPG, PNG, WEBP ou GIF.',
+            ];
         }
 
         if ((int) ($uploadedImage['size'] ?? 0) > 5 * 1024 * 1024) {
-            return ['success' => false, 'error' => 'A imagem do parceiro deve ter no máximo 5 MB.'];
+            return [
+                'success' => false,
+                'error' => 'A imagem do parceiro deve ter no máximo 5 MB.',
+            ];
         }
 
         return [
@@ -378,12 +358,14 @@ class PartnerManager
     private function storeImageUpload(?array $uploadedImage): array
     {
         $validation = $this->validateImageUpload($uploadedImage);
+
         if (!$validation['success']) {
             return $validation;
         }
 
         $tmpName = (string) ($uploadedImage['tmp_name'] ?? '');
         $extension = (string) ($validation['extension'] ?? 'png');
+
         $filename = uniqid('partner_', true) . '.' . $extension;
         $destination = $this->uploadsDirectory . DIRECTORY_SEPARATOR . $filename;
 
@@ -392,16 +374,23 @@ class PartnerManager
         }
 
         if (!move_uploaded_file($tmpName, $destination)) {
-            return ['success' => false, 'error' => 'Não foi possível salvar a imagem do parceiro no servidor.'];
+            return [
+                'success' => false,
+                'error' => 'Não foi possível salvar a imagem do parceiro no servidor.',
+            ];
         }
 
-        return ['success' => true, 'path' => './uploads/partners/' . $filename];
+        return [
+            'success' => true,
+            'path' => './uploads/partners/' . $filename,
+        ];
     }
 
     private function detectMimeType(string $tmpName): string
     {
         if (function_exists('finfo_open')) {
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
+
             if ($finfo) {
                 $mimeType = (string) finfo_file($finfo, $tmpName);
                 finfo_close($finfo);
@@ -412,6 +401,7 @@ class PartnerManager
 
         if (function_exists('mime_content_type')) {
             $mimeType = (string) mime_content_type($tmpName);
+
             if ($mimeType !== '') {
                 return $mimeType;
             }
@@ -419,6 +409,7 @@ class PartnerManager
 
         if (function_exists('getimagesize')) {
             $imageInfo = @getimagesize($tmpName);
+
             if (is_array($imageInfo) && !empty($imageInfo['mime'])) {
                 return (string) $imageInfo['mime'];
             }
@@ -427,15 +418,20 @@ class PartnerManager
         return '';
     }
 
-    private function resolveUploadedImageFormat(?array $uploadedImage, string $tmpName): array
-    {
+    private function resolveUploadedImageFormat(
+        ?array $uploadedImage,
+        string $tmpName
+    ): array {
         $mimeCandidates = [
             $this->detectMimeType($tmpName),
             (string) ($uploadedImage['type'] ?? ''),
         ];
 
         foreach ($mimeCandidates as $mimeCandidate) {
-            $normalizedMimeType = $this->normalizeImageMimeType($mimeCandidate);
+            $normalizedMimeType = $this->normalizeImageMimeType(
+                $mimeCandidate
+            );
+
             if ($normalizedMimeType !== '') {
                 return [
                     'success' => true,
@@ -445,13 +441,24 @@ class PartnerManager
             }
         }
 
-        $extension = strtolower((string) pathinfo((string) ($uploadedImage['name'] ?? ''), PATHINFO_EXTENSION));
+        $extension = strtolower(
+            (string) pathinfo(
+                (string) ($uploadedImage['name'] ?? ''),
+                PATHINFO_EXTENSION
+            )
+        );
+
         if ($extension !== '') {
             if ($extension === 'jpeg') {
                 $extension = 'jpg';
             }
 
-            $mimeType = array_search($extension, self::ALLOWED_IMAGE_TYPES, true);
+            $mimeType = array_search(
+                $extension,
+                self::ALLOWED_IMAGE_TYPES,
+                true
+            );
+
             if (is_string($mimeType)) {
                 return [
                     'success' => true,
@@ -461,68 +468,104 @@ class PartnerManager
             }
         }
 
-        return ['success' => false];
+        return [
+            'success' => false,
+        ];
     }
 
     private function normalizeImageMimeType(string $mimeType): string
     {
         $mimeType = strtolower(trim($mimeType));
+
         if ($mimeType === '') {
             return '';
         }
 
-        return isset(self::ALLOWED_IMAGE_TYPES[$mimeType]) ? $mimeType : '';
+        return isset(self::ALLOWED_IMAGE_TYPES[$mimeType])
+            ? $mimeType
+            : '';
     }
 
     private function validateImagePath(string $imagePath): array
     {
         $imagePath = trim($imagePath);
+
         if ($imagePath === '') {
-            return ['success' => false, 'error' => 'A imagem do parceiro não pode ficar vazia.'];
+            return [
+                'success' => false,
+                'error' => 'A imagem do parceiro não pode ficar vazia.',
+            ];
         }
 
-        $url = filter_var($imagePath, FILTER_VALIDATE_URL);
+        $url = filter_var(
+            $imagePath,
+            FILTER_VALIDATE_URL
+        );
+
         if ($url !== false) {
-            $scheme = strtolower((string) parse_url($imagePath, PHP_URL_SCHEME));
+            $scheme = strtolower(
+                (string) parse_url(
+                    $imagePath,
+                    PHP_URL_SCHEME
+                )
+            );
+
             if (in_array($scheme, ['http', 'https'], true)) {
-                return ['success' => true];
+                return [
+                    'success' => true,
+                ];
             }
         }
 
         $candidatePath = $imagePath;
+
         if (strpos($candidatePath, './') === 0) {
             $candidatePath = __DIR__ . '/../' . substr($candidatePath, 2);
-        } elseif (!preg_match('/^[a-zA-Z]:[\\\\\\/]/', $candidatePath) && strpos($candidatePath, '/') !== 0) {
-            $candidatePath = __DIR__ . '/../' . ltrim($candidatePath, '\\/');
+        } elseif (
+            !preg_match('/^[a-zA-Z]:[\\\\\\/]/', $candidatePath)
+            && strpos($candidatePath, '/') !== 0
+        ) {
+            $candidatePath = __DIR__ . '/../' . ltrim(
+                $candidatePath,
+                '\\/'
+            );
         }
 
         if (!file_exists($candidatePath)) {
-            return ['success' => false, 'error' => 'O caminho informado para a imagem do parceiro não foi encontrado no projeto.'];
+            return [
+                'success' => false,
+                'error' => 'O caminho informado para a imagem do parceiro não foi encontrado no projeto.',
+            ];
         }
 
-        return ['success' => true];
+        return [
+            'success' => true,
+        ];
     }
 
     private function deleteManagedImage(string $relativePath): void
     {
         $relativePath = trim($relativePath);
-        if ($relativePath === '' || strpos($relativePath, './uploads/partners/') !== 0) {
+
+        if (
+            $relativePath === ''
+            || strpos($relativePath, './uploads/partners/') !== 0
+        ) {
             return;
         }
 
         $filename = basename($relativePath);
+
         if ($filename === '') {
             return;
         }
 
-        $absolutePath = $this->uploadsDirectory . DIRECTORY_SEPARATOR . $filename;
+        $absolutePath = $this->uploadsDirectory
+            . DIRECTORY_SEPARATOR
+            . $filename;
+
         if (is_file($absolutePath)) {
             @unlink($absolutePath);
         }
-    }
-
-    private function now(): string
-    {
-        return date('Y-m-d H:i:s');
     }
 }
