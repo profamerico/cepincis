@@ -1,8 +1,10 @@
 <?php
 require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/../database.php';
 
 class PartnerManager
 {
+    private $db;
     private $partnersFile;
     private $uploadsDirectory;
 
@@ -18,15 +20,32 @@ class PartnerManager
 
     public function __construct($partnersFile = null, $uploadsDirectory = null)
     {
+        $database = new Database();
+        $this->db = $database->getConnection();
+
         $this->partnersFile = $partnersFile ?: __DIR__ . '/../data/partners.json';
         $this->uploadsDirectory = $uploadsDirectory ?: __DIR__ . '/../uploads/partners';
 
-        $this->ensureFileExists();
+        if (!is_dir($this->uploadsDirectory)) {
+            mkdir($this->uploadsDirectory, 0775, true);
+        }
     }
 
     public function listPartners(): array
     {
-        return $this->loadPartners();
+        $stmt = $this->db->query("
+        SELECT
+            id,
+            name,
+            description,
+            image_path,
+            created_at,
+            updated_at
+        FROM partners
+        ORDER BY created_at ASC
+    ");
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getPartner(string $partnerId)
