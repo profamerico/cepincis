@@ -167,7 +167,7 @@ $pendingInvites = $workspaceManager->getUserInvites($currentUserId);
                 <div class="panel-card-header">
                     <div>
                         <p class="eyebrow">Convites</p>
-                        <h2>Colaboracoes pendentes</h2>
+                        <h2>Colaborações pendentes</h2>
                     </div>
                 </div>
 
