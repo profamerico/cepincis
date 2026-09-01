@@ -76,6 +76,7 @@ $implementationHighlights = array_map(
     array_keys($implementationHighlights)
 );
 
+
 function home_project_status_label(string $status): string
 {
     switch ($status) {
