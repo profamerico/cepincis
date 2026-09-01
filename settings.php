@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Configuracoes | CEPIN-CIS';
+$pageTitle = 'Configuraçôes | CEPIN-CIS';
 $bodyClass = 'app-page settings-page';
 
 require_once 'controllers/AuthController.php';
@@ -13,7 +13,7 @@ $auth->requireAuth();
 <main class="page-shell app-shell">
     <section class="panel-hero">
         <div class="panel-hero-main">
-            <p class="eyebrow">Configuracoes</p>
+            <p class="eyebrow">Configuraçôes</p>
             <h1>Ajustes da sua experiência</h1>
             <p class="hero-copy">Uma área mais limpa para concentrar preferencias de conta, privacidade e notificações sem scripts inline espalhados pela página.</p>
         </div>

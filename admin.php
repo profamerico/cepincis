@@ -570,7 +570,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $message .= ' ' . $orphanedProjects . ' projeto(s) ficaram sem responsável.';
                     }
                     if ($removedOrientations > 0) {
-                        $message .= ' ' . $removedOrientations . ' orientação(oes) vinculada(s) a essa conta foram removidas.';
+                        $message .= ' ' . $removedOrientations . ' orientação(ões) vinculada(s) a essa conta foram removidas.';
                     }
 
                     admin_set_flash('sucesso', $message);
@@ -677,7 +677,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $clearedOrientations = $orientationManager->clearProjectReferences($projectId);
                     $message = 'Projeto removido com sucesso.';
                     if ($clearedOrientations > 0) {
-                        $message .= ' ' . $clearedOrientations . ' orientação(oes) perderam o vínculo com este projeto.';
+                        $message .= ' ' . $clearedOrientations . ' orientação(ões) perderam o vínculo com este projeto.';
                     }
 
                     admin_set_flash('sucesso', $message);
@@ -1261,7 +1261,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         <article class="panel-card admin-workspace__full">
             <div class="panel-card-header">
                 <div>
-                    <p class="eyebrow">Permissoes</p>
+                    <p class="eyebrow">Permissões</p>
                     <h2>Solicitações de aumento de nível</h2>
                     <p class="admin-subtitle">Revise pedidos para Pesquisador Acadêmico ou Pesquisador Pleno e promova a conta quando fizer sentido.</p>
                 </div>
@@ -1358,7 +1358,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                             <strong><?php echo $editingUserProjectCount; ?></strong>
                         </article>
                         <article class="admin-user-profile-stat">
-                            <span>Supervisoes</span>
+                            <span>Supervisões</span>
                             <strong><?php echo $editingUserSupervisionCount; ?></strong>
                         </article>
                         <article class="admin-user-profile-stat">
@@ -1458,7 +1458,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 <th>Nível</th>
                                 <th>Perfil</th>
                                 <th>Atuação</th>
-                                <th>Acoes</th>
+                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1494,8 +1494,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                     </td>
                                     <td>
                                         <strong><?php echo $listedProjectCount; ?> projeto(s)</strong>
-                                        <div class="admin-meta">Supervisiona<?php echo $listedSupervisionCount; ?> orientação(oes)</div>
-                                        <div class="admin-meta">Recebe<?php echo $listedAssignedCount; ?> orientação(oes)</div>
+                                        <div class="admin-meta">Supervisiona<?php echo $listedSupervisionCount; ?> orientação(ões)</div>
+                                        <div class="admin-meta">Recebe<?php echo $listedAssignedCount; ?> orientação(ões)</div>
                                     </td>
                                     <td>
                                         <div class="table-actions">
@@ -1683,7 +1683,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                 <div class="form-group">
                     <label for="project_document_file">Documentação obrigatoria</label>
                     <input type="file" id="project_document_file" name="document_file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" <?php echo $projectForm['id'] === '' ? 'required' : ''; ?>>
-                    <p class="form-help">Novos projetos precisam de PDF ou DOCX para entrar no fluxo de autenticação. Em edicoes, use este campo apenas para enviar uma nova versão documental.</p>
+                    <p class="form-help">Novos projetos precisam de PDF ou DOCX para entrar no fluxo de autenticação. Em edições, use este campo apenas para enviar uma nova versão documental.</p>
                 </div>
 
                 <?php if ((string) $projectForm['image_path'] !== ''): ?>
@@ -1737,7 +1737,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 <th>Autenticação</th>
                                 <th>Categoria</th>
                                 <th>Atualizado em</th>
-                                <th>Acoes</th>
+                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -1876,7 +1876,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 <th>Parceiro</th>
                                 <th>Imagem</th>
                                 <th>Atualizado em</th>
-                                <th>Acoes</th>
+                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2412,7 +2412,7 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                 <th>Tipo</th>
                                 <th>Layout</th>
                                 <th>Atualizado em</th>
-                                <th>Acoes</th>
+                                <th>Ações</th>
                             </tr>
                         </thead>
                         <tbody>

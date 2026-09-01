@@ -477,7 +477,7 @@ $metrics = $canManageOrientations
                                         </div>
 
                                         <div class="form-group">
-                                                <label for="orientation_notes">Observacoes</label>
+                                                <label for="orientation_notes">Observacôes</label>
                                                 <textarea id="orientation_notes" name="notes" rows="6" placeholder="Diretrizes, objetivo da orientação, edital, observações de acompanhamento..."><?php echo htmlspecialchars((string) $orientationForm['notes'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></textarea>
                                         </div>
 
@@ -566,7 +566,7 @@ $metrics = $canManageOrientations
                                                                 <th>Status</th>
                                                                 <th>Atualizado em</th>
                                                                 <?php if ($canManageOrientations): ?>
-                                                                        <th>Acoes</th>
+                                                                        <th>Açôes</th>
                                                                 <?php endif; ?>
                                                         </tr>
                                                 </thead>

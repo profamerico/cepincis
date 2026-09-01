@@ -67,7 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if ($action === 'mark_all_read') {
             $count = $workspaceManager->markAllNotificationsRead($currentUserId);
-            notifications_set_flash('sucesso', $count . ' notificação(oes) marcada(s) como lida(s).');
+            notifications_set_flash('sucesso', $count . ' notificação(ôes) marcada(s) como lida(s).');
             notifications_redirect();
         }
 

@@ -129,7 +129,7 @@ $statusPanelItems = [
 $accentEyebrow = 'Conta';
 $accentTitle = 'Proximo passo sugerido';
 $accentCopy = 'Mantenha seu perfil atualizado para facilitar o contato e a organização do portal. Se precisar de mais acessos, um administrador pode ajustar sua permissão no painel interno.';
-$accentAction = ['href' => 'settings.php', 'label' => 'Ver configuracoes'];
+$accentAction = ['href' => 'settings.php', 'label' => 'Ver configuracões'];
 $metrics = [];
 
 if ($isAdmin) {
@@ -282,7 +282,7 @@ $actionCards[] = [
                 <?php elseif ($canAccessResearchWorkspace): ?>
                     <a class="dashboard-btn dashboard-btn--ghost" href="orientations.php">Abrir workspace</a>
                 <?php else: ?>
-                    <a class="dashboard-btn dashboard-btn--ghost" href="settings.php">Ver configuracoes</a>
+                    <a class="dashboard-btn dashboard-btn--ghost" href="settings.php">Ver configuracões</a>
                 <?php endif; ?>
             </div>
         </div>

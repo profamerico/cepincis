@@ -56,7 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <span>Depois do login você cai em um dashboard mais organizado.</span>
                 </div>
                 <div class="auth-highlight">
-                    <strong>Permissoes controladas</strong>
+                    <strong>Permissôes controladas</strong>
                     <span>Administradores podem promover acessos no painel admin.</span>
                 </div>
             </div>

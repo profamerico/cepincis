@@ -529,7 +529,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
                     </div>
 
                     <?php if (empty($authenticationHistory)): ?>
-                        <p class="admin-empty">Sem movimentacoes de autenticação até agora.</p>
+                        <p class="admin-empty">Sem movimentaçôes de autenticação até agora.</p>
                     <?php else: ?>
                         <ul class="workspace-audit-list">
                             <?php foreach ($authenticationHistory as $entry): ?>
