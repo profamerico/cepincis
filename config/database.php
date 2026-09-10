@@ -57,5 +57,5 @@ class Database
 
 function db(): PDO
 {
-    return Database::getConnection();
+    return Database::getSharedConnection();
 }
