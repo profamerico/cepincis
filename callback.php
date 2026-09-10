@@ -7,7 +7,7 @@ $provider = $_GET['provider'] ?? '';
 $code = $_GET['code'] ?? '';
 
 if (!$code) {
-    die('Codigo não fornecido.');
+    die('Codigo nao fornecido.');
 }
 
 switch ($provider) {
@@ -34,7 +34,7 @@ switch ($provider) {
         break;
 
     default:
-        die('Provedor inválido ou não suportado.');
+        die('Provedor invalido ou nao suportado.');
 }
 
 $ch = curl_init($token_url);
@@ -48,7 +48,7 @@ curl_close($ch);
 
 if (isset($response['error'])) {
     $errorMessage = $response['error_description'] ?? $response['error'];
-    die('Erro ao obter token da rede social: ' . htmlspecialchars((string) $errorMessage, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+    die('Erro ao obter token da rede social: ' . htmlspecialchars((string) $errorMessage, ENT_QUOTES, 'UTF-8'));
 }
 
 $accessToken = $response['access_token'] ?? null;
@@ -78,15 +78,15 @@ if ($provider === 'github') {
 }
 
 if ($nome === '') {
-    die('Erro: não foi possível ler os dados da conta.');
+    die('Erro: nao foi possivel ler os dados da conta.');
 }
 
 $auth = new AuthController();
 $result = $auth->loginSocialUser($nome, $email, $provider);
 
 if (!$result['success']) {
-    $message = $result['errors'][0] ?? 'Falha ao autenticar o usuário social.';
-    die(htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'));
+    $message = $result['errors'][0] ?? 'Falha ao autenticar o usuario social.';
+    die(htmlspecialchars($message, ENT_QUOTES, 'UTF-8'));
 }
 
 header('Location: dashboard.php');

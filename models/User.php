@@ -1,64 +1,10 @@
 <?php
+require_once __DIR__ . '/../bootstrap.php';
 class User {
-    private $conn;
-    private $table_name = "usuarios";
-
-    public $id;
-    public $username;
-    public $password;
-    public $data_criacao;
-
-    public function __construct($db) {
-        $this->conn = $db;
-    }
-
-    public function create() {
-        $query = "INSERT INTO " . $this->table_name . " 
-                 SET username=:username, password=:password";
-
-        $stmt = $this->conn->prepare($query);
-
-        $this->username = htmlspecialchars(strip_tags($this->username), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-        $this->password = htmlspecialchars(strip_tags($this->password), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
-
-        $hashed_password = password_hash($this->password, PASSWORD_DEFAULT);
-
-        $stmt->bindParam(":username", $this->username);
-        $stmt->bindParam(":password", $hashed_password);
-
-        if($stmt->execute()) {
-            return true;
-        }
-        return false;
-    }
-
-    public function usernameExists() {
-        $query = "SELECT id, username, password 
-                  FROM " . $this->table_name . " 
-                  WHERE username = ? 
-                  LIMIT 0,1";
-
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $this->username);
-        $stmt->execute();
-
-        if($stmt->rowCount() > 0) {
-            $row = $stmt->fetch(PDO::FETCH_ASSOC);
-            $this->id = $row['id'];
-            $this->username = $row['username'];
-            $this->password = $row['password'];
-            return true;
-        }
-        return false;
-    }
-
-    public function login($password) {
-        if($this->usernameExists()) {
-            if(password_verify($password, $this->password)) {
-                return true;
-            }
-        }
-        return false;
-    }
+    private PDO $conn; private string $table_name='users';
+    public $id,$username,$password,$data_criacao;
+    public function __construct($db=null){$this->conn=$db instanceof PDO?$db:db();}
+    public function create(){ $s=$this->conn->prepare("INSERT INTO users (username,password_hash,fullname,email,role,provider) VALUES (?,?,?,?, 'member','local')"); return $s->execute([$this->username,password_hash($this->password,PASSWORD_DEFAULT),$this->username,'']); }
+    public function usernameExists(){ $s=$this->conn->prepare('SELECT id,username,password_hash FROM users WHERE username=? LIMIT 1');$s->execute([$this->username]);$r=$s->fetch();if($r){$this->id=$r['id'];$this->username=$r['username'];$this->password=$r['password_hash'];return true;}return false; }
+    public function login($password){return $this->usernameExists()&&password_verify($password,$this->password);}
 }
-?>

@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Configuraçôes | CEPIN-CIS';
+$pageTitle = 'Configuracoes | CEPIN-CIS';
 $bodyClass = 'app-page settings-page';
 
 require_once 'controllers/AuthController.php';
@@ -13,9 +13,9 @@ $auth->requireAuth();
 <main class="page-shell app-shell">
     <section class="panel-hero">
         <div class="panel-hero-main">
-            <p class="eyebrow">Configuraçôes</p>
-            <h1>Ajustes da sua experiência</h1>
-            <p class="hero-copy">Uma área mais limpa para concentrar preferencias de conta, privacidade e notificações sem scripts inline espalhados pela página.</p>
+            <p class="eyebrow">Configuracoes</p>
+            <h1>Ajustes da sua experiencia</h1>
+            <p class="hero-copy">Uma area mais limpa para concentrar preferencias de conta, privacidade e notificacoes sem scripts inline espalhados pela pagina.</p>
         </div>
     </section>
 
@@ -23,7 +23,7 @@ $auth->requireAuth();
         <aside class="settings-nav panel-card">
             <button type="button" class="tab-btn active" data-tab-target="account">Conta</button>
             <button type="button" class="tab-btn" data-tab-target="privacy">Privacidade</button>
-            <button type="button" class="tab-btn" data-tab-target="notifications">Notificações</button>
+            <button type="button" class="tab-btn" data-tab-target="notifications">Notificacoes</button>
         </aside>
 
         <div class="settings-content">
@@ -59,7 +59,7 @@ $auth->requireAuth();
                 </div>
 
                 <div class="settings-row">
-                    <span>Perfil público</span>
+                    <span>Perfil publico</span>
                     <label class="toggle-switch">
                         <input type="checkbox" checked>
                         <span class="toggle-slider"></span>
@@ -78,13 +78,13 @@ $auth->requireAuth();
             <section class="panel-card tab-content" data-tab-panel="notifications">
                 <div class="panel-card-header">
                     <div>
-                        <p class="eyebrow">Notificações</p>
+                        <p class="eyebrow">Notificacoes</p>
                         <h2>Preferencias de aviso</h2>
                     </div>
                 </div>
 
                 <div class="settings-row">
-                    <span>Notificações por email</span>
+                    <span>Notificacoes por email</span>
                     <label class="toggle-switch">
                         <input type="checkbox" checked>
                         <span class="toggle-slider"></span>
@@ -92,7 +92,7 @@ $auth->requireAuth();
                 </div>
 
                 <div class="settings-row">
-                    <span>Atualizações de projetos</span>
+                    <span>Atualizacoes de projetos</span>
                     <label class="toggle-switch">
                         <input type="checkbox" checked>
                         <span class="toggle-slider"></span>
