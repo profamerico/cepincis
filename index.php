@@ -405,13 +405,18 @@ include_once 'includes/header.php';
                         <div>
                             <p class="eyebrow">Equipe vinculada</p>
                             <h2>Pesquisadores e administradores</h2>
+                            <p class="admin-subtitle">Conheça as pessoas que integram a estrutura de pesquisa e administração do CEPIN-CIS.</p>
                         </div>
+                        <span class="team-count"><?php echo count($homepageResearchUsers); ?> perfis</span>
                     </div>
 
                     <?php if (empty($homepageResearchUsers)): ?>
-                        <p class="admin-empty">Nenhum pesquisador ou administrador público cadastrado ainda.</p>
+                        <div class="team-empty">
+                            <i class="fa-solid fa-users" aria-hidden="true"></i>
+                            <p>Nenhum pesquisador ou administrador público cadastrado ainda.</p>
+                        </div>
                     <?php else: ?>
-                        <div class="researcher-directory">
+                        <div class="researcher-directory researcher-directory--cards">
                             <?php foreach ($homepageResearchUsers as $researchUser): ?>
                                 <?php
                                 $researchUserId = (int) ($researchUser['id'] ?? 0);
@@ -419,44 +424,36 @@ include_once 'includes/header.php';
                                 $researchPhoto = trim((string) ($researchProfile['photo_path'] ?? ''));
                                 $researchBio = trim((string) ($researchProfile['bio'] ?? ''));
                                 $researchName = trim((string) ($researchUser['fullname'] ?? $researchUser['username'] ?? 'Pesquisador'));
+                                $researchRole = $homeAuth->getRoleLabel($researchUser);
+                                $researchInitial = function_exists('mb_substr') ? mb_strtoupper(mb_substr($researchName, 0, 1, 'UTF-8'), 'UTF-8') : strtoupper(substr($researchName, 0, 1));
                                 ?>
-                                <details class="researcher-directory-item">
-                                    <summary>
-                                        <span><?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
-                                        <small><?php echo htmlspecialchars($homeAuth->getRoleLabel($researchUser), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></small>
-                                    </summary>
-
-                                    <div class="researcher-directory-profile">
+                                <article class="researcher-card">
+                                    <div class="researcher-card__visual">
                                         <?php if ($researchPhoto !== ''): ?>
                                             <img src="<?php echo htmlspecialchars($researchPhoto, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
                                         <?php else: ?>
-                                            <span class="researcher-directory-initial"><?php echo htmlspecialchars(strtoupper(substr($researchName, 0, 1)), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                            <span class="researcher-card__initial"><?php echo htmlspecialchars($researchInitial, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                         <?php endif; ?>
+                                        <span class="researcher-card__role"><?php echo htmlspecialchars($researchRole, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                    </div>
 
-                                        <div>
-                                            <h3><?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
-                                            <p><?php echo htmlspecialchars($researchBio !== '' ? $researchBio : 'Biografia ainda não cadastrada.', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+                                    <div class="researcher-card__body">
+                                        <h3><?php echo htmlspecialchars($researchName, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
+                                        <p><?php echo htmlspecialchars($researchBio !== '' ? $researchBio : 'Perfil público sem biografia cadastrada.', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
 
-                                            <div class="profile-public-links profile-public-links--compact">
-                                                <?php if (!empty($researchProfile['linkedin_url'])): ?>
-                                                    <a href="<?php echo htmlspecialchars((string) $researchProfile['linkedin_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></a>
-                                                <?php else: ?>
-                                                    <span class="profile-public-link-disabled"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></span>
-                                                <?php endif; ?>
-                                                <?php if (!empty($researchProfile['integra_ifsp_url'])): ?>
-                                                    <a href="<?php echo htmlspecialchars((string) $researchProfile['integra_ifsp_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></a>
-                                                <?php else: ?>
-                                                    <span class="profile-public-link-disabled"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></span>
-                                                <?php endif; ?>
-                                                <?php if (!empty($researchProfile['lattes_url'])): ?>
-                                                    <a href="<?php echo htmlspecialchars((string) $researchProfile['lattes_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></a>
-                                                <?php else: ?>
-                                                    <span class="profile-public-link-disabled"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></span>
-                                                <?php endif; ?>
-                                            </div>
+                                        <div class="profile-public-links profile-public-links--compact">
+                                            <?php if (!empty($researchProfile['linkedin_url'])): ?>
+                                                <a href="<?php echo htmlspecialchars((string) $researchProfile['linkedin_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-brands fa-linkedin-in" aria-hidden="true"></i><span>LinkedIn</span></a>
+                                            <?php endif; ?>
+                                            <?php if (!empty($researchProfile['integra_ifsp_url'])): ?>
+                                                <a href="<?php echo htmlspecialchars((string) $researchProfile['integra_ifsp_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-building-columns" aria-hidden="true"></i><span>Integra IFSP</span></a>
+                                            <?php endif; ?>
+                                            <?php if (!empty($researchProfile['lattes_url'])): ?>
+                                                <a href="<?php echo htmlspecialchars((string) $researchProfile['lattes_url'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" target="_blank" rel="noopener"><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i><span>Lattes CNPq</span></a>
+                                            <?php endif; ?>
                                         </div>
                                     </div>
-                                </details>
+                                </article>
                             <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
@@ -510,60 +507,64 @@ include_once 'includes/header.php';
             <section id="parceiros" class="panel-card public-partners-panel">
                 <div class="panel-card-header">
                     <div>
+                        <p class="eyebrow">Rede institucional</p>
                         <h2>Parceiros</h2>
+                        <p class="admin-subtitle">Instituições e grupos que colaboram com o CEPIN-CIS.</p>
                     </div>
+                    <span class="team-count"><?php echo count($homepagePartners); ?> parceiros</span>
                 </div>
 
                 <?php if (!empty($homepagePartners)): ?>
-                    <div class="public-partners-stage" data-partners-carousel>
-                        <div class="carousel-container">
-                            <button class="nav-arrow left" type="button" aria-label="Parceiro anterior" data-partner-prev <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>&#8249;</button>
-                            <div class="carousel-track">
+                    <div class="cepin-partner-carousel" data-partners-carousel>
+                        <div class="cepin-partner-stage">
+                            <button class="cepin-partner-arrow cepin-partner-arrow--prev" type="button" aria-label="Parceiro anterior" data-partner-prev <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>
+                                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            </button>
+
+                            <div class="cepin-partner-track" data-partner-track>
                                 <?php foreach ($homepagePartners as $index => $partner): ?>
-                                    <div
-                                        class="partner-card <?php
-                                            $partnerCount = count($homepagePartners);
-                                            if ($index === 0) {
-                                                echo 'center';
-                                            } elseif ($index === 1) {
-                                                echo 'right-1';
-                                            } elseif ($index === 2) {
-                                                echo 'right-2';
-                                            } elseif ($index === $partnerCount - 1) {
-                                                echo 'left-1';
-                                            } elseif ($index === $partnerCount - 2) {
-                                                echo 'left-2';
-                                            } else {
-                                                echo 'hidden';
-                                            }
-                                        ?>"
-                                        data-index="<?php echo (int) $index; ?>"
+                                    <button
+                                        class="cepin-partner-card"
+                                        type="button"
                                         data-partner-card
+                                        data-index="<?php echo (int) $index; ?>"
                                         data-partner-name="<?php echo htmlspecialchars((string) ($partner['name'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
                                         data-partner-description="<?php echo htmlspecialchars((string) ($partner['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                                        <img
-                                            src="<?php echo htmlspecialchars((string) ($partner['image_path'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"
-                                            alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">
-                                    </div>
+                                        <span class="cepin-partner-card__media">
+                                            <?php if (trim((string) ($partner['image_path'] ?? '')) !== ''): ?>
+                                                <img src="<?php echo htmlspecialchars((string) $partner['image_path'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>" loading="lazy">
+                                            <?php else: ?>
+                                                <span class="cepin-partner-card__fallback"><i class="fa-solid fa-building-columns" aria-hidden="true"></i></span>
+                                            <?php endif; ?>
+                                        </span>
+                                        <span class="cepin-partner-card__name"><?php echo htmlspecialchars((string) ($partner['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
+                                    </button>
                                 <?php endforeach; ?>
                             </div>
-                            <button class="nav-arrow right" type="button" aria-label="Próximo parceiro" data-partner-next <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>&#8250;</button>
+
+                            <button class="cepin-partner-arrow cepin-partner-arrow--next" type="button" aria-label="Próximo parceiro" data-partner-next <?php echo count($homepagePartners) <= 1 ? 'disabled' : ''; ?>>
+                                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                            </button>
                         </div>
 
-                        <div class="member-info">
-                            <h2 class="member-name" data-partner-display-name><?php echo htmlspecialchars((string) ($homepagePartners[0]['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h2>
-                            <p class="member-role" data-partner-display-description><?php echo htmlspecialchars((string) ($homepagePartners[0]['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+                        <div class="cepin-partner-caption">
+                            <div>
+                                <span class="eyebrow">Parceiro selecionado</span>
+                                <h3 data-partner-display-name><?php echo htmlspecialchars((string) ($homepagePartners[0]['name'] ?? 'Parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></h3>
+                                <p data-partner-display-description><?php echo htmlspecialchars((string) ($homepagePartners[0]['description'] ?? ''), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
+                            </div>
                         </div>
 
-                        <div class="dots">
+                        <div class="cepin-partner-dots" aria-label="Selecionar parceiro">
                             <?php foreach ($homepagePartners as $index => $partner): ?>
-                                <div class="dot<?php echo $index === 0 ? ' active' : ''; ?>" data-index="<?php echo (int) $index; ?>" data-partner-dot></div>
+                                <button type="button" class="cepin-partner-dot<?php echo $index === 0 ? ' is-active' : ''; ?>" data-partner-dot data-index="<?php echo (int) $index; ?>" aria-label="Selecionar <?php echo htmlspecialchars((string) ($partner['name'] ?? 'parceiro'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>"></button>
                             <?php endforeach; ?>
                         </div>
                     </div>
                 <?php else: ?>
                     <div class="public-partners-empty">
-                        <p>Nenhum parceiro foi publicado no carrossel ainda. Assim que a equipe cadastrar novas instituições no painel mestre, elas aparecerão aqui automaticamente.</p>
+                        <i class="fa-solid fa-handshake" aria-hidden="true"></i>
+                        <p>Nenhum parceiro foi publicado no carrossel ainda.</p>
                     </div>
                 <?php endif; ?>
             </section>

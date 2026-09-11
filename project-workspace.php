@@ -98,6 +98,7 @@ $auth->requireAuth();
 $projectManager = new ProjectManager();
 $workspaceManager = new ProjectWorkspaceManager($projectManager);
 $currentUser = $auth->getCurrentUser();
+$isAdmin = $auth->isAdmin($currentUser);
 $allUsers = $auth->listUsers();
 $allProjects = $projectManager->getAllProjects();
 $userMap = [];
@@ -434,6 +435,11 @@ if ($projectId !== '' && !is_array($currentProject)) {
                 <p class="hero-copy"><?php echo htmlspecialchars((string) ($currentProject['description'] ?? 'Mantenha a documentação, colaboradores e timeline atualizados.'), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></p>
                 <div class="hero-actions">
                     <a class="dashboard-btn" href="#timeline">Atualizar timeline</a>
+                    <?php if ($isAdmin): ?>
+                        <a class="dashboard-btn dashboard-btn--ghost" href="admin.php?edit_project=<?php echo urlencode($projectId); ?>#projects">Editar dados no Admin</a>
+                    <?php else: ?>
+                        <a class="dashboard-btn dashboard-btn--ghost" href="research-projects.php?edit=<?php echo urlencode($projectId); ?>#manage">Editar dados</a>
+                    <?php endif; ?>
                     <a class="dashboard-btn dashboard-btn--ghost" href="project.php?id=<?php echo urlencode($projectId); ?>">Ver página pública</a>
                 </div>
             </div>
@@ -442,7 +448,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
                     <?php echo htmlspecialchars((string) $authentication['label'], ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>
                 </span>
                 <h2>Status documental</h2>
-                <p>Um projeto so é considerado autenticado quando algum documento PDF ou DOCX for aprovado por administrador.</p>
+                <p>A autenticação documental é opcional. Quando utilizada, um documento PDF ou DOCX aprovado por administrador valida o projeto.</p>
             </aside>
         </section>
 
@@ -475,7 +481,7 @@ if ($projectId !== '' && !is_array($currentProject)) {
                     <div>
                         <p class="eyebrow">Autenticador</p>
                         <h2>Documentação do projeto</h2>
-                        <p class="admin-subtitle">Envie PDF ou DOCX de até 10 MB. O arquivo fica pendente até avaliação administrativa.</p>
+                        <p class="admin-subtitle">O envio é opcional e serve para autenticar o projeto. Quando necessário, envie PDF ou DOCX de até 10 MB; o arquivo fica pendente até avaliação administrativa.</p>
                     </div>
                 </div>
 

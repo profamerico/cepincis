@@ -1564,8 +1564,9 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
         <article class="panel-card">
             <div class="panel-card-header">
                 <div>
-                    <p class="eyebrow">Projetos</p>
-                    <h2><?php echo $projectForm['id'] !== '' ? 'Editar projeto' : 'Novo projeto'; ?></h2>
+                    <p class="eyebrow">Gestão de projetos</p>
+                    <h2><?php echo $projectForm['id'] !== '' ? 'Editar projeto' : 'Criar e administrar projetos'; ?></h2>
+                    <p class="admin-subtitle">O painel mestre controla os dados públicos do projeto. A documentação, equipe, convites e timeline são administrados no Workspace vinculado a cada projeto.</p>
                 </div>
 
                 <?php if ($projectForm['id'] !== ''): ?>
@@ -1732,8 +1733,8 @@ $layoutHeightOptions = $contentManager->getHeightDefinitions();
                                     <td>
                                         <div class="table-actions">
                                             <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project.php?id=<?php echo urlencode((string) $project['id']); ?>">Ver página</a>
-                                            <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-workspace.php?id=<?php echo urlencode((string) $project['id']); ?>">Workspace</a>
-                                            <a class="dashboard-btn admin-btn-small" href="admin.php?edit_project=<?php echo urlencode((string) $project['id']); ?>#projects">Editar</a>
+                                            <a class="dashboard-btn admin-btn-small" href="admin.php?edit_project=<?php echo urlencode((string) $project['id']); ?>#projects">Editar dados</a>
+                                            <a class="dashboard-btn admin-btn-small dashboard-btn--ghost" href="project-workspace.php?id=<?php echo urlencode((string) $project['id']); ?>">Gerenciar workspace</a>
 
                                             <form method="POST" onsubmit="return confirm('Excluir este projeto?');">
                                                 <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrfToken, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?>">

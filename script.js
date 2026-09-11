@@ -781,72 +781,97 @@ function initTeamCarousel() {
     const cards = Array.from(root.querySelectorAll('[data-partner-card]'));
     const dots = Array.from(root.querySelectorAll('[data-partner-dot]'));
     const memberName = root.querySelector('[data-partner-display-name]');
-    const memberRole = root.querySelector('[data-partner-display-description]');
-    const leftArrow = root.querySelector('[data-partner-prev]');
-    const rightArrow = root.querySelector('[data-partner-next]');
-    if (!cards.length || !memberName || !memberRole) return;
+    const memberDescription = root.querySelector('[data-partner-display-description]');
+    const previous = root.querySelector('[data-partner-prev]');
+    const next = root.querySelector('[data-partner-next]');
+
+    if (!cards.length || !memberName || !memberDescription) return;
 
     const partners = cards.map((card) => ({
         name: card.dataset.partnerName || '',
         description: card.dataset.partnerDescription || ''
     }));
+
     let currentIndex = 0;
-    let isAnimating = false;
-    let touchStartX = 0;
-    const duration = 460;
+    let touchStartX = null;
 
-    function positionCard(card, offset) {
-        card.classList.remove('center', 'left-1', 'left-2', 'right-1', 'right-2', 'hidden');
-        if (offset === 0) card.classList.add('center');
-        else if (offset === 1) card.classList.add('right-1');
-        else if (offset === 2) card.classList.add('right-2');
-        else if (offset === cards.length - 1) card.classList.add('left-1');
-        else if (offset === cards.length - 2) card.classList.add('left-2');
-        else card.classList.add('hidden');
-    }
-
-    function render(index, animate = true) {
-        if (isAnimating) return;
+    function render(index) {
         currentIndex = (index + cards.length) % cards.length;
-        isAnimating = animate;
 
         cards.forEach((card, cardIndex) => {
-            const offset = (cardIndex - currentIndex + cards.length) % cards.length;
-            positionCard(card, offset);
+            const distance = (cardIndex - currentIndex + cards.length) % cards.length;
+            const signed = distance > cards.length / 2 ? distance - cards.length : distance;
+
+            card.classList.remove(
+                'is-active',
+                'is-prev',
+                'is-next',
+                'is-prev-2',
+                'is-next-2',
+                'is-hidden'
+            );
+
+            if (signed === 0) card.classList.add('is-active');
+            else if (signed === -1) card.classList.add('is-prev');
+            else if (signed === 1) card.classList.add('is-next');
+            else if (signed === -2) card.classList.add('is-prev-2');
+            else if (signed === 2) card.classList.add('is-next-2');
+            else card.classList.add('is-hidden');
+
+            card.setAttribute('aria-hidden', signed === 0 ? 'false' : 'true');
         });
 
-        dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === currentIndex));
-        memberName.textContent = partners[currentIndex]?.name || '';
-        memberRole.textContent = partners[currentIndex]?.description || '';
+        dots.forEach((dot, dotIndex) => {
+            const active = dotIndex === currentIndex;
+            dot.classList.toggle('is-active', active);
+            dot.setAttribute('aria-current', active ? 'true' : 'false');
+        });
 
-        if (animate) {
-            window.setTimeout(() => { isAnimating = false; }, duration);
-        }
+        memberName.textContent = partners[currentIndex].name;
+        memberDescription.textContent = partners[currentIndex].description;
+
+        if (previous instanceof HTMLButtonElement) previous.disabled = cards.length <= 1;
+        if (next instanceof HTMLButtonElement) next.disabled = cards.length <= 1;
     }
 
-    leftArrow?.addEventListener('click', () => render(currentIndex - 1));
-    rightArrow?.addEventListener('click', () => render(currentIndex + 1));
-    dots.forEach((dot, index) => dot.addEventListener('click', () => render(index)));
-    cards.forEach((card, index) => card.addEventListener('click', () => render(index)));
+    previous?.addEventListener('click', () => render(currentIndex - 1));
+    next?.addEventListener('click', () => render(currentIndex + 1));
 
-    root.addEventListener('touchstart', (event) => {
-        touchStartX = event.changedTouches[0]?.screenX || 0;
-    }, { passive: true });
-    root.addEventListener('touchend', (event) => {
-        const endX = event.changedTouches[0]?.screenX || 0;
-        const difference = touchStartX - endX;
-        if (Math.abs(difference) > 50) render(difference > 0 ? currentIndex + 1 : currentIndex - 1);
-    }, { passive: true });
-
-    document.addEventListener('keydown', (event) => {
-        if (!root.matches(':hover')) return;
-        if (event.key === 'ArrowLeft') render(currentIndex - 1);
-        if (event.key === 'ArrowRight') render(currentIndex + 1);
+    dots.forEach((dot, index) => {
+        dot.addEventListener('click', () => render(index));
     });
 
-    if (leftArrow instanceof HTMLButtonElement) leftArrow.disabled = cards.length <= 1;
-    if (rightArrow instanceof HTMLButtonElement) rightArrow.disabled = cards.length <= 1;
-    render(0, false);
+    cards.forEach((card, index) => {
+        card.addEventListener('click', () => render(index));
+    });
+
+    root.addEventListener('touchstart', (event) => {
+        touchStartX = event.changedTouches[0]?.clientX ?? null;
+    }, { passive: true });
+
+    root.addEventListener('touchend', (event) => {
+        if (touchStartX === null) return;
+        const endX = event.changedTouches[0]?.clientX ?? touchStartX;
+        const delta = touchStartX - endX;
+        touchStartX = null;
+
+        if (Math.abs(delta) >= 45) {
+            render(delta > 0 ? currentIndex + 1 : currentIndex - 1);
+        }
+    }, { passive: true });
+
+    root.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') {
+            event.preventDefault();
+            render(currentIndex - 1);
+        }
+        if (event.key === 'ArrowRight') {
+            event.preventDefault();
+            render(currentIndex + 1);
+        }
+    });
+
+    render(0);
 }
 
 function initFloatingButtonObserver() {

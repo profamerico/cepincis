@@ -129,7 +129,7 @@ if ($isAdmin) {
                 }
             }
 
-            window.setTimeout(releaseLoader, 1500);
+            window.setTimeout(releaseLoader, 180);
         }());
     </script>
 
