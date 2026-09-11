@@ -2,80 +2,57 @@
 
 class Database
 {
+    private static ?PDO $instance = null;
 
-    private $conn;
-
-    public function getConnection()
+    public static function getSharedConnection(): PDO
     {
-
-        $this->conn = null;
-        $this->loadEnvironment();
-
-        try {
-
-            $databaseUrl = $_ENV['DATABASE_URL'] ?? getenv('DATABASE_URL') ?: '';
-
-            if ($databaseUrl !== '') {
-                $url = parse_url($databaseUrl);
-
-                $host = $url["host"] ?? 'localhost';
-                $port = $url["port"] ?? 3306;
-                $user = $url["user"] ?? '';
-                $pass = $url["pass"] ?? '';
-                $db = ltrim((string) ($url["path"] ?? ''), '/');
-            } else {
-                $host = $_ENV['MYSQL_HOST'] ?? $_ENV['DB_HOST'] ?? getenv('MYSQL_HOST') ?: getenv('DB_HOST') ?: 'localhost';
-                $port = $_ENV['MYSQL_PORT'] ?? $_ENV['DB_PORT'] ?? getenv('MYSQL_PORT') ?: getenv('DB_PORT') ?: 3306;
-                $user = $_ENV['MYSQL_USER'] ?? $_ENV['DB_USER'] ?? getenv('MYSQL_USER') ?: getenv('DB_USER') ?: 'root';
-                $pass = $_ENV['MYSQL_PASSWORD'] ?? $_ENV['DB_PASS'] ?? getenv('MYSQL_PASSWORD') ?: getenv('DB_PASS') ?: '';
-                $db = $_ENV['MYSQL_DATABASE'] ?? $_ENV['DB_NAME'] ?? getenv('MYSQL_DATABASE') ?: getenv('DB_NAME') ?: '';
-            }
-
-            if ($db === '') {
-                throw new PDOException('Nome do banco de dados não configurado.');
-            }
-
-            $this->conn = new PDO(
-                "mysql:host=$host;port=$port;dbname=$db;charset=utf8mb4",
-                $user,
-                $pass
-            );
-
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-
-            die("Erro de conexão: " . $e->getMessage());
+        if (self::$instance instanceof PDO) {
+            return self::$instance;
         }
 
-        return $this->conn;
+        $url = trim((string) getenv('DATABASE_URL'));
+        $host = trim((string) getenv('MYSQL_HOST'));
+        $port = trim((string) getenv('MYSQL_PORT'));
+        $database = trim((string) getenv('MYSQL_DATABASE'));
+        $user = trim((string) getenv('MYSQL_USER'));
+        $password = (string) getenv('MYSQL_PASSWORD');
+
+        if ($url !== '') {
+            $parts = parse_url($url);
+            if ($parts !== false && in_array(strtolower((string) ($parts['scheme'] ?? '')), ['mysql', 'mysql2', 'mariadb'], true)) {
+                $host = (string) ($parts['host'] ?? $host);
+                $port = (string) ($parts['port'] ?? ($port ?: '3306'));
+                $database = ltrim((string) ($parts['path'] ?? $database), '/');
+                $user = isset($parts['user']) ? urldecode((string) $parts['user']) : $user;
+                $password = isset($parts['pass']) ? urldecode((string) $parts['pass']) : $password;
+            }
+        }
+
+        if ($host === '' || $database === '' || $user === '') {
+            throw new RuntimeException('Conexão MySQL não configurada. Verifique DATABASE_URL ou as variáveis MYSQL_*.');
+        }
+
+        self::$instance = new PDO(
+            'mysql:host=' . $host . ';port=' . ((int) ($port ?: 3306)) . ';dbname=' . $database . ';charset=utf8mb4',
+            $user,
+            $password,
+            [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false,
+            ]
+        );
+
+        return self::$instance;
     }
 
-    private function loadEnvironment(): void
+    public function getConnection(): PDO
     {
-        $envPath = __DIR__ . '/.env';
-
-        if (!is_file($envPath)) {
-            return;
-        }
-
-        $lines = file($envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        if (!is_array($lines)) {
-            return;
-        }
-
-        foreach ($lines as $line) {
-            $line = trim((string) $line);
-            if ($line === '' || strpos($line, '#') === 0 || strpos($line, '=') === false) {
-                continue;
-            }
-
-            [$key, $value] = array_map('trim', explode('=', $line, 2));
-            $value = trim($value, "\"'");
-
-            if ($key !== '' && !isset($_ENV[$key])) {
-                $_ENV[$key] = $value;
-                putenv($key . '=' . $value);
-            }
-        }
+        return self::getSharedConnection();
     }
+}
+
+function db(): PDO
+{
+    return Database::getSharedConnection();
 }

@@ -1,2 +1,65 @@
 <?php
-require_once 'controllers/AuthController.php';require_once 'models/Project.php';require_once 'models/ProjectWorkspace.php';$auth=new AuthController();$auth->requireAuth();$wm=new ProjectWorkspaceManager();$kind=(string)($_GET['kind']??'');$id=(string)($_GET['id']??'');$project=null;$file=null;if($kind==='document'){$file=$wm->getDocument((int)$id);$project=$file?$GLOBALS['pm']??null:null;}elseif($kind==='timeline'){$file=$wm->getTimelineEvent($id);}if(!$file){http_response_code(404);exit('Arquivo nao encontrado.');}$projectManager=new ProjectManager();$project=$projectManager->getProject((string)$file['project_id']);if(!$project||!$wm->canViewWorkspace($project,$auth->getCurrentUser())){http_response_code(403);exit('Acesso negado.');}$path=(string)($file['storage_path']??$file['attachment_path']??'');if($path==='')exit('Arquivo nao encontrado.');$absolute=__DIR__.'/'.ltrim(str_replace('./','',$path),'/\\');if(!is_file($absolute)){http_response_code(404);exit('Arquivo nao encontrado.');}$name=(string)($file['original_name']??$file['attachment_original_name']??basename($absolute));$mime=(string)($file['mime_type']??$file['attachment_mime_type']??'application/octet-stream');header('Content-Type: '.$mime);header('Content-Length: '.filesize($absolute));header('Content-Disposition: inline; filename="'.str_replace('"','',basename($name)).'"');readfile($absolute);
+header('Content-Type: text/html; charset=UTF-8');
+require_once 'models/Project.php';
+require_once 'models/ProjectWorkspace.php';
+
+$projectManager = new ProjectManager();
+$workspaceManager = new ProjectWorkspaceManager($projectManager);
+
+$kind = strtolower(trim((string) ($_GET['kind'] ?? '')));
+$id = trim((string) ($_GET['id'] ?? ''));
+
+if ($id === '' || !in_array($kind, ['document', 'timeline'], true)) {
+    http_response_code(404);
+    echo 'Arquivo não encontrado.';
+    exit();
+}
+
+if ($kind === 'document') {
+    require_once 'controllers/AuthController.php';
+
+    $auth = new AuthController();
+    $auth->requireAuth();
+    $currentUser = $auth->getCurrentUser();
+    $fileInfo = $workspaceManager->getDocumentFileInfo($id);
+
+    if (!$fileInfo) {
+        http_response_code(404);
+        echo 'Documento não encontrado.';
+        exit();
+    }
+
+    $document = $fileInfo['record'];
+    $project = $projectManager->getProject((string) ($document['project_id'] ?? ''));
+
+    if (!is_array($project) || !$workspaceManager->canViewProjectDocument($document, $project, $currentUser)) {
+        http_response_code(403);
+        echo 'Acesso negado.';
+        exit();
+    }
+} else {
+    $fileInfo = $workspaceManager->getTimelineAttachmentFileInfo($id);
+
+    if (!$fileInfo) {
+        http_response_code(404);
+        echo 'Anexo não encontrado.';
+        exit();
+    }
+}
+
+$path = (string) ($fileInfo['absolute_path'] ?? '');
+if ($path === '' || !is_file($path)) {
+    http_response_code(404);
+    echo 'Arquivo não encontrado.';
+    exit();
+}
+
+$downloadName = basename((string) ($fileInfo['download_name'] ?? 'arquivo'));
+$mimeType = (string) ($fileInfo['mime_type'] ?? 'application/octet-stream');
+
+header('Content-Type: ' . $mimeType);
+header('Content-Length: ' . filesize($path));
+header('Content-Disposition: attachment; filename="' . str_replace('"', '', $downloadName) . '"');
+header('X-Content-Type-Options: nosniff');
+readfile($path);
+exit();

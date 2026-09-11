@@ -48,7 +48,7 @@ class OrientationManager
         $orientationIndex = $isCreate ? null : $this->findOrientationIndex($orientations, (string) $orientationId);
 
         if (!$isCreate && $orientationIndex === null) {
-            return ['success' => false, 'errors' => ['Orientacao nao encontrada.']];
+            return ['success' => false, 'errors' => ['Orientação não encontrada.']];
         }
 
         $title = trim((string) ($data['title'] ?? ''));
@@ -61,13 +61,13 @@ class OrientationManager
 
         $errors = [];
         if ($title === '') {
-            $errors[] = 'Titulo da orientacao e obrigatorio.';
+            $errors[] = 'Título da orientação é obrigatório.';
         }
         if ($supervisorId <= 0) {
-            $errors[] = 'Supervisor invalido.';
+            $errors[] = 'Supervisor inválido.';
         }
         if ($researcherId <= 0) {
-            $errors[] = 'Pesquisador academico invalido.';
+            $errors[] = 'Pesquisador acadêmico inválido.';
         }
 
         if ($errors) {
@@ -101,7 +101,7 @@ class OrientationManager
         }
 
         if (!$this->saveOrientations($orientations)) {
-            return ['success' => false, 'errors' => ['Nao foi possivel salvar a orientacao.']];
+            return ['success' => false, 'errors' => ['Não foi possível salvar a orientação.']];
         }
 
         return ['success' => true, 'orientation' => $savedOrientation, 'created' => $isCreate];

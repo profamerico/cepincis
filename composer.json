@@ -1,0 +1,7 @@
+{
+  "name": "cepin-cis/portal",
+  "description": "Portal CEPIN-CIS",
+  "require": {
+    "php": ">=8.1"
+  }
+}

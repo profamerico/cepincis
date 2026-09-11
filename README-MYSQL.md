@@ -1,18 +1,35 @@
-# CEPIN-CIS — versão MySQL/Railway
+# CEPIN-CIS — Railway / MySQL
 
-Esta versão encerra a dependência dos JSONs de **usuários, projetos e parceiros**. Esses dados passam a ser lidos e gravados exclusivamente no MySQL.
+Esta versão usa o MySQL do Railway como fonte de dados para usuários, projetos, parceiros, documentos, colaboradores, convites, timeline e notificações.
 
 ## Railway
 
-1. Mantenha as variáveis de conexão MySQL do Railway (`DATABASE_URL` ou `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_DATABASE`, `MYSQL_USER`, `MYSQL_PASSWORD`).
-2. Faça o deploy.
-3. Abra `migrate.php` uma única vez para criar/verificar as tabelas e registrar as migrations.
-4. Depois da execução, remova `migrate.php` do servidor ou bloqueie seu acesso público.
+No serviço PHP, mantenha `DATABASE_URL` apontando para o MySQL do Railway.
 
-A versão usa as tabelas `users`, `projects`, `partners`, `project_documents`, `project_collaborators`, `project_collaboration_invites`, `project_authentication_history`, `project_timeline_events`, `project_timeline_history` e `notifications`.
+Para executar a migration pelo navegador, crie temporariamente uma variável:
 
-## Importante
+`CEPIN_MIGRATION_KEY=uma-chave-temporaria`
 
-O arquivo `.env` não é incluído no pacote. O Railway deve fornecer as credenciais por variáveis de ambiente.
+Depois do deploy, abra:
 
-Os JSONs de conteúdo institucional e orientações ainda são mantidos porque não existe, neste pacote, uma tabela MySQL equivalente para esses dois módulos. Eles não participam da persistência de usuários, projetos ou parceiros.
+`https://SEU-DOMINIO/migrate.php?key=uma-chave-temporaria`
+
+O resultado esperado começa com `MIGRATION_OK`.
+
+Após a execução, remova `migrate.php` do repositório e remova `CEPIN_MIGRATION_KEY` das Variables do Railway.
+
+## Fluxos implementados
+
+- Usuários e autenticação em MySQL.
+- Projetos em MySQL.
+- Parceiros em MySQL, com seed dos seis parceiros institucionais existentes.
+- Criação de projeto sem exigir documentação.
+- Upload de documentação PDF/DOCX pelo workspace, com limite de 10 MB.
+- Autenticação documental administrativa.
+- Colaboradores e convites.
+- Timeline e histórico.
+- Notificações e contador no header.
+- Modo claro/escuro persistente em `localStorage`.
+- Carrossel de parceiros com navegação por setas, cards, pontos, teclado e toque.
+
+Os JSONs de usuários, projetos e parceiros foram removidos. `content_blocks.json`, `content_layouts.json`, `orientations.json`, `role_requests.json` e `user_profiles.json` permanecem porque esses módulos ainda não possuem equivalentes MySQL completos nesta versão.
