@@ -774,104 +774,113 @@ function initContentBlockReveal() {
     });
 }
 
-function initTeamCarousel() {
+function initPartnerCarousel() {
     const root = document.querySelector('[data-partners-carousel]');
-    if (!root) return;
+    if (!root || root.dataset.carouselReady === 'true') return;
 
     const cards = Array.from(root.querySelectorAll('[data-partner-card]'));
     const dots = Array.from(root.querySelectorAll('[data-partner-dot]'));
-    const memberName = root.querySelector('[data-partner-display-name]');
-    const memberDescription = root.querySelector('[data-partner-display-description]');
+    const name = root.querySelector('[data-partner-display-name]');
+    const description = root.querySelector('[data-partner-display-description]');
     const previous = root.querySelector('[data-partner-prev]');
     const next = root.querySelector('[data-partner-next]');
 
-    if (!cards.length || !memberName || !memberDescription) return;
+    if (!cards.length) return;
+
+    root.dataset.carouselReady = 'true';
 
     const partners = cards.map((card) => ({
         name: card.dataset.partnerName || '',
         description: card.dataset.partnerDescription || ''
     }));
 
-    let currentIndex = 0;
-    let touchStartX = null;
+    let current = 0;
+    let locked = false;
+    let startX = null;
 
-    function render(index) {
-        currentIndex = (index + cards.length) % cards.length;
+    const setState = (index, animate = true) => {
+        if (locked && animate) return;
 
-        cards.forEach((card, cardIndex) => {
-            const distance = (cardIndex - currentIndex + cards.length) % cards.length;
-            const signed = distance > cards.length / 2 ? distance - cards.length : distance;
+        current = (index + cards.length) % cards.length;
 
-            card.classList.remove(
-                'is-active',
-                'is-prev',
-                'is-next',
-                'is-prev-2',
-                'is-next-2',
-                'is-hidden'
-            );
+        cards.forEach((card, i) => {
+            const offset = (i - current + cards.length) % cards.length;
+            let state = 'is-hidden';
 
-            if (signed === 0) card.classList.add('is-active');
-            else if (signed === -1) card.classList.add('is-prev');
-            else if (signed === 1) card.classList.add('is-next');
-            else if (signed === -2) card.classList.add('is-prev-2');
-            else if (signed === 2) card.classList.add('is-next-2');
-            else card.classList.add('is-hidden');
+            if (offset === 0) state = 'is-active';
+            else if (offset === 1) state = 'is-next';
+            else if (offset === 2) state = 'is-next-2';
+            else if (offset === cards.length - 1) state = 'is-prev';
+            else if (offset === cards.length - 2) state = 'is-prev-2';
 
-            card.setAttribute('aria-hidden', signed === 0 ? 'false' : 'true');
+            card.classList.remove('is-active', 'is-prev', 'is-next', 'is-prev-2', 'is-next-2', 'is-hidden');
+            card.classList.add(state);
+            card.dataset.carouselPosition = state;
+            card.setAttribute('aria-hidden', state === 'is-active' ? 'false' : 'true');
+            card.tabIndex = state === 'is-active' ? 0 : -1;
         });
 
-        dots.forEach((dot, dotIndex) => {
-            const active = dotIndex === currentIndex;
+        dots.forEach((dot, i) => {
+            const active = i === current;
             dot.classList.toggle('is-active', active);
             dot.setAttribute('aria-current', active ? 'true' : 'false');
         });
 
-        memberName.textContent = partners[currentIndex].name;
-        memberDescription.textContent = partners[currentIndex].description;
+        if (name) name.textContent = partners[current].name;
+        if (description) description.textContent = partners[current].description;
 
-        if (previous instanceof HTMLButtonElement) previous.disabled = cards.length <= 1;
-        if (next instanceof HTMLButtonElement) next.disabled = cards.length <= 1;
-    }
+        if (previous instanceof HTMLButtonElement) previous.disabled = cards.length < 2;
+        if (next instanceof HTMLButtonElement) next.disabled = cards.length < 2;
 
-    previous?.addEventListener('click', () => render(currentIndex - 1));
-    next?.addEventListener('click', () => render(currentIndex + 1));
+        if (animate) {
+            locked = true;
+            window.setTimeout(() => { locked = false; }, 380);
+        }
+    };
+
+    previous?.addEventListener('click', () => setState(current - 1));
+    next?.addEventListener('click', () => setState(current + 1));
 
     dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => render(index));
+        dot.addEventListener('click', () => setState(index));
     });
 
     cards.forEach((card, index) => {
-        card.addEventListener('click', () => render(index));
+        card.addEventListener('click', () => setState(index));
+        card.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                setState(index);
+            }
+        });
     });
-
-    root.addEventListener('touchstart', (event) => {
-        touchStartX = event.changedTouches[0]?.clientX ?? null;
-    }, { passive: true });
-
-    root.addEventListener('touchend', (event) => {
-        if (touchStartX === null) return;
-        const endX = event.changedTouches[0]?.clientX ?? touchStartX;
-        const delta = touchStartX - endX;
-        touchStartX = null;
-
-        if (Math.abs(delta) >= 45) {
-            render(delta > 0 ? currentIndex + 1 : currentIndex - 1);
-        }
-    }, { passive: true });
 
     root.addEventListener('keydown', (event) => {
         if (event.key === 'ArrowLeft') {
             event.preventDefault();
-            render(currentIndex - 1);
-        }
-        if (event.key === 'ArrowRight') {
+            setState(current - 1);
+        } else if (event.key === 'ArrowRight') {
             event.preventDefault();
-            render(currentIndex + 1);
+            setState(current + 1);
         }
     });
 
-    render(0);
+    root.addEventListener('touchstart', (event) => {
+        startX = event.changedTouches[0]?.clientX ?? null;
+    }, { passive: true });
+
+    root.addEventListener('touchend', (event) => {
+        if (startX === null) return;
+        const endX = event.changedTouches[0]?.clientX ?? startX;
+        const delta = startX - endX;
+        startX = null;
+
+        if (Math.abs(delta) >= 45) {
+            setState(delta > 0 ? current + 1 : current - 1);
+        }
+    }, { passive: true });
+
+    setState(0, false);
 }
 
 function initFloatingButtonObserver() {
@@ -2278,7 +2287,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initMobileNavigation,
         initMobileCollapseCards,
         initContentBlockReveal,
-        initTeamCarousel,
+        initPartnerCarousel,
         initFloatingButtonObserver,
         initInnovationCards,
         initSettingsTabs,
