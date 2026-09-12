@@ -774,115 +774,78 @@ function initContentBlockReveal() {
     });
 }
 
-function initPartnerCarousel() {
+function initTeamCarousel() {
     const root = document.querySelector('[data-partners-carousel]');
-    if (!root || root.dataset.carouselReady === 'true') return;
+    if (!root) return;
 
     const cards = Array.from(root.querySelectorAll('[data-partner-card]'));
     const dots = Array.from(root.querySelectorAll('[data-partner-dot]'));
-    const name = root.querySelector('[data-partner-display-name]');
-    const description = root.querySelector('[data-partner-display-description]');
-    const previous = root.querySelector('[data-partner-prev]');
-    const next = root.querySelector('[data-partner-next]');
+    const memberName = root.querySelector('[data-partner-display-name]');
+    const memberDescription = root.querySelector('[data-partner-display-description]');
+    const leftArrow = root.querySelector('[data-partner-prev]');
+    const rightArrow = root.querySelector('[data-partner-next]');
 
     if (!cards.length) return;
-
-    root.dataset.carouselReady = 'true';
 
     const partners = cards.map((card) => ({
         name: card.dataset.partnerName || '',
         description: card.dataset.partnerDescription || ''
     }));
 
-    let current = 0;
-    let locked = false;
-    let startX = null;
+    let currentIndex = 0;
+    let isAnimating = false;
+    let touchStartX = 0;
 
-    const setState = (index, animate = true) => {
-        if (locked && animate) return;
+    function updateCarousel(newIndex) {
+        if (isAnimating || cards.length <= 1) return;
+        isAnimating = true;
+        currentIndex = (newIndex + cards.length) % cards.length;
 
-        current = (index + cards.length) % cards.length;
+        cards.forEach((card, index) => {
+            const offset = (index - currentIndex + cards.length) % cards.length;
+            card.classList.remove('center', 'left-1', 'left-2', 'right-1', 'right-2', 'hidden');
 
-        cards.forEach((card, i) => {
-            const offset = (i - current + cards.length) % cards.length;
-            let state = 'is-hidden';
-
-            if (offset === 0) state = 'is-active';
-            else if (offset === 1) state = 'is-next';
-            else if (offset === 2) state = 'is-next-2';
-            else if (offset === cards.length - 1) state = 'is-prev';
-            else if (offset === cards.length - 2) state = 'is-prev-2';
-
-            card.classList.remove('is-active', 'is-prev', 'is-next', 'is-prev-2', 'is-next-2', 'is-hidden');
-            card.classList.add(state);
-            card.dataset.carouselPosition = state;
-            card.setAttribute('aria-hidden', state === 'is-active' ? 'false' : 'true');
-            card.tabIndex = state === 'is-active' ? 0 : -1;
+            if (offset === 0) card.classList.add('center');
+            else if (offset === 1) card.classList.add('right-1');
+            else if (offset === 2) card.classList.add('right-2');
+            else if (offset === cards.length - 1) card.classList.add('left-1');
+            else if (offset === cards.length - 2) card.classList.add('left-2');
+            else card.classList.add('hidden');
         });
 
-        dots.forEach((dot, i) => {
-            const active = i === current;
-            dot.classList.toggle('is-active', active);
+        dots.forEach((dot, index) => {
+            const active = index === currentIndex;
+            dot.classList.toggle('active', active);
             dot.setAttribute('aria-current', active ? 'true' : 'false');
         });
 
-        if (name) name.textContent = partners[current].name;
-        if (description) description.textContent = partners[current].description;
+        if (memberName) memberName.textContent = partners[currentIndex].name;
+        if (memberDescription) memberDescription.textContent = partners[currentIndex].description;
 
-        if (previous instanceof HTMLButtonElement) previous.disabled = cards.length < 2;
-        if (next instanceof HTMLButtonElement) next.disabled = cards.length < 2;
+        window.setTimeout(() => { isAnimating = false; }, 380);
+    }
 
-        if (animate) {
-            locked = true;
-            window.setTimeout(() => { locked = false; }, 380);
-        }
-    };
-
-    previous?.addEventListener('click', () => setState(current - 1));
-    next?.addEventListener('click', () => setState(current + 1));
-
-    dots.forEach((dot, index) => {
-        dot.addEventListener('click', () => setState(index));
-    });
-
-    cards.forEach((card, index) => {
-        card.addEventListener('click', () => setState(index));
-        card.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                setState(index);
-            }
-        });
-    });
-
-    root.addEventListener('keydown', (event) => {
-        if (event.key === 'ArrowLeft') {
-            event.preventDefault();
-            setState(current - 1);
-        } else if (event.key === 'ArrowRight') {
-            event.preventDefault();
-            setState(current + 1);
-        }
-    });
+    leftArrow?.addEventListener('click', () => updateCarousel(currentIndex - 1));
+    rightArrow?.addEventListener('click', () => updateCarousel(currentIndex + 1));
+    dots.forEach((dot, index) => dot.addEventListener('click', () => updateCarousel(index)));
+    cards.forEach((card, index) => card.addEventListener('click', () => updateCarousel(index)));
 
     root.addEventListener('touchstart', (event) => {
-        startX = event.changedTouches[0]?.clientX ?? null;
+        touchStartX = event.changedTouches[0]?.clientX || 0;
     }, { passive: true });
-
     root.addEventListener('touchend', (event) => {
-        if (startX === null) return;
-        const endX = event.changedTouches[0]?.clientX ?? startX;
-        const delta = startX - endX;
-        startX = null;
-
-        if (Math.abs(delta) >= 45) {
-            setState(delta > 0 ? current + 1 : current - 1);
-        }
+        const endX = event.changedTouches[0]?.clientX || 0;
+        const diff = touchStartX - endX;
+        if (Math.abs(diff) > 50) updateCarousel(currentIndex + (diff > 0 ? 1 : -1));
     }, { passive: true });
 
-    setState(0, false);
-}
+    root.addEventListener('keydown', (event) => {
+        if (event.key === 'ArrowLeft') updateCarousel(currentIndex - 1);
+        if (event.key === 'ArrowRight') updateCarousel(currentIndex + 1);
+    });
 
+    updateCarousel(0);
+}
 function initFloatingButtonObserver() {
     const button = document.querySelector('.botao-ver-mais-lateral');
     if (!button) {
@@ -2287,7 +2250,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initMobileNavigation,
         initMobileCollapseCards,
         initContentBlockReveal,
-        initPartnerCarousel,
+        initTeamCarousel,
         initFloatingButtonObserver,
         initInnovationCards,
         initSettingsTabs,

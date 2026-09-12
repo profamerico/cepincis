@@ -423,8 +423,13 @@ include_once 'includes/header.php';
                                 $researchProfile = $homepageProfiles[$researchUserId] ?? [];
                                 $researchPhoto = trim((string) ($researchProfile['photo_path'] ?? ''));
                                 $researchBio = trim((string) ($researchProfile['bio'] ?? ''));
-                                $researchName = trim((string) ($researchUser['fullname'] ?? $researchUser['username'] ?? 'Pesquisador'));
-                                $researchRole = $homeAuth->getRoleLabel($researchUser);
+                                $researchFullName = trim((string) ($researchUser['fullname'] ?? $researchUser['username'] ?? 'Pesquisador'));
+                                $researchNameParts = preg_split('/\s+/', $researchFullName, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+                                if (count($researchNameParts) > 3) {
+                                    $researchName = $researchNameParts[0] . ' ' . $researchNameParts[1] . ' ' . $researchNameParts[count($researchNameParts) - 1];
+                                } else {
+                                    $researchName = $researchFullName;
+                                }
                                 $researchInitial = function_exists('mb_substr') ? mb_strtoupper(mb_substr($researchName, 0, 1, 'UTF-8'), 'UTF-8') : strtoupper(substr($researchName, 0, 1));
                                 ?>
                                 <article class="researcher-card">
@@ -434,7 +439,6 @@ include_once 'includes/header.php';
                                         <?php else: ?>
                                             <span class="researcher-card__initial"><?php echo htmlspecialchars($researchInitial, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                         <?php endif; ?>
-                                        <span class="researcher-card__role"><?php echo htmlspecialchars($researchRole, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'); ?></span>
                                     </div>
 
                                     <div class="researcher-card__body">

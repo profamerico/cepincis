@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/config/database.php';
+
 if (!defined('CEPIN_APP_TIMEZONE')) {
     define('CEPIN_APP_TIMEZONE', 'America/Sao_Paulo');
 }
