@@ -152,7 +152,7 @@ if ($isAdmin) {
             <div class="site-nav-links">
                 <a href="./about.php#sobre">Sobre</a>
                 <a href="./implement.php">Áreas Temáticas</a>
-                <a href="https://www.ifspcaraguatatuba.edu.br/images/CEPIN/Portaria_Normativa_n%C2%BA_14-2024_Aprova_regulamento_CEPIN-CIS.pdf">Regulamento</a>
+                <a href="../docs/Regulamento_CEPIN-CIS.pdf">Regulamento</a>
                 <a href="./contact.php">Contato</a>
             </div>
 
@@ -165,7 +165,15 @@ if ($isAdmin) {
                     aria-label="Ativar modo escuro"
                     title="Ativar modo escuro"
                 >
-                    <i class="fa-solid fa-moon" data-theme-toggle-icon></i>
+                    <span class="theme-toggle-symbol" data-theme-toggle-icon aria-hidden="true">
+                        <svg class="theme-toggle-svg theme-toggle-svg--light" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 3V5M12 19V21M3 12H5M19 12H21M5.64 5.64L7.05 7.05M16.95 16.95L18.36 18.36M5.64 18.36L7.05 16.95M16.95 7.05L18.36 5.64" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            <circle cx="12" cy="12" r="4.25" fill="currentColor"/>
+                        </svg>
+                        <svg class="theme-toggle-svg theme-toggle-svg--dark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M20.2 14.7A8.5 8.5 0 0 1 9.3 3.8a8.6 8.6 0 1 0 10.9 10.9Z" fill="currentColor"/>
+                        </svg>
+                    </span>
                 </button>
 
                 <?php if ($isLoggedIn): ?>
@@ -263,7 +271,15 @@ if ($isAdmin) {
                 aria-pressed="false"
                 aria-label="Ativar modo escuro"
             >
-                <i class="fa-solid fa-moon" data-theme-toggle-icon></i>
+                <span class="theme-toggle-symbol" data-theme-toggle-icon aria-hidden="true">
+                    <svg class="theme-toggle-svg theme-toggle-svg--light" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 3V5M12 19V21M3 12H5M19 12H21M5.64 5.64L7.05 7.05M16.95 16.95L18.36 18.36M5.64 18.36L7.05 16.95M16.95 7.05L18.36 5.64" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        <circle cx="12" cy="12" r="4.25" fill="currentColor"/>
+                    </svg>
+                    <svg class="theme-toggle-svg theme-toggle-svg--dark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20.2 14.7A8.5 8.5 0 0 1 9.3 3.8a8.6 8.6 0 1 0 10.9 10.9Z" fill="currentColor"/>
+                    </svg>
+                </span>
                 <span data-theme-toggle-label>Modo escuro</span>
             </button>
 
