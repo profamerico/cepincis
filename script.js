@@ -127,10 +127,6 @@ function initThemeToggle() {
             const label = isDark ? 'Ativar modo claro' : 'Ativar modo escuro';
             button.setAttribute('aria-label', label);
             if (button.hasAttribute('title')) button.setAttribute('title', label);
-            const icon = button.querySelector('[data-theme-toggle-icon]');
-            if (icon) {
-                icon.classList.toggle('is-dark', isDark);
-            }
             const text = button.querySelector('[data-theme-toggle-label]');
             if (text) text.textContent = isDark ? 'Modo claro' : 'Modo escuro';
         });

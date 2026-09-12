@@ -156,28 +156,6 @@ button.mobile-account-link {
        color: #ffffff;
 }
 
-
-.theme-toggle-symbol {
-       width: 20px;
-       height: 20px;
-       display: inline-flex;
-       align-items: center;
-       justify-content: center;
-       flex: 0 0 20px;
-}
-
-.theme-toggle-svg {
-       width: 20px;
-       height: 20px;
-       display: block;
-       transition: transform .22s ease, opacity .18s ease;
-}
-
-.theme-toggle-svg--dark { display: none; }
-.theme-toggle-symbol.is-dark .theme-toggle-svg--light { display: none; }
-.theme-toggle-symbol.is-dark .theme-toggle-svg--dark { display: block; }
-.theme-toggle-symbol.is-dark .theme-toggle-svg { transform: rotate(-8deg); }
-
 .header-icon-link--image {
        padding: 0;
 }
@@ -8798,7 +8776,7 @@ html[data-theme="dark"] .public-partners-panel .partner-card.center {
     opacity:0; visibility:hidden; pointer-events:none; z-index:1;
 }
 .cepin-partner-card__media { width:100%; aspect-ratio:9/16; height:auto; display:block; background:#fff; overflow:hidden; }
-.cepin-partner-card__media img { width:100%; height:100%; aspect-ratio:9/16; display:block; object-fit:contain; padding:0; border:0; }
+.cepin-partner-card__media img { width:100%; height:100%; display:block; object-fit:cover; padding:0; border:0; }
 .cepin-partner-card__fallback { width:100%; height:100%; display:grid; place-items:center; color:#52705c; font-size:3rem; background:linear-gradient(145deg,#eef4ef,#dfeae1); }
 .cepin-partner-card__name { min-height:58px; display:flex; align-items:center; justify-content:center; padding:10px 16px; color:#07240f; font-size:.9rem; font-weight:900; line-height:1.25; text-align:center; }
 .cepin-partner-card.center { z-index:10; opacity:1; visibility:visible; pointer-events:auto; transform:translate(-50%,-50%) scale(1.06); }
@@ -9118,26 +9096,20 @@ html[data-theme="dark"] .cepin-partner-caption {
     }
 
     .cepin-partner-stage {
-        height: 400px;
+        height: 350px;
     }
 
     .cepin-partner-card {
-        width: 170px;
-        height: 365px;
+        width: 190px;
+        height: 250px;
     }
 
     .cepin-partner-card__media {
-        width: 100%;
-        aspect-ratio: 9 / 16;
-        height: auto;
+        height: 200px;
     }
 
     .cepin-partner-card__media img {
-        width: 100%;
-        height: 100%;
-        aspect-ratio: 9 / 16;
-        padding: 0;
-        object-fit: contain;
+        padding: 22px;
     }
 
     .cepin-partner-card.is-prev {
@@ -9161,4 +9133,23 @@ html[data-theme="dark"] .cepin-partner-caption {
     .project-timeline-date {
         text-align: left;
     }
+}
+
+
+/* ===== AJUSTE FINAL: ÍCONE DE TEMA E PROPORÇÃO REAL DO CARROSSEL ===== */
+.theme-toggle-icon { width:21px; height:21px; display:block; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto; }
+.header-theme-toggle { display:inline-flex; align-items:center; justify-content:center; }
+.cepin-partner-stage { height:560px !important; }
+.cepin-partner-card { width:220px !important; height:450px !important; padding:0 !important; box-sizing:border-box !important; }
+.cepin-partner-card__media { width:220px !important; height:391.111px !important; min-height:391.111px !important; max-height:391.111px !important; aspect-ratio:9 / 16 !important; display:block !important; box-sizing:border-box !important; overflow:hidden !important; padding:0 !important; border:0 !important; border-radius:0 !important; background:#fff !important; }
+.cepin-partner-card__media img { width:220px !important; height:391.111px !important; min-width:220px !important; min-height:391.111px !important; max-width:220px !important; max-height:391.111px !important; display:block !important; box-sizing:border-box !important; object-fit:contain !important; object-position:center !important; padding:0 !important; margin:0 !important; border:0 !important; }
+.cepin-partner-card__fallback { width:220px !important; height:391.111px !important; min-height:391.111px !important; box-sizing:border-box !important; }
+.cepin-partner-card__name { height:59px !important; min-height:59px !important; box-sizing:border-box !important; }
+@media (max-width:700px) {
+ .cepin-partner-stage { height:390px !important; }
+ .cepin-partner-card { width:170px !important; height:360px !important; }
+ .cepin-partner-card__media { width:170px !important; height:302.222px !important; min-height:302.222px !important; max-height:302.222px !important; }
+ .cepin-partner-card__media img { width:170px !important; height:302.222px !important; min-width:170px !important; min-height:302.222px !important; max-width:170px !important; max-height:302.222px !important; }
+ .cepin-partner-card__fallback { width:170px !important; height:302.222px !important; min-height:302.222px !important; }
+ .cepin-partner-card__name { height:58px !important; min-height:58px !important; }
 }

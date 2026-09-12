@@ -165,15 +165,10 @@ if ($isAdmin) {
                     aria-label="Ativar modo escuro"
                     title="Ativar modo escuro"
                 >
-                    <span class="theme-toggle-symbol" data-theme-toggle-icon aria-hidden="true">
-                        <svg class="theme-toggle-svg theme-toggle-svg--light" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 3V5M12 19V21M3 12H5M19 12H21M5.64 5.64L7.05 7.05M16.95 16.95L18.36 18.36M5.64 18.36L7.05 16.95M16.95 7.05L18.36 5.64" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                            <circle cx="12" cy="12" r="4.25" fill="currentColor"/>
-                        </svg>
-                        <svg class="theme-toggle-svg theme-toggle-svg--dark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M20.2 14.7A8.5 8.5 0 0 1 9.3 3.8a8.6 8.6 0 1 0 10.9 10.9Z" fill="currentColor"/>
-                        </svg>
-                    </span>
+                    <svg class="theme-toggle-icon" data-theme-toggle-icon viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 3.5v2M12 18.5v2M4.5 12h-2M21.5 12h-2M5.99 5.99 4.58 4.58M19.42 19.42l-1.41-1.41M18.01 5.99l1.41-1.41M4.58 19.42l1.41-1.41"/>
+                        <circle cx="12" cy="12" r="3.4"/>
+                    </svg>
                 </button>
 
                 <?php if ($isLoggedIn): ?>
@@ -271,15 +266,10 @@ if ($isAdmin) {
                 aria-pressed="false"
                 aria-label="Ativar modo escuro"
             >
-                <span class="theme-toggle-symbol" data-theme-toggle-icon aria-hidden="true">
-                    <svg class="theme-toggle-svg theme-toggle-svg--light" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 3V5M12 19V21M3 12H5M19 12H21M5.64 5.64L7.05 7.05M16.95 16.95L18.36 18.36M5.64 18.36L7.05 16.95M16.95 7.05L18.36 5.64" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                        <circle cx="12" cy="12" r="4.25" fill="currentColor"/>
+                <svg class="theme-toggle-icon" data-theme-toggle-icon viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                        <path d="M12 3.5v2M12 18.5v2M4.5 12h-2M21.5 12h-2M5.99 5.99 4.58 4.58M19.42 19.42l-1.41-1.41M18.01 5.99l1.41-1.41M4.58 19.42l1.41-1.41"/>
+                        <circle cx="12" cy="12" r="3.4"/>
                     </svg>
-                    <svg class="theme-toggle-svg theme-toggle-svg--dark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20.2 14.7A8.5 8.5 0 0 1 9.3 3.8a8.6 8.6 0 1 0 10.9 10.9Z" fill="currentColor"/>
-                    </svg>
-                </span>
                 <span data-theme-toggle-label>Modo escuro</span>
             </button>
 
