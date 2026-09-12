@@ -191,7 +191,7 @@ if ($isAdmin) {
 
                     <?php if ($canCreateResearchProjects): ?>
                         <a href="./research-projects.php" class="header-icon-link" aria-label="Projetos de pesquisa" title="Projetos de pesquisa">
-                            <i class="fa-solid fa-diagram-project"></i>
+                            <i class="fa fa-product-hunt" aria-hidden="true"></i>
                         </a>
                     <?php endif; ?>
 
