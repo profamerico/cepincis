@@ -270,7 +270,7 @@ http_response_code(404);
 </main>
 
 <footer>
-    CEPIN-CIS · Centro de Pesquisa e Inovação em Cidade Inteligentes e Sustentáveis
+    CEPIN-CIS · Centro de Pesquisa e Inovação em Cidades Inteligentes e Sustentáveis
 </footer>
 
 </body>
