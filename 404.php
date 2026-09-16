@@ -9,6 +9,7 @@ http_response_code(404);
 
     <title>404 CEPIN-CIS</title>
     <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" href="./img/Captura_de_tela_2026-03-23_165121-removebg-preview.png">
 
     <style>
         :root {
