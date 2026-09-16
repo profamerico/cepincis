@@ -44,6 +44,15 @@ http_response_code(404);
                 ),
                 var(--bg);
             color: var(--text);
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Roboto,
+                Helvetica,
+                Arial,
+                sans-serif;
         }
 
         header {
