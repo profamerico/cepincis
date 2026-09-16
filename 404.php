@@ -7,7 +7,7 @@ http_response_code(404);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>404 — CEPIN-CIS</title>
+    <title>404 CEPIN-CIS</title>
     <meta name="robots" content="noindex, nofollow">
 
     <style>
@@ -44,15 +44,6 @@ http_response_code(404);
                 ),
                 var(--bg);
             color: var(--text);
-            font-family:
-                Inter,
-                -apple-system,
-                BlinkMacSystemFont,
-                "Segoe UI",
-                Roboto,
-                Helvetica,
-                Arial,
-                sans-serif;
         }
 
         header {
@@ -70,6 +61,7 @@ http_response_code(404);
             font-size: 29px;
             font-weight: 900;
             letter-spacing: -1.5px;
+            font-family: 'Aldrich', sans-serif;
         }
 
         main {
